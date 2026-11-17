@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
-# Run an admin command against one deployment: dev (wildro.nikone.dev) or
-# main (wildro.app). Test events belong in dev only, never in main.
+# Run an admin command against the stand: java (java.wildro.app).
 #
-#   scripts/events.sh dev import events.json --operator nikita          (dry run)
-#   scripts/events.sh dev import events.json --operator nikita --write
-#   scripts/events.sh dev list --all
+#   scripts/events.sh java import events.json --operator nikita          (dry run)
+#   scripts/events.sh java import events.json --operator nikita --write
+#   scripts/events.sh java list --all
 #
 # Uses the jar the running service was started from and the same credentials,
 # so the command sees exactly the schema and rules that are live. The format is
@@ -14,9 +13,9 @@
 # server (SPEC.md §0.1).
 set -euo pipefail
 
-# Which database: "dev" (wildro.nikone.dev) or "main" (wildro.app).
-TARGET="${1:?usage: $0 <dev|main> <import|cancel|delete|list> ...}"
-case "$TARGET" in dev | main) ;; *) echo "unknown environment '$TARGET', expected dev or main" >&2; exit 2 ;; esac
+# Which database: "java" (java.wildro.app).
+TARGET="${1:?usage: $0 java <import|cancel|delete|list> ...}"
+case "$TARGET" in java) ;; *) echo "unknown environment '$TARGET', expected java" >&2; exit 2 ;; esac
 shift
 DEPLOY_ROOT=/home/nikita/deploy/wildro-$TARGET
 JAR="$DEPLOY_ROOT/current/event-service.jar"

@@ -114,9 +114,9 @@ superuser; the migrations then run as an ordinary role.
 Admin command line, against a deployed service:
 
 ```
-scripts/events.sh dev import seed/dev-test-events.json --operator NAME          # dry run
-scripts/events.sh dev import seed/dev-test-events.json --operator NAME --write
-scripts/events.sh dev list --all
+scripts/events.sh java list --all
+scripts/events.sh java import events.json --operator NAME          # dry run
+scripts/events.sh java import events.json --operator NAME --write
 ```
 
 CI (`.github/workflows/ci.yml`) builds and tests both services against a real

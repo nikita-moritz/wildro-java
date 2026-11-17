@@ -1,12 +1,11 @@
 #!/usr/bin/env bash
-# Deploy one Spring service of the current checkout to one environment.
-#   scripts/deploy-service.sh dev                         # event-service, wildro.nikone.dev
-#   scripts/deploy-service.sh main                        # event-service, wildro.app
-#   scripts/deploy-service.sh dev "" analytics-service    # another service, same rules
+# Deploy one Spring service of the current checkout to the stand.
+#   scripts/deploy-service.sh java                         # event-service, java.wildro.app
+#   scripts/deploy-service.sh java "" analytics-service    # another service, same rules
 #
 # Lives in the repo rather than on the box so that what runs is reviewable and
-# versioned. The CI workflow calls it on the self-hosted runner; running it by
-# hand from a checkout does the same thing.
+# versioned. Run by hand from a checkout on the server: this repository is
+# public, so no CI job of it ever runs on the machine that serves the site.
 #
 # Releases are kept by commit and swapped with a symlink, so a rollback is
 # pointing "current" back at a directory that is still there rather than a
@@ -19,11 +18,11 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SERVICE="${3:-event-service}"
 case "$SERVICE" in event-service | analytics-service) ;; *) echo "unknown service '$SERVICE'"; exit 2 ;; esac
 SERVICE_DIR="$REPO_ROOT/services/$SERVICE"
-# Which environment: "dev" (wildro.nikone.dev, branch dev) or "main" (wildro.app,
-# branch main). Everything else follows from the name, so the two can never run
-# different deploy logic.
-TARGET="${1:?usage: $0 <dev|main> [revision]}"
-case "$TARGET" in dev | main) ;; *) echo "unknown environment '$TARGET', expected dev or main"; exit 2 ;; esac
+# Which environment. Until 2026-11-17 this took "dev" and "main"; those now run
+# the Go version, and the Java version has one stand, "java" (java.wildro.app).
+# Everything else follows from the name.
+TARGET="${1:?usage: $0 java [revision] [service]}"
+case "$TARGET" in java) ;; *) echo "unknown environment '$TARGET', expected java"; exit 2 ;; esac
 # event-service predates the others and keeps the plain directory; every other
 # service gets its own, the same convention as wildro-<env>-frontend.
 if [ "$SERVICE" = event-service ]; then

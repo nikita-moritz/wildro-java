@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
-# Deploy the frontend of the current checkout to one environment.
-#   scripts/deploy-frontend.sh dev   # wildro.nikone.dev
-#   scripts/deploy-frontend.sh main  # wildro.app
+# Deploy the frontend of the current checkout to the stand.
+#   scripts/deploy-frontend.sh java   # java.wildro.app
 #
 # The same shape as deploy-service.sh: build once, stage a release by commit, swap
 # a symlink, restart, and keep the swap only if the new release answers. A
@@ -11,11 +10,9 @@ set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 FRONTEND_DIR="$REPO_ROOT/frontend"
-# Which environment: "dev" (wildro.nikone.dev, branch dev) or "main" (wildro.app,
-# branch main). Everything else follows from the name, so the two can never run
-# different deploy logic.
-TARGET="${1:?usage: $0 <dev|main> [revision]}"
-case "$TARGET" in dev | main) ;; *) echo "unknown environment '$TARGET', expected dev or main"; exit 2 ;; esac
+# Which environment: "java" (java.wildro.app), see deploy-service.sh.
+TARGET="${1:?usage: $0 java [revision]}"
+case "$TARGET" in java) ;; *) echo "unknown environment '$TARGET', expected java"; exit 2 ;; esac
 DEPLOY_ROOT=/home/nikita/deploy/wildro-$TARGET-frontend
 UNIT=wildro-$TARGET-frontend.service
 KEEP_RELEASES=5
