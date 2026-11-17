@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	The service logs to the console as usual. The admin command logs to stderr
+	instead, because its stdout is one JSON object that a caller, often a language
+	model, parses and acts on: a log line in it breaks the contract. Boot has no
+	property that moves the console to stderr, hence this file.
+-->
+<configuration>
+	<include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+	<springProfile name="cli">
+		<appender name="STDERR" class="ch.qos.logback.core.ConsoleAppender">
+			<target>System.err</target>
+			<encoder>
+				<pattern>${CONSOLE_LOG_PATTERN}</pattern>
+				<charset>${CONSOLE_LOG_CHARSET}</charset>
+			</encoder>
+		</appender>
+		<root level="WARN">
+			<appender-ref ref="STDERR"/>
+		</root>
+	</springProfile>
+
+	<springProfile name="!cli">
+		<include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+		<root level="INFO">
+			<appender-ref ref="CONSOLE"/>
+		</root>
+	</springProfile>
+</configuration>

@@ -1,0 +1,176 @@
+import { ArrowRight, Calendar, ExternalLink, Footprints, MapPin, SlidersHorizontal } from "lucide-react";
+import type { Metadata } from "next";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { connection } from "next/server";
+import { Suspense } from "react";
+
+import { EventTeaser } from "@/components/event-teaser";
+import { SiteFooter } from "@/components/site-footer";
+import { Button } from "@/components/ui/button";
+import { getDictionary, type Dictionary } from "@/lib/dictionaries";
+import { brand } from "@/lib/env";
+import { getFeed } from "@/lib/events-api";
+import { isLocale, type Locale } from "@/lib/locales";
+import { routes } from "@/lib/routes";
+import { alternatesFor } from "@/lib/seo";
+
+/**
+ * The working version's landing page. Kept: the hero, "coming up next" and
+ * "how it works". Dropped, because stage one has none of it: "host your own",
+ * the member and community counts, the create-event and communities blocks, and
+ * the closing "create account" call.
+ */
+
+const PREVIEW_COUNT = 6;
+
+const STEP_ICONS = [MapPin, SlidersHorizontal, ExternalLink, Footprints];
+
+export async function generateMetadata({ params }: PageProps<"/[locale]">): Promise<Metadata> {
+  const { locale } = await params;
+  if (!isLocale(locale)) {
+    notFound();
+  }
+  const t = getDictionary(locale);
+  return {
+    // Topic and region first, for search; the brand comes last, as on every other page.
+    title: { absolute: `${t.site.homeTitle} · ${brand().name}` },
+    alternates: alternatesFor(routes.home, locale),
+  };
+}
+
+export default async function HomePage({ params }: PageProps<"/[locale]">) {
+  const { locale } = await params;
+  if (!isLocale(locale)) {
+    notFound();
+  }
+  const t = getDictionary(locale);
+  const l = t.home;
+
+  return (
+    <>
+      <main className="flex-1">
+        <section className="relative overflow-hidden border-b">
+          {/* A soft glow instead of a photograph, as in the working version: events carry no photos yet. */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 -top-40 h-80 bg-[radial-gradient(60%_100%_at_50%_100%,color-mix(in_oklch,var(--primary)_18%,transparent),transparent)]"
+          />
+          <div className="relative mx-auto w-full max-w-5xl px-4 pt-16 pb-16 sm:pt-24">
+            <span className="inline-flex items-center gap-2 rounded-full border bg-card/60 px-3 py-1 text-xs font-medium text-muted-foreground backdrop-blur">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary/60 motion-reduce:animate-none" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
+              </span>
+              {l.kicker}
+            </span>
+
+            <h1 className="mt-6 max-w-3xl text-4xl leading-[1.08] font-bold tracking-tight sm:text-6xl">
+              {l.title1} <span className="text-primary">{l.title2}</span>
+            </h1>
+
+            <p className="mt-5 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">{l.subtitle}</p>
+
+            <div className="mt-8 flex flex-wrap items-center gap-3">
+              <Button asChild size="lg" className="h-12 gap-2 px-6 text-base">
+                <Link href={routes.map(locale)}>
+                  {l.primaryCta}
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </Button>
+            </div>
+          </div>
+        </section>
+
+        <section className="mx-auto w-full max-w-5xl px-4 py-16">
+          <div className="mb-6 flex items-end justify-between gap-4">
+            <div>
+              <h2 className="text-2xl font-bold tracking-tight">{l.upcomingTitle}</h2>
+              <p className="mt-1 text-sm text-muted-foreground">{l.upcomingSubtitle}</p>
+            </div>
+            <Link
+              href={routes.feed(locale)}
+              className="hidden shrink-0 items-center gap-1.5 text-sm font-medium text-primary hover:underline sm:flex"
+            >
+              {l.upcomingCta}
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+
+          <Suspense fallback={<TeaserSkeleton />}>
+            <UpcomingTeasers locale={locale} t={t} />
+          </Suspense>
+
+          <Link
+            href={routes.feed(locale)}
+            className="mt-6 flex items-center justify-center gap-1.5 text-sm font-medium text-primary hover:underline sm:hidden"
+          >
+            {l.upcomingCta}
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        </section>
+
+        <section className="border-y bg-muted/30">
+          <div className="mx-auto w-full max-w-5xl px-4 py-16">
+            <h2 className="text-2xl font-bold tracking-tight">{l.featuresTitle}</h2>
+            <p className="mt-1 text-sm text-muted-foreground">{l.featuresSubtitle}</p>
+            <ol className="mt-8 grid gap-x-8 gap-y-6 sm:grid-cols-2 lg:grid-cols-4">
+              {l.features.map((feature, index) => {
+                const Icon = STEP_ICONS[index] ?? MapPin;
+                return (
+                  <li key={feature.title} className="relative pl-11">
+                    <span className="absolute top-0 left-0 flex h-8 w-8 items-center justify-center rounded-lg border bg-card">
+                      <Icon className="h-4 w-4 text-primary" />
+                    </span>
+                    <span className="text-xs font-semibold text-primary/70 tabular-nums">
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+                    <p className="mt-0.5 font-semibold">{feature.title}</p>
+                    <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{feature.description}</p>
+                  </li>
+                );
+              })}
+            </ol>
+          </div>
+        </section>
+      </main>
+      <SiteFooter locale={locale} t={t} />
+    </>
+  );
+}
+
+async function UpcomingTeasers({ locale, t }: { locale: Locale; t: Dictionary }) {
+  // At request time, not at build: the machine that builds has no event service
+  // to ask, and the list is cached per tag once asked. Past events must also
+  // drop out as time passes, which a list frozen at build would not do.
+  await connection();
+  const feed = await getFeed(locale, 1);
+  const events = feed.items.slice(0, PREVIEW_COUNT);
+
+  if (events.length === 0) {
+    return (
+      <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed py-14 text-center">
+        <Calendar className="h-8 w-8 text-muted-foreground/40" />
+        <p className="font-medium">{t.home.emptyTitle}</p>
+        <p className="max-w-xs text-sm text-muted-foreground">{t.home.emptySubtitle}</p>
+      </div>
+    );
+  }
+  return (
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {events.map((event) => (
+        <EventTeaser key={event.slug} event={event} locale={locale} t={t} />
+      ))}
+    </div>
+  );
+}
+
+function TeaserSkeleton() {
+  return (
+    <div aria-hidden="true" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {Array.from({ length: PREVIEW_COUNT }, (_, index) => (
+        <div key={index} className="h-72 animate-pulse rounded-2xl bg-muted" />
+      ))}
+    </div>
+  );
+}

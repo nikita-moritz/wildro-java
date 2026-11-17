@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="32" height="32">
+  <!--
+    The one picture of the wildro logo, carried over from the working version.
+    The browser takes it as the tab icon (metadata in app/[locale]/layout.tsx)
+    and the .logo-mask class in globals.css paints it everywhere else. The mask
+    reads transparency, not colour, so the fill below only affects the tab icon;
+    on the page the colour comes from a bg-* class and follows the theme.
+    Change the shape here and nowhere else.
+  -->
+  <style>
+    .peak { fill: #0d874a; }
+    @media (prefers-color-scheme: dark) { .peak { fill: #1eeb85; } }
+  </style>
+  <path class="peak" d="m8 3 4 8 5-5 5 15H2L8 3z" />
+</svg>

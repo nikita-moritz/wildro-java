@@ -1,0 +1,173 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://wildro.app/schemas/event-import.schema.json",
+  "title": "wildro event import",
+  "description": "The input of `events import`. This file is the contract: the command validates every document against it before anything is written, and it is also what a language model is told to follow. Read docs/event-import.md before writing a document. Every object rejects unknown keys, because a typo in a field name would otherwise mean silently lost data.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["events"],
+  "properties": {
+    "events": {
+      "description": "One or more events. A batch is applied wholly or not at all.",
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 200,
+      "items": { "$ref": "#/$defs/event" }
+    }
+  },
+  "$defs": {
+    "text": {
+      "type": "string",
+      "pattern": "\\S"
+    },
+    "instant": {
+      "description": "RFC 3339 date-time with an explicit offset, e.g. 2026-10-03T09:00:00+02:00. A time without an offset would let the server's zone decide what it means.",
+      "type": "string",
+      "format": "date-time",
+      "pattern": "(Z|[+-][0-9]{2}:[0-9]{2})$"
+    },
+    "event": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["slug", "status", "activityType", "startsAt", "startPoint", "organizer", "source", "translations"],
+      "dependentRequired": { "coverImageUrl": ["coverCredit"], "coverCredit": ["coverImageUrl"] },
+      "properties": {
+        "slug": {
+          "description": "The public address of the event page and the key a repeated import updates. Lowercase ASCII words joined by single hyphens. A recurring event keeps one slug with no date in it; only a one-off event may carry its date.",
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 120,
+          "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+        },
+        "status": {
+          "description": "DRAFT stays off the public side. PUBLISHED is visible. Cancelling is a separate command, never a value here.",
+          "enum": ["DRAFT", "PUBLISHED"]
+        },
+        "activityType": {
+          "enum": ["HIKING", "TRAIL_RUN", "CYCLING", "WATER", "MOUNTAINEERING", "CLIMBING", "FERRATA", "KIDS", "YOGA", "CAMPING"]
+        },
+        "difficulty": {
+          "description": "Only if the source says so. Omit the key rather than guess.",
+          "enum": ["EASY", "MEDIUM", "HARD"]
+        },
+        "startsAt": { "$ref": "#/$defs/instant" },
+        "endsAt": {
+          "description": "Optional. Must be after startsAt.",
+          "$ref": "#/$defs/instant"
+        },
+        "startPoint": {
+          "description": "Where the outing starts, in WGS 84 degrees. Named keys rather than a pair, so latitude and longitude cannot be swapped. Set by a human when the source does not name an exact start point; never estimated.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["lat", "lon"],
+          "properties": {
+            "lat": { "type": "number", "minimum": -90, "maximum": 90 },
+            "lon": { "type": "number", "minimum": -180, "maximum": 180 }
+          }
+        },
+        "organizer": {
+          "description": "The group or person running it, as plain text from the source. Not an account.",
+          "allOf": [{ "$ref": "#/$defs/text" }],
+          "maxLength": 200
+        },
+        "source": {
+          "description": "Where the event is announced and when it was read. Both back the 'check the source' line on the page.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["url", "readAt"],
+          "properties": {
+            "url": { "type": "string", "format": "uri", "pattern": "^https?://", "maxLength": 2000 },
+            "readAt": { "$ref": "#/$defs/instant" }
+          }
+        },
+        "distanceKm": {
+          "description": "Only if the source says so.",
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 9999.99
+        },
+        "elevationGainM": {
+          "description": "Only if the source says so.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 20000
+        },
+        "coverCredit": {
+          "description": "Required with coverImageUrl, and only with it: the photo's author, its licence as written by the archive (e.g. 'CC BY-SA 4.0'), the licence text's address and the original's page. Only freely licensed photos (Wikimedia Commons and the like) or the owner's own; never a photo taken from the organiser's page.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["author", "license", "licenseUrl", "sourceUrl"],
+          "properties": {
+            "author": { "type": "string", "minLength": 1, "maxLength": 300 },
+            "license": { "type": "string", "minLength": 1, "maxLength": 100 },
+            "licenseUrl": { "type": "string", "format": "uri", "pattern": "^https://", "maxLength": 2000 },
+            "sourceUrl": { "type": "string", "format": "uri", "pattern": "^https://", "maxLength": 2000 }
+          }
+        },
+        "price": {
+          "description": "Only if the source says what taking part costs. The regular adult price; 0 when free. Other prices (children, members) stay in the description. Omit the key rather than guess.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["amount", "currency"],
+          "properties": {
+            "amount": { "type": "number", "minimum": 0, "maximum": 999999.99, "multipleOf": 0.01 },
+            "currency": { "type": "string", "pattern": "^[A-Z]{3}$" }
+          }
+        },
+        "coverImageUrl": {
+          "description": "Optional. An event without a cover is the normal case.",
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https://",
+          "maxLength": 2000
+        },
+        "links": {
+          "description": "Optional, beside the source link. Only addresses the source itself names; never searched for or guessed. Telegram, Instagram, WhatsApp and Facebook are shown with their own mark, anything else by its host name.",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "event": {
+              "description": "Where this one outing lives on a network or in a messenger: its post, its event page, its chat.",
+              "$ref": "#/$defs/links"
+            },
+            "community": {
+              "description": "Where the group running it can be found: its channel, its profile, its group chat.",
+              "$ref": "#/$defs/links"
+            }
+          }
+        },
+        "translations": {
+          "description": "All three languages, always. The description is written in our own words, never copied from the source.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["de", "en", "ru"],
+          "properties": {
+            "de": { "$ref": "#/$defs/translation" },
+            "en": { "$ref": "#/$defs/translation" },
+            "ru": { "$ref": "#/$defs/translation" }
+          }
+        }
+      }
+    },
+    "links": {
+      "type": "array",
+      "maxItems": 5,
+      "uniqueItems": true,
+      "items": { "type": "string", "format": "uri", "pattern": "^https://", "maxLength": 500 }
+    },
+    "translation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "placeName", "description"],
+      "properties": {
+        "name": { "allOf": [{ "$ref": "#/$defs/text" }], "maxLength": 200 },
+        "placeName": {
+          "description": "The place in words, in this language, country name included. The card must not mix languages.",
+          "allOf": [{ "$ref": "#/$defs/text" }],
+          "maxLength": 300
+        },
+        "description": { "allOf": [{ "$ref": "#/$defs/text" }], "maxLength": 10000 }
+      }
+    }
+  }
+}

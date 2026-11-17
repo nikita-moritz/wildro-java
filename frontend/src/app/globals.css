@@ -1,0 +1,202 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+/*
+  Dark mode is a class on <html>, set by next-themes: light, dark, or the
+  system's choice, the same three-way toggle as the working version. next-themes
+  sets the class from an inline script before paint, so nothing flashes.
+*/
+@custom-variant dark (&:is(.dark *));
+
+/*
+  The events list as list or tiles (SPEC.md §0.3.2): src/lib/feed-view.ts puts
+  data-feed-view on <html> from an inline script before paint, the same way.
+  `tiles` applies only inside the list marked data-feed (and to it), so the same
+  card elsewhere, under a past event, stays a row; `tiles-chosen` is the choice
+  itself, for the switch. `scripted` holds once that script ran at all, for
+  controls that need it. :is() rather than :where(), so these win over the
+  plain utility they replace.
+*/
+@custom-variant tiles (&:is([data-feed-view="tiles"] [data-feed], [data-feed-view="tiles"] [data-feed] *));
+@custom-variant tiles-chosen (&:is([data-feed-view="tiles"] *));
+@custom-variant scripted (&:is([data-feed-view] *));
+
+/*
+  The small island with Impressum and Datenschutz (components/legal-island.tsx),
+  floating over the map and over the events list. One definition, so both look
+  the same; a utility, so a page can float it from a breakpoint (md:legal-island).
+*/
+@utility legal-island {
+  @apply rounded-xl border bg-card/95 px-5 py-2 shadow-xl backdrop-blur;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-inter);
+  --font-heading: var(--font-inter);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+}
+
+/*
+  wildro green, carried over from the working version (#0d874a light, #1eeb85
+  dark). Contrast checked: white on the light green is 4.58:1, the dark
+  foreground on the bright green 9.42:1, both above WCAG AA.
+*/
+:root {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.548 0.136 153.7);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.48 0 0);
+  --accent: oklch(0.96 0.02 153.7);
+  --accent-foreground: oklch(0.266 0.063 152.9);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.548 0.136 153.7);
+  --radius: 0.625rem;
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.827 0.205 153.7);
+  --primary-foreground: oklch(0.266 0.063 152.9);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.72 0 0);
+  --accent: oklch(0.3 0.05 153.7);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.827 0.205 153.7);
+}
+
+/* The map engine paints popups white whatever the theme; its text would then
+   be the dark theme's light grey on white. Popups follow the theme instead. */
+.mapboxgl-popup-content {
+  background: var(--card);
+  color: var(--card-foreground);
+  border-radius: 0.75rem;
+  padding: 0.875rem 1rem;
+  font-family: inherit;
+}
+
+.mapboxgl-popup-anchor-bottom .mapboxgl-popup-tip,
+.mapboxgl-popup-anchor-bottom-left .mapboxgl-popup-tip,
+.mapboxgl-popup-anchor-bottom-right .mapboxgl-popup-tip {
+  border-top-color: var(--card);
+}
+
+.mapboxgl-popup-anchor-top .mapboxgl-popup-tip,
+.mapboxgl-popup-anchor-top-left .mapboxgl-popup-tip,
+.mapboxgl-popup-anchor-top-right .mapboxgl-popup-tip {
+  border-bottom-color: var(--card);
+}
+
+.mapboxgl-popup-anchor-left .mapboxgl-popup-tip {
+  border-right-color: var(--card);
+}
+
+.mapboxgl-popup-anchor-right .mapboxgl-popup-tip {
+  border-left-color: var(--card);
+}
+
+.mapboxgl-popup-close-button {
+  color: var(--muted-foreground);
+  font-size: 1.125rem;
+  padding: 0.125rem 0.5rem;
+}
+
+.mapboxgl-map {
+  font-family: inherit;
+}
+
+/* The working version's entrance animations, kept short and skipped for anyone
+   who asked the system for less motion. */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes map-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.fade-up {
+  animation: fade-up 0.25s ease both;
+}
+
+.map-fade-in {
+  animation: map-fade-in 0.3s ease both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fade-up,
+  .map-fade-in {
+    animation: none;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  button:not(:disabled),
+  [role="button"]:not(:disabled),
+  a[href] {
+    cursor: pointer;
+  }
+  html {
+    @apply font-sans;
+  }
+}
+
+/*
+  The logo is one picture, public/logo.svg. The browser takes it as the tab icon
+  and this mask paints it everywhere else, in the current text colour, so it
+  follows the theme without a second copy of its outline.
+*/
+.logo-mask {
+  mask: url("/logo.svg") center / contain no-repeat;
+  -webkit-mask: url("/logo.svg") center / contain no-repeat;
+}

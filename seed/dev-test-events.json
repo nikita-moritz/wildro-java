@@ -1,0 +1,311 @@
+{
+  "events": [
+    {
+      "slug": "test-aachen-wurmtal-wanderung",
+      "status": "PUBLISHED",
+      "activityType": "HIKING",
+      "difficulty": "EASY",
+      "startsAt": "2026-10-03T10:00:00+02:00",
+      "endsAt": "2026-10-03T14:00:00+02:00",
+      "startPoint": { "lat": 50.7960, "lon": 6.0880 },
+      "organizer": "Test Event",
+      "source": { "url": "https://example.org/wandertreff-aachen/wurmtal", "readAt": "2026-09-29T12:00:00+02:00" },
+      "distanceKm": 11,
+      "elevationGainM": 120,
+      "translations": {
+        "de": { "name": "Durch das Wurmtal", "placeName": "Aachen-Soers, Deutschland", "description": "Eine ruhige Runde entlang der Wurm, vorbei an alten Mühlen und durch lichten Auwald. Das Tempo ist gemütlich, Pausen sind eingeplant. Anmeldung und Treffpunkt stehen beim Veranstalter." },
+        "en": { "name": "Through the Wurm valley", "placeName": "Aachen-Soers, Germany", "description": "A quiet loop along the Wurm, past old mills and through open riverside woodland. The pace is relaxed and breaks are planned in. Sign-up and the meeting point are with the organiser." },
+        "ru": { "name": "По долине Вурма", "placeName": "Ахен-Зоэрс, Германия", "description": "Спокойный маршрут вдоль реки Вурм мимо старых мельниц и через светлый пойменный лес. Темп прогулочный, привалы предусмотрены. Запись и место встречи у организатора." }
+      }
+    },
+    {
+      "slug": "test-hohes-venn-botrange-runde",
+      "status": "PUBLISHED",
+      "activityType": "HIKING",
+      "difficulty": "MEDIUM",
+      "startsAt": "2026-10-04T09:30:00+02:00",
+      "startPoint": { "lat": 50.5019, "lon": 6.0931 },
+      "organizer": "Test Event",
+      "source": { "url": "https://example.org/venn-wanderfreunde/botrange", "readAt": "2026-09-29T12:00:00+02:00" },
+      "distanceKm": 16.5,
+      "elevationGainM": 210,
+      "translations": {
+        "de": { "name": "Hochmoor-Runde am Signal de Botrange", "placeName": "Botrange, Belgien", "description": "Über Holzstege durch das Hohe Venn, den höchsten Punkt Belgiens und eine der ältesten Moorlandschaften Europas. Wasserfeste Schuhe sind Pflicht, der Boden ist oft nass. Die Gruppe fährt in Fahrgemeinschaften ab Aachen." },
+        "en": { "name": "Bog loop at Signal de Botrange", "placeName": "Botrange, Belgium", "description": "Along boardwalks across the High Fens, the highest point in Belgium and one of the oldest bog landscapes in Europe. Waterproof boots are a must, the ground is often wet. The group car-shares from Aachen." },
+        "ru": { "name": "Болотный маршрут у Сигналь-де-Ботранж", "placeName": "Ботранж, Бельгия", "description": "По деревянным настилам через Высокий Фенн, высшую точку Бельгии и один из старейших болотных ландшафтов Европы. Непромокаемая обувь обязательна, земля часто мокрая. Группа едет из Ахена на общих машинах." }
+      }
+    },
+    {
+      "slug": "test-rursee-kajak-einsteiger",
+      "status": "PUBLISHED",
+      "activityType": "WATER",
+      "difficulty": "EASY",
+      "startsAt": "2026-10-10T11:00:00+02:00",
+      "endsAt": "2026-10-10T15:00:00+02:00",
+      "startPoint": { "lat": 50.6070, "lon": 6.3716 },
+      "organizer": "Test Event",
+      "source": { "url": "https://example.org/paddelgruppe-nordeifel/rursee", "readAt": "2026-09-29T12:00:00+02:00" },
+      "links": {
+        "community": [
+          "https://chat.whatsapp.com/WildroTestEinladung",
+          "https://www.instagram.com/wildro.test/"
+        ]
+      },
+      "translations": {
+        "de": { "name": "Kajak für Einsteiger auf dem Rursee", "placeName": "Rurberg, Deutschland", "description": "Ein Nachmittag auf dem Wasser für alle, die zum ersten Mal im Kajak sitzen. Boote und Schwimmwesten stellt der Veranstalter, Wechselkleidung bringt man selbst mit. Die Plätze sind begrenzt, deshalb beim Veranstalter anmelden." },
+        "en": { "name": "Kayaking for beginners on the Rursee", "placeName": "Rurberg, Germany", "description": "An afternoon on the water for anyone sitting in a kayak for the first time. The organiser provides boats and life jackets, bring a change of clothes. Places are limited, so sign up with the organiser." },
+        "ru": { "name": "Каяк для начинающих на Рурзее", "placeName": "Рурберг, Германия", "description": "Полдня на воде для тех, кто впервые садится в каяк. Лодки и спасжилеты даёт организатор, сменную одежду нужно взять с собой. Мест немного, поэтому записывайся у организатора." }
+      }
+    },
+    {
+      "slug": "test-nideggen-klettern-schnupperkurs",
+      "status": "PUBLISHED",
+      "activityType": "CLIMBING",
+      "difficulty": "MEDIUM",
+      "startsAt": "2026-10-11T10:00:00+02:00",
+      "endsAt": "2026-10-11T16:00:00+02:00",
+      "startPoint": { "lat": 50.6897, "lon": 6.4836 },
+      "organizer": "Test Event",
+      "source": { "url": "https://example.org/felsfreunde-rurtal/schnupperkurs", "readAt": "2026-09-29T12:00:00+02:00" },
+      "translations": {
+        "de": { "name": "Schnupperklettern am Buntsandstein", "placeName": "Nideggen, Deutschland", "description": "Erste Routen am roten Buntsandstein über dem Rurtal, gesichert von erfahrenen Kletterern. Gurt und Helm werden gestellt, Kletterschuhe gibt es in gängigen Größen. Vorkenntnisse braucht es keine." },
+        "en": { "name": "Taster climbing on red sandstone", "placeName": "Nideggen, Germany", "description": "First routes on the red sandstone above the Rur valley, belayed by experienced climbers. Harnesses and helmets are provided, climbing shoes come in common sizes. No experience needed." },
+        "ru": { "name": "Пробное скалолазание на красном песчанике", "placeName": "Нидегген, Германия", "description": "Первые маршруты по красному песчанику над долиной Рура со страховкой опытных скалолазов. Обвязку и каску дают на месте, скальные туфли есть ходовых размеров. Опыт не нужен." }
+      }
+    },
+    {
+      "slug": "test-aachen-feierabend-radtour",
+      "status": "PUBLISHED",
+      "activityType": "CYCLING",
+      "difficulty": "EASY",
+      "startsAt": "2026-10-07T18:00:00+02:00",
+      "endsAt": "2026-10-07T20:00:00+02:00",
+      "startPoint": { "lat": 50.7753, "lon": 6.0839 },
+      "organizer": "Test Event",
+      "source": { "url": "https://example.org/radtreff-oecher-runde/feierabend", "readAt": "2026-09-29T12:00:00+02:00" },
+      "distanceKm": 28,
+      "elevationGainM": 180,
+      "links": {
+        "event": [
+          "https://t.me/wildro_app",
+          "https://www.facebook.com/events/000000000000000"
+        ],
+        "community": [
+          "https://t.me/wildro_app",
+          "https://www.instagram.com/wildro.test/",
+          "https://chat.whatsapp.com/WildroTestEinladung",
+          "https://www.facebook.com/groups/wildro.test",
+          "https://example.org/test-community"
+        ]
+      },
+      "translations": {
+        "de": { "name": "Feierabend-Radtour ab dem Elisenbrunnen", "placeName": "Aachen, Deutschland", "description": "Jeden Mittwoch nach der Arbeit eine lockere Runde aus der Stadt hinaus und zurück. Licht am Rad ist Pflicht, im Herbst wird es früh dunkel. Hier steht immer der nächste Termin." },
+        "en": { "name": "After-work ride from the Elisenbrunnen", "placeName": "Aachen, Germany", "description": "Every Wednesday after work, an easy loop out of town and back. Lights on the bike are a must, it gets dark early in autumn. This page always shows the next date." },
+        "ru": { "name": "Вечерний велопробег от Элизенбруннена", "placeName": "Ахен, Германия", "description": "Каждую среду после работы лёгкий круг за город и обратно. Фары на велосипеде обязательны, осенью темнеет рано. На этой странице всегда следующая дата." }
+      }
+    },
+    {
+      "slug": "test-eifel-trailrun-monschau",
+      "status": "PUBLISHED",
+      "activityType": "TRAIL_RUN",
+      "difficulty": "HARD",
+      "startsAt": "2026-10-17T08:30:00+02:00",
+      "startPoint": { "lat": 50.5547, "lon": 6.2406 },
+      "organizer": "Test Event",
+      "source": { "url": "https://example.org/eifel-trail-crew/monschau", "readAt": "2026-09-29T12:00:00+02:00" },
+      "distanceKm": 24,
+      "elevationGainM": 650,
+      "links": {
+        "event": [
+          "https://www.instagram.com/wildro.test/"
+        ]
+      },
+      "translations": {
+        "de": { "name": "Trailrun rund um Monschau", "placeName": "Monschau, Deutschland", "description": "Steile Anstiege aus dem Rurtal, schmale Pfade und ein paar Bachquerungen. Gelaufen wird in einer Gruppe, niemand wird zurückgelassen, aber das Tempo ist sportlich. Trinkrucksack und Stirnlampe gehören ins Gepäck." },
+        "en": { "name": "Trail run around Monschau", "placeName": "Monschau, Germany", "description": "Steep climbs out of the Rur valley, narrow paths and a few stream crossings. The group runs together and nobody is left behind, but the pace is sporty. Bring a hydration pack and a head torch." },
+        "ru": { "name": "Трейлран вокруг Моншау", "placeName": "Моншау, Германия", "description": "Крутые подъёмы из долины Рура, узкие тропы и несколько бродов. Бежим группой и никого не бросаем, но темп спортивный. С собой питьевой рюкзак и налобный фонарь." }
+      }
+    },
+    {
+      "slug": "test-siebengebirge-drachenfels-tour",
+      "status": "PUBLISHED",
+      "activityType": "HIKING",
+      "difficulty": "MEDIUM",
+      "startsAt": "2026-10-18T10:00:00+02:00",
+      "startPoint": { "lat": 50.6739, "lon": 7.1906 },
+      "organizer": "Test Event",
+      "source": { "url": "https://example.org/bonner-bergwanderer/drachenfels", "readAt": "2026-09-29T12:00:00+02:00" },
+      "distanceKm": 13,
+      "elevationGainM": 480,
+      "translations": {
+        "de": { "name": "Über den Drachenfels ins Siebengebirge", "placeName": "Königswinter, Deutschland", "description": "Vom Rheinufer hinauf zur Burgruine und weiter über die Kuppen des Siebengebirges. Oben gibt es den weiten Blick über das Rheintal. Zurück geht es auf einem ruhigeren Weg durch den Wald." },
+        "en": { "name": "Over the Drachenfels into the Siebengebirge", "placeName": "Königswinter, Germany", "description": "From the Rhine bank up to the castle ruin and on over the hilltops of the Siebengebirge. At the top there is a wide view over the Rhine valley. The way back follows a quieter forest path." },
+        "ru": { "name": "Через Драхенфельс в Зибенгебирге", "placeName": "Кёнигсвинтер, Германия", "description": "С берега Рейна наверх к руинам замка и дальше по вершинам Зибенгебирге. Сверху открывается широкий вид на долину Рейна. Обратно по более тихой лесной тропе." }
+      }
+    },
+    {
+      "slug": "test-kinder-waldentdecker-aachener-wald",
+      "status": "PUBLISHED",
+      "activityType": "KIDS",
+      "difficulty": "EASY",
+      "startsAt": "2026-10-24T14:00:00+02:00",
+      "endsAt": "2026-10-24T16:30:00+02:00",
+      "startPoint": { "lat": 50.7440, "lon": 6.0710 },
+      "organizer": "Test Event",
+      "source": { "url": "https://example.org/waldkinder-aachen/entdecker", "readAt": "2026-09-29T12:00:00+02:00" },
+      "distanceKm": 3,
+      "translations": {
+        "de": { "name": "Waldentdecker für Familien", "placeName": "Aachener Wald, Deutschland", "description": "Ein kurzer Weg mit vielen Stopps: Spuren lesen, Pilze anschauen, eine Hütte aus Ästen bauen. Gedacht für Kinder von vier bis zehn Jahren mit ihren Eltern. Kinderwagen kommen auf dem Weg nicht gut voran." },
+        "en": { "name": "Forest explorers for families", "placeName": "Aachen Forest, Germany", "description": "A short walk with lots of stops: reading tracks, looking at mushrooms, building a shelter from branches. Meant for children aged four to ten with their parents. Pushchairs do not get along well on the path." },
+        "ru": { "name": "Лесные исследователи для семей", "placeName": "Ахенский лес, Германия", "description": "Короткий маршрут с частыми остановками: читаем следы, разглядываем грибы, строим шалаш из веток. Для детей от четырёх до десяти лет вместе с родителями. С коляской по тропе идти неудобно." }
+      }
+    },
+    {
+      "slug": "test-yoga-am-blausteinsee",
+      "status": "PUBLISHED",
+      "activityType": "YOGA",
+      "startsAt": "2026-10-25T10:00:00+01:00",
+      "endsAt": "2026-10-25T11:30:00+01:00",
+      "startPoint": { "lat": 50.8367, "lon": 6.3014 },
+      "organizer": "Test Event",
+      "source": { "url": "https://example.org/draussen-yoga/blausteinsee", "readAt": "2026-09-29T12:00:00+02:00" },
+      "translations": {
+        "de": { "name": "Yoga am Ufer des Blausteinsees", "placeName": "Eschweiler, Deutschland", "description": "Eine ruhige Stunde auf der Wiese am See, für jedes Niveau. Matte und eine warme Schicht mitbringen, am Wasser ist es morgens frisch. An diesem Tag endet die Sommerzeit, die Uhrzeit gilt nach Winterzeit." },
+        "en": { "name": "Yoga on the shore of the Blausteinsee", "placeName": "Eschweiler, Germany", "description": "A calm hour on the lakeside meadow, for every level. Bring a mat and a warm layer, it is chilly by the water in the morning. Summer time ends that day, the time given is winter time." },
+        "ru": { "name": "Йога на берегу Блауштайнзее", "placeName": "Эшвайлер, Германия", "description": "Спокойный час на лугу у озера, для любого уровня. Возьми коврик и тёплую кофту, утром у воды свежо. В этот день заканчивается летнее время, время указано по зимнему." }
+      }
+    },
+    {
+      "slug": "test-herbst-camping-eifel-wochenende",
+      "status": "PUBLISHED",
+      "activityType": "CAMPING",
+      "difficulty": "EASY",
+      "startsAt": "2026-10-31T12:00:00+01:00",
+      "endsAt": "2026-11-01T13:00:00+01:00",
+      "startPoint": { "lat": 50.5770, "lon": 6.4960 },
+      "organizer": "Test Event",
+      "source": { "url": "https://example.org/draussen-stammtisch/herbstcamp", "readAt": "2026-09-29T12:00:00+02:00" },
+      "translations": {
+        "de": { "name": "Herbstcamp am Nationalpark Eifel", "placeName": "Gemünd, Deutschland", "description": "Ein Wochenende mit Zelt, Lagerfeuer und einer kurzen Nachtwanderung. Übernachtet wird auf einem Zeltplatz mit Toiletten, das Essen kocht die Gruppe gemeinsam. Schlafsack für kalte Nächte nicht vergessen." },
+        "en": { "name": "Autumn camp at Eifel National Park", "placeName": "Gemünd, Germany", "description": "A weekend of tents, a campfire and a short night walk. We stay on a campsite with toilets, and the group cooks together. Do not forget a sleeping bag for cold nights." },
+        "ru": { "name": "Осенний кемпинг у Национального парка Айфель", "placeName": "Гемюнд, Германия", "description": "Выходные с палатками, костром и короткой ночной прогулкой. Ночуем на кемпинге с туалетами, еду готовим всей группой. Не забудь спальник для холодных ночей." }
+      }
+    },
+    {
+      "slug": "test-dreilaendereck-vaalserberg-tour",
+      "status": "PUBLISHED",
+      "activityType": "HIKING",
+      "difficulty": "MEDIUM",
+      "startsAt": "2026-11-07T10:00:00+01:00",
+      "startPoint": { "lat": 50.7548, "lon": 6.0207 },
+      "organizer": "Test Event",
+      "source": { "url": "https://example.org/grenzgaenger/vaalserberg", "readAt": "2026-09-29T12:00:00+02:00" },
+      "distanceKm": 14,
+      "elevationGainM": 250,
+      "translations": {
+        "de": { "name": "Rund um das Dreiländereck", "placeName": "Vaals, Niederlande", "description": "Vom höchsten Punkt der Niederlande durch drei Länder an einem Tag, mit Abstechern nach Belgien und Deutschland. Die Wege sind gut markiert, aber an einigen Stellen schlammig. Ausweis mitnehmen." },
+        "en": { "name": "Around the three-country point", "placeName": "Vaals, Netherlands", "description": "From the highest point of the Netherlands through three countries in one day, with detours into Belgium and Germany. The paths are well marked but muddy in places. Bring your ID." },
+        "ru": { "name": "Вокруг точки трёх границ", "placeName": "Ваалс, Нидерланды", "description": "От высшей точки Нидерландов через три страны за один день, с заходами в Бельгию и Германию. Тропы хорошо размечены, но местами грязные. Возьми с собой документ." }
+      }
+    },
+    {
+      "slug": "test-mittelrhein-klettersteig-boppard",
+      "status": "PUBLISHED",
+      "activityType": "FERRATA",
+      "difficulty": "HARD",
+      "startsAt": "2026-11-14T09:00:00+01:00",
+      "startPoint": { "lat": 50.2315, "lon": 7.5890 },
+      "organizer": "Test Event",
+      "source": { "url": "https://example.org/steigfreunde/boppard", "readAt": "2026-09-29T12:00:00+02:00" },
+      "distanceKm": 6,
+      "elevationGainM": 350,
+      "translations": {
+        "de": { "name": "Mittelrhein-Klettersteig bei Boppard", "placeName": "Boppard, Deutschland", "description": "Ein anspruchsvoller Steig mit Leitern und ausgesetzten Passagen hoch über dem Rhein. Klettersteigset, Helm und Handschuhe sind Pflicht und können nicht geliehen werden. Wer nicht schwindelfrei ist, sollte diese Tour auslassen." },
+        "en": { "name": "Middle Rhine via ferrata near Boppard", "placeName": "Boppard, Germany", "description": "A demanding route with ladders and exposed sections high above the Rhine. A via ferrata set, helmet and gloves are mandatory and cannot be borrowed. Skip this one if you are not comfortable with heights." },
+        "ru": { "name": "Виа феррата на Среднем Рейне у Боппарда", "placeName": "Боппард, Германия", "description": "Сложный маршрут с лестницами и открытыми участками высоко над Рейном. Страховочный набор, каска и перчатки обязательны, напрокат их не дают. Если боишься высоты, этот выход лучше пропустить." }
+      }
+    },
+    {
+      "slug": "test-alpin-grundkurs-seiltechnik",
+      "status": "PUBLISHED",
+      "activityType": "MOUNTAINEERING",
+      "difficulty": "MEDIUM",
+      "startsAt": "2026-11-21T09:30:00+01:00",
+      "endsAt": "2026-11-21T16:00:00+01:00",
+      "startPoint": { "lat": 50.6897, "lon": 6.4836 },
+      "organizer": "Test Event",
+      "source": { "url": "https://example.org/hochtourengruppe/grundkurs", "readAt": "2026-09-29T12:00:00+02:00" },
+      "translations": {
+        "de": { "name": "Grundkurs Seiltechnik für Hochtouren", "placeName": "Nideggen, Deutschland", "description": "Knoten, Standplatzbau und Spaltenbergung am Fels, als Vorbereitung auf die Gletschersaison. Eigenes Material ist willkommen, Leihausrüstung ist in begrenzter Zahl vorhanden. Der Kurs findet bei jedem Wetter statt." },
+        "en": { "name": "Rope skills for alpine tours", "placeName": "Nideggen, Germany", "description": "Knots, anchor building and crevasse rescue on the rock, as preparation for the glacier season. Your own kit is welcome, a limited amount of rental gear is available. The course runs in any weather." },
+        "ru": { "name": "Базовый курс верёвочной техники для альпинизма", "placeName": "Нидегген, Германия", "description": "Узлы, организация станции и спасение из трещины на скалах, подготовка к ледниковому сезону. Своё снаряжение приветствуется, прокатного немного. Курс проходит в любую погоду." }
+      }
+    },
+    {
+      "slug": "test-koeln-rheinradweg-entwurf",
+      "status": "DRAFT",
+      "activityType": "CYCLING",
+      "difficulty": "MEDIUM",
+      "startsAt": "2026-11-28T10:00:00+01:00",
+      "startPoint": { "lat": 50.9413, "lon": 6.9583 },
+      "organizer": "Test Event",
+      "source": { "url": "https://example.org/kettenfreunde/rheinradweg", "readAt": "2026-09-29T12:00:00+02:00" },
+      "distanceKm": 45,
+      "translations": {
+        "de": { "name": "Rheinradweg von Köln nach Bonn", "placeName": "Köln, Deutschland", "description": "Flach am Rhein entlang bis Bonn und mit dem Zug zurück. Entwurf, noch nicht veröffentlicht." },
+        "en": { "name": "Rhine cycle route from Cologne to Bonn", "placeName": "Cologne, Germany", "description": "Flat along the Rhine to Bonn and back by train. Draft, not published yet." },
+        "ru": { "name": "Рейнский велосипедный маршрут из Кёльна в Бонн", "placeName": "Кёльн, Германия", "description": "По ровному берегу Рейна до Бонна, обратно на поезде. Черновик, ещё не опубликован." }
+      }
+    },
+    {
+      "slug": "test-vergangen-eifelsteig-etappe",
+      "status": "PUBLISHED",
+      "activityType": "HIKING",
+      "difficulty": "MEDIUM",
+      "startsAt": "2026-09-05T09:00:00+02:00",
+      "endsAt": "2026-09-05T17:00:00+02:00",
+      "startPoint": { "lat": 50.7266, "lon": 6.1758 },
+      "organizer": "Test Event",
+      "source": { "url": "https://example.org/wandertreff-aachen/eifelsteig", "readAt": "2026-09-01T12:00:00+02:00" },
+      "distanceKm": 22,
+      "elevationGainM": 400,
+      "translations": {
+        "de": { "name": "Eifelsteig, erste Etappe", "placeName": "Kornelimünster, Deutschland", "description": "Die erste Etappe des Eifelsteigs vom Aachener Stadtrand in die Nordeifel. Diese Tour hat bereits stattgefunden." },
+        "en": { "name": "Eifelsteig, first stage", "placeName": "Kornelimünster, Germany", "description": "The first stage of the Eifelsteig from the edge of Aachen into the northern Eifel. This outing has already taken place." },
+        "ru": { "name": "Айфельштайг, первый этап", "placeName": "Корнелимюнстер, Германия", "description": "Первый этап Айфельштайга от окраины Ахена в Северный Айфель. Этот выход уже состоялся." }
+      }
+    },
+    {
+      "slug": "test-vergangen-wurmtal-lauf",
+      "status": "PUBLISHED",
+      "activityType": "TRAIL_RUN",
+      "difficulty": "EASY",
+      "startsAt": "2026-09-13T09:00:00+02:00",
+      "startPoint": { "lat": 50.7960, "lon": 6.0880 },
+      "organizer": "Test Event",
+      "source": { "url": "https://example.org/eifel-trail-crew/wurmtal", "readAt": "2026-09-01T12:00:00+02:00" },
+      "distanceKm": 10,
+      "translations": {
+        "de": { "name": "Lockerer Lauf durchs Wurmtal", "placeName": "Aachen-Soers, Deutschland", "description": "Zehn Kilometer auf weichen Wegen entlang der Wurm, ideal zum Einstieg ins Traillaufen. Dieser Lauf hat bereits stattgefunden." },
+        "en": { "name": "Easy run through the Wurm valley", "placeName": "Aachen-Soers, Germany", "description": "Ten kilometres on soft paths along the Wurm, ideal for getting into trail running. This run has already taken place." },
+        "ru": { "name": "Лёгкая пробежка по долине Вурма", "placeName": "Ахен-Зоэрс, Германия", "description": "Десять километров по мягким тропам вдоль Вурма, хороший старт в трейлраннинге. Эта пробежка уже состоялась." }
+      }
+    },
+    {
+      "slug": "test-abgesagt-venn-sonnenaufgang",
+      "status": "PUBLISHED",
+      "activityType": "HIKING",
+      "difficulty": "EASY",
+      "startsAt": "2026-10-11T06:30:00+02:00",
+      "startPoint": { "lat": 50.5019, "lon": 6.0931 },
+      "organizer": "Test Event",
+      "source": { "url": "https://example.org/venn-wanderfreunde/sonnenaufgang", "readAt": "2026-09-29T12:00:00+02:00" },
+      "distanceKm": 7,
+      "translations": {
+        "de": { "name": "Sonnenaufgang im Hohen Venn", "placeName": "Botrange, Belgien", "description": "Ein früher Start, um den Sonnenaufgang über dem Moor zu erleben. Stirnlampe mitbringen, der Weg beginnt im Dunkeln." },
+        "en": { "name": "Sunrise in the High Fens", "placeName": "Botrange, Belgium", "description": "An early start to watch the sunrise over the bog. Bring a head torch, the walk starts in the dark." },
+        "ru": { "name": "Рассвет в Высоком Фенне", "placeName": "Ботранж, Бельгия", "description": "Ранний выход, чтобы встретить рассвет над болотом. Возьми налобный фонарь, идём ещё в темноте." }
+      }
+    }
+  ]
+}
