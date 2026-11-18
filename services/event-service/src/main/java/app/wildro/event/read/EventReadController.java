@@ -98,6 +98,13 @@ class EventReadController {
 				filter(types, difficulties, from, to, minKm, maxKm, null, null, null, price, q));
 	}
 
+	/** A community's upcoming events, for its page. */
+	@GetMapping("/community/{communityId}")
+	List<EventCard> ofCommunity(@PathVariable long communityId, @RequestParam String locale) {
+		requireLocale(locale);
+		return this.reader.ofCommunity(communityId, locale);
+	}
+
 	/** One event, published or cancelled. A draft answers 404, as if it were not there. */
 	@GetMapping("/{slug}")
 	EventPage page(@PathVariable String slug, @RequestParam String locale) {

@@ -25,7 +25,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        service: [event-service, analytics-service, user-service]
+        service: [event-service, analytics-service, user-service, community-service]
     defaults:
       run:
         working-directory: services/${{ matrix.service }}

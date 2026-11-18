@@ -41,6 +41,9 @@ public class EventReader {
 	/** A viewport's worth of markers. More than this and the visitor is asked to zoom in. */
 	static final int MAX_POINTS = 300;
 
+	/** A community page lists this many upcoming events; more is a feed, which has its own page. */
+	static final int MAX_COMMUNITY_EVENTS = 50;
+
 	private final EventRepository events;
 
 	private final EventReadRepository read;
@@ -84,6 +87,17 @@ public class EventReader {
 		return new PointsPage(points, truncated);
 	}
 
+	/** A community's upcoming published events, soonest first, for its page (SPEC.md §18.3). */
+	@Transactional(readOnly = true)
+	public List<EventCard> ofCommunity(long communityId, String locale) {
+		Specification<Event> spec = EventSpecifications.upcomingPublished(this.clock.instant())
+				.and((root, query, cb) -> cb.equal(root.get("ownerCommunityId"), communityId));
+		List<Long> ids = this.events.findBy(spec,
+				query -> query.as(IdView.class).sortBy(FEED_ORDER).limit(MAX_COMMUNITY_EVENTS).all())
+			.stream().map(IdView::getId).toList();
+		return ids.isEmpty() ? List.of() : this.read.findCards(ids, locale);
+	}
+
 	@Transactional(readOnly = true)
 	public Optional<EventPage> page(String slug, String locale) {
 		return this.read.findWithTranslationsBySlug(slug)
@@ -109,7 +123,7 @@ public class EventReader {
 				event.getPassesAt(),
 				event.getStartPoint().getY(),
 				event.getStartPoint().getX(),
-				event.getOrganizer(),
+				event.getShownOrganizer(),
 				event.getSourceUrl(),
 				event.getSourceCheckedAt(),
 				event.getDistanceKm(),
@@ -122,6 +136,7 @@ public class EventReader {
 				links(event, LinkScope.COMMUNITY),
 				event.getKind(),
 				event.getOriginalLocale(),
+				event.getCommunitySlug(),
 				event.getUpdatedAt());
 	}
 

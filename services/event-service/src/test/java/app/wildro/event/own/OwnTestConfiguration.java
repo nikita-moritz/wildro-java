@@ -13,4 +13,10 @@ public class OwnTestConfiguration {
 		return new FakeWriters();
 	}
 
+	@Bean
+	@Primary
+	FakeCommunities fakeCommunities() {
+		return new FakeCommunities();
+	}
+
 }

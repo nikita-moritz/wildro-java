@@ -34,5 +34,7 @@ public record OwnEventRequest(
 		Integer elevationGainM,
 		Integer maxParticipants,
 		@Size(max = 5) List<@NotBlank @Size(max = 500) String> eventLinks,
-		@Size(max = 5) List<@NotBlank @Size(max = 500) String> communityLinks) {
+		@Size(max = 5) List<@NotBlank @Size(max = 500) String> communityLinks,
+		/** Write it in this community's name (§18.3); null for a personal event. Fixed once created. */
+		@Size(max = 200) String communitySlug) {
 }

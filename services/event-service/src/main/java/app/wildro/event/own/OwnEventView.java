@@ -20,7 +20,7 @@ public record OwnEventView(String slug, EventStatus status, String suspensionRea
 		String placeName, String description, ActivityType activityType, Difficulty difficulty, Instant startsAt,
 		Instant endsAt, Instant passesAt, double latitude, double longitude, BigDecimal distanceKm,
 		Integer elevationGainM, Integer maxParticipants, List<String> eventLinks, List<String> communityLinks,
-		Instant publishedAt, Instant updatedAt) {
+		Instant publishedAt, Instant updatedAt, String communitySlug, String organizer) {
 
 	static OwnEventView of(Event event) {
 		EventTranslation text = event.translation(event.getOriginalLocale());
@@ -29,7 +29,8 @@ public record OwnEventView(String slug, EventStatus status, String suspensionRea
 				event.getActivityType(), event.getDifficulty(), event.getStartsAt(), event.getEndsAt(),
 				event.getPassesAt(), event.getStartPoint().getY(), event.getStartPoint().getX(), event.getDistanceKm(),
 				event.getElevationGainM(), event.getVisibleCapacity(), urls(event, LinkScope.EVENT),
-				urls(event, LinkScope.COMMUNITY), event.getPublishedAt(), event.getUpdatedAt());
+				urls(event, LinkScope.COMMUNITY), event.getPublishedAt(), event.getUpdatedAt(),
+				event.getCommunitySlug(), event.getOrganizer());
 	}
 
 	private static List<String> urls(Event event, LinkScope scope) {

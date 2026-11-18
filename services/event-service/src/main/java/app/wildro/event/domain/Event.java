@@ -181,6 +181,14 @@ public class Event {
 	@Column(name = "author_user_id")
 	private String authorUserId;
 
+	/** The community's address beside its id, so a page links to it without asking (V11). */
+	@Column(name = "community_slug")
+	private String communitySlug;
+
+	/** The author deleted their account; a personal event no longer shows their name. */
+	@Column(name = "author_erased", nullable = false)
+	private boolean authorErased;
+
 	/** The one language an own event was written in; the text is stored under every locale. */
 	@Column(name = "original_locale")
 	private String originalLocale;
@@ -223,6 +231,8 @@ public class Event {
 		this.translations = new LinkedHashMap<>(builder.translations);
 		this.links = orderedLinks(builder.links);
 		this.ownerUserId = builder.ownerUserId;
+		this.ownerCommunityId = builder.ownerCommunityId;
+		this.communitySlug = builder.communitySlug;
 		this.authorUserId = builder.authorUserId;
 		this.originalLocale = builder.originalLocale;
 		if (this.status == EventStatus.PUBLISHED) {
@@ -251,11 +261,12 @@ public class Event {
 			throw new InvalidEventException("coverCredit",
 					"a cover needs its author and licence, and a credit needs a cover");
 		}
-		if (this.kind == EventKind.OWN && (this.ownerUserId == null || this.authorUserId == null
-				|| this.originalLocale == null || !LOCALES.contains(this.originalLocale))) {
+		if (this.kind == EventKind.OWN && ((this.ownerUserId == null) == (this.ownerCommunityId == null)
+				|| this.authorUserId == null || this.originalLocale == null || !LOCALES.contains(this.originalLocale))) {
 			throw new InvalidEventException("owner", "an own event needs an owner, an author and its language");
 		}
-		if (this.kind == EventKind.EXTERNAL && (this.ownerUserId != null || this.authorUserId != null)) {
+		if (this.kind == EventKind.EXTERNAL
+				&& (this.ownerUserId != null || this.ownerCommunityId != null || this.authorUserId != null)) {
 			throw new InvalidEventException("owner", "an external event belongs to its source, not to a person");
 		}
 		if (this.status == EventStatus.SUSPENDED) {
@@ -456,6 +467,11 @@ public class Event {
 		this.suspensionReason = null;
 	}
 
+	/** The author's account is gone (§18.1): their name leaves the event, the event stays. */
+	public void eraseAuthor() {
+		this.authorErased = true;
+	}
+
 	/** Whether this person may change it: the owner of a personal event. Moderators are decided by the caller. */
 	public boolean isOwnedBy(String userId) {
 		return this.kind == EventKind.OWN && userId != null && userId.equals(this.ownerUserId);
@@ -612,6 +628,23 @@ public class Event {
 		return this.authorUserId;
 	}
 
+	public Long getOwnerCommunityId() {
+		return this.ownerCommunityId;
+	}
+
+	public String getCommunitySlug() {
+		return this.communitySlug;
+	}
+
+	public boolean isAuthorErased() {
+		return this.authorErased;
+	}
+
+	/** The name to show as organiser: none for a personal event whose author deleted their account. */
+	public String getShownOrganizer() {
+		return this.authorErased && this.ownerUserId != null ? null : this.organizer;
+	}
+
 	public String getOriginalLocale() {
 		return this.originalLocale;
 	}
@@ -677,6 +710,10 @@ public class Event {
 		private final List<EventLink> links = new ArrayList<>();
 
 		private String ownerUserId;
+
+		private Long ownerCommunityId;
+
+		private String communitySlug;
 
 		private String authorUserId;
 
@@ -785,6 +822,17 @@ public class Event {
 			this.kind = EventKind.OWN;
 			this.ownerUserId = userId;
 			this.authorUserId = userId;
+			this.originalLocale = originalLocale;
+			return this;
+		}
+
+		/** An own event of a community (§18.3): the community owns it, this person wrote it. */
+		public Builder ownedByCommunity(long communityId, String communitySlug, String authorId, String originalLocale) {
+			this.kind = EventKind.OWN;
+			this.ownerUserId = null;
+			this.ownerCommunityId = communityId;
+			this.communitySlug = communitySlug;
+			this.authorUserId = authorId;
 			this.originalLocale = originalLocale;
 			return this;
 		}

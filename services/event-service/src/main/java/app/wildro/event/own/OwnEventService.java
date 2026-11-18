@@ -16,6 +16,7 @@ import app.wildro.event.audit.AuditAction;
 import app.wildro.event.audit.AuditRecorder;
 import app.wildro.event.audit.Operator;
 import app.wildro.event.domain.Event;
+import app.wildro.event.domain.EventKind;
 import app.wildro.event.domain.EventLink;
 import app.wildro.event.domain.EventRepository;
 import app.wildro.event.domain.EventStatus;
@@ -25,14 +26,15 @@ import app.wildro.event.domain.LinkScope;
 import app.wildro.event.own.OwnEventRefusal.Code;
 
 /**
- * Own events, SPEC.md §18.2. Every rule about who may do what lives here; the
- * rules about what an event is live in the domain and are the same ones an
- * import passes.
+ * Own events, SPEC.md §18.2, and events of communities, §18.3. Every rule about
+ * who may do what lives here; what an event is lives in the domain, the same
+ * rules an import passes.
  *
- * Who: the owner writes, publishes and cancels; a moderator or superuser may
- * also edit and cancel, recorded in the audit log under their own id. Before
- * anything an owner does, the user service is asked whether they accepted the
- * current terms, at the moment of writing (§18.4).
+ * Who: a personal event is its owner's; a community's event belongs to whoever
+ * is OWNER or ADMIN of that community at the moment of writing, asked from the
+ * community service every time (§18.4). A moderator or superuser may also edit
+ * and cancel, audited under their own id. Whoever publishes must have accepted
+ * the terms in force, asked from the user service at the moment of writing.
  */
 @Service
 public class OwnEventService {
@@ -45,17 +47,20 @@ public class OwnEventService {
 
 	private final WriterDirectory writers;
 
+	private final CommunityGateway communities;
+
 	private final AuditRecorder audit;
 
 	private final OwnProperties limits;
 
 	private final Clock clock;
 
-	OwnEventService(EventRepository events, OwnEventRepository own, WriterDirectory writers, AuditRecorder audit,
-			OwnProperties limits, Clock clock) {
+	OwnEventService(EventRepository events, OwnEventRepository own, WriterDirectory writers,
+			CommunityGateway communities, AuditRecorder audit, OwnProperties limits, Clock clock) {
 		this.events = events;
 		this.own = own;
 		this.writers = writers;
+		this.communities = communities;
 		this.audit = audit;
 		this.limits = limits;
 		this.clock = clock;
@@ -63,7 +68,7 @@ public class OwnEventService {
 
 	@Transactional
 	public OwnEventView create(Jwt token, OwnEventRequest request, boolean publish) {
-		Writer writer = owner(token);
+		Writer writer = publisher(token);
 		Instant now = this.clock.instant();
 		requireFuture(request, now);
 		if (this.own.countUpcoming(writer.id(), now) >= this.limits.upcomingAtOnce()) {
@@ -73,10 +78,18 @@ public class OwnEventService {
 		if (publish) {
 			requireDailyRoom(writer.id(), now);
 		}
+		Event.Builder builder;
+		if (request.communitySlug() != null && !request.communitySlug().isBlank()) {
+			CommunityGateway.Standing community = managedCommunity(token, request.communitySlug());
+			builder = builder(request, community.name())
+				.ownedByCommunity(community.id(), community.slug(), writer.id(), request.locale());
+		}
+		else {
+			builder = builder(request, writer.displayName()).ownedBy(writer.id(), request.locale());
+		}
 		String slug = Slugs.forEvent(request.name(), LocalDate.ofInstant(request.startsAt(), Event.ZONE),
 				this.events::existsBySlug);
-		Event event = this.events.save(builder(request, writer.displayName(), writer.id())
-			.slug(slug)
+		Event event = this.events.save(builder.slug(slug)
 			.status(publish ? EventStatus.PUBLISHED : EventStatus.DRAFT)
 			.publishedAt(now)
 			.build());
@@ -89,22 +102,20 @@ public class OwnEventService {
 	public OwnEventView update(Jwt token, Authentication authentication, String slug, OwnEventRequest request) {
 		Event event = find(slug);
 		Instant now = this.clock.instant();
-		String organizer;
-		if (event.isOwnedBy(token.getSubject())) {
-			organizer = owner(token).displayName();
-		}
-		else if (moderates(authentication)) {
-			organizer = event.getOrganizer();
-		}
-		else {
-			throw new OwnEventRefusal(Code.NOT_YOURS, "only the owner or a moderator may edit this event");
-		}
+		String organizer = organizerFor(event, token, authentication);
 		if (event.hasPassed(now)) {
 			throw new OwnEventRefusal(Code.IN_THE_PAST, "a past event is archive and is not edited");
 		}
 		requireFuture(request, now);
-		Event candidate = builder(request, organizer, event.getOwnerUserId())
-			.slug(event.getSlug())
+		Event.Builder builder = builder(request, organizer);
+		if (event.getOwnerCommunityId() != null) {
+			builder.ownedByCommunity(event.getOwnerCommunityId(), event.getCommunitySlug(), event.getAuthorUserId(),
+					request.locale());
+		}
+		else {
+			builder.ownedBy(event.getOwnerUserId(), request.locale());
+		}
+		Event candidate = builder.slug(event.getSlug())
 			.status(event.getStatus() == EventStatus.PUBLISHED ? EventStatus.PUBLISHED : EventStatus.DRAFT)
 			.publishedAt(event.getPublishedAt())
 			.build();
@@ -121,10 +132,8 @@ public class OwnEventService {
 	@Transactional
 	public OwnEventView publish(Jwt token, String slug) {
 		Event event = find(slug);
-		if (!event.isOwnedBy(token.getSubject())) {
-			throw new OwnEventRefusal(Code.NOT_YOURS, "only the owner publishes");
-		}
-		Writer writer = owner(token);
+		String organizer = organizerFor(event, token, null);
+		Writer writer = publisher(token);
 		Instant now = this.clock.instant();
 		if (event.getStatus() != EventStatus.DRAFT) {
 			throw new OwnEventRefusal(Code.WRONG_STATE, "only a draft can be published");
@@ -133,7 +142,7 @@ public class OwnEventService {
 			throw new OwnEventRefusal(Code.IN_THE_PAST, "a past event is not published");
 		}
 		requireDailyRoom(writer.id(), now);
-		event.renameOrganizer(writer.displayName());
+		event.renameOrganizer(organizer);
 		event.publish(now);
 		this.audit.record(Operator.web(writer.id()), AuditAction.EVENT_PUBLISHED, event, Map.of());
 		return OwnEventView.of(event);
@@ -142,9 +151,7 @@ public class OwnEventService {
 	@Transactional
 	public OwnEventView cancel(Jwt token, Authentication authentication, String slug) {
 		Event event = find(slug);
-		if (!event.isOwnedBy(token.getSubject()) && !moderates(authentication)) {
-			throw new OwnEventRefusal(Code.NOT_YOURS, "only the owner or a moderator may cancel this event");
-		}
+		organizerFor(event, token, authentication);
 		if (event.getStatus() != EventStatus.DRAFT && event.getStatus() != EventStatus.PUBLISHED) {
 			throw new OwnEventRefusal(Code.WRONG_STATE, "the event is already " + event.getStatus());
 		}
@@ -155,24 +162,57 @@ public class OwnEventService {
 
 	@Transactional(readOnly = true)
 	public List<OwnEventView> mine(Jwt token) {
-		return this.own.findFirst100ByOwnerUserIdOrderByStartsAtDesc(token.getSubject())
-			.stream()
-			.map(OwnEventView::of)
-			.toList();
+		return this.own.mine(token.getSubject()).stream().map(OwnEventView::of).toList();
 	}
 
 	@Transactional(readOnly = true)
 	public OwnEventView one(Jwt token, Authentication authentication, String slug) {
 		Event event = find(slug);
-		if (!event.isOwnedBy(token.getSubject()) && !moderates(authentication)) {
+		try {
+			organizerFor(event, token, authentication);
+		}
+		catch (OwnEventRefusal refusal) {
 			// Indistinguishable from absent: someone else's draft is not to be probed for.
 			throw new OwnEventRefusal(Code.NOT_FOUND, "no such event");
 		}
 		return OwnEventView.of(event);
 	}
 
-	/** The writer behind the token, refused unless they may publish at all. */
-	private Writer owner(Jwt token) {
+	/**
+	 * Decides whether the caller may change this event, and under which organiser
+	 * name it then appears: the owner's current name for a personal event, the
+	 * community's current name for a community's, unchanged when a moderator
+	 * edits. Refuses everyone else.
+	 */
+	private String organizerFor(Event event, Jwt token, Authentication authentication) {
+		if (event.getOwnerCommunityId() != null) {
+			CommunityGateway.Standing community = this.communities.standing(token, event.getCommunitySlug());
+			if (community != null && community.manages()) {
+				return community.name();
+			}
+		}
+		else if (event.isOwnedBy(token.getSubject())) {
+			return publisher(token).displayName();
+		}
+		if (authentication != null && moderates(authentication)) {
+			return event.getOrganizer();
+		}
+		throw new OwnEventRefusal(Code.NOT_YOURS, "only the owner, the community's admins or a moderator may do this");
+	}
+
+	private CommunityGateway.Standing managedCommunity(Jwt token, String slug) {
+		CommunityGateway.Standing community = this.communities.standing(token, slug);
+		if (community == null) {
+			throw new OwnEventRefusal(Code.NOT_FOUND, "no such community");
+		}
+		if (!community.manages()) {
+			throw new OwnEventRefusal(Code.NOT_YOURS, "only an owner or admin writes events for a community");
+		}
+		return community;
+	}
+
+	/** The person behind the token, refused unless they may publish at all. */
+	private Writer publisher(Jwt token) {
 		Writer writer = this.writers.whoIs(token);
 		if (!writer.termsUpToDate()) {
 			throw new OwnEventRefusal(Code.TERMS_REQUIRED, "accept the current terms first");
@@ -185,14 +225,14 @@ public class OwnEventService {
 
 	private Event find(String slug) {
 		Event event = this.events.findBySlug(slug).orElse(null);
-		if (event == null || event.getOwnerUserId() == null) {
+		if (event == null || event.getKind() != EventKind.OWN) {
 			throw new OwnEventRefusal(Code.NOT_FOUND, "no such event");
 		}
 		return event;
 	}
 
-	private void requireDailyRoom(String owner, Instant now) {
-		if (this.own.countPublishedSince(owner, now.minus(DAY)) >= this.limits.publishedPerDay()) {
+	private void requireDailyRoom(String author, Instant now) {
+		if (this.own.countPublishedSince(author, now.minus(DAY)) >= this.limits.publishedPerDay()) {
 			throw new OwnEventRefusal(Code.LIMIT_PER_DAY,
 					"at most " + this.limits.publishedPerDay() + " events published within 24 hours");
 		}
@@ -213,12 +253,11 @@ public class OwnEventService {
 	/**
 	 * The one text, under every locale: the read path then keeps one row per event
 	 * and language, and the page marks it as being in the organiser's language
-	 * (SPEC.md §18.2, question 3).
+	 * (SPEC.md §18.2, question 3). Ownership is set by the caller.
 	 */
-	private static Event.Builder builder(OwnEventRequest request, String organizer, String ownerId) {
+	private static Event.Builder builder(OwnEventRequest request, String organizer) {
 		EventTranslation text = new EventTranslation(request.name(), request.placeName(), request.description());
 		Event.Builder builder = Event.builder()
-			.ownedBy(ownerId, request.locale())
 			.activityType(request.activityType())
 			.difficulty(request.difficulty())
 			.startsAt(request.startsAt())

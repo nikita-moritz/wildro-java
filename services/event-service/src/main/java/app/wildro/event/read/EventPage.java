@@ -51,6 +51,8 @@ public record EventPage(
 		EventKind kind,
 		/** The language an own event was written in; null for an external one. */
 		String originalLocale,
+		/** The community that owns it, for a link to its page; null otherwise. */
+		String communitySlug,
 		Instant updatedAt) {
 
 	public record Link(LinkNetwork network, String url) {

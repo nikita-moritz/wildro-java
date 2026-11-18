@@ -10,24 +10,35 @@ import org.springframework.data.repository.query.Param;
 
 import app.wildro.event.domain.Event;
 
-/** The questions only own events raise: whose, and how many lately. Writes go through the domain repository. */
+/**
+ * The questions only own events raise: whose, and how many lately. The limits
+ * count per account (SPEC.md §18.2), which is the author: for a personal event
+ * also its owner. Writes go through the domain repository.
+ */
 interface OwnEventRepository extends Repository<Event, Long> {
 
 	@Query("""
 			select count(e) from Event e
-			where e.ownerUserId = :owner and e.publishedAt > :since
+			where e.authorUserId = :author and e.publishedAt > :since
 			""")
-	long countPublishedSince(@Param("owner") String owner, @Param("since") Instant since);
+	long countPublishedSince(@Param("author") String author, @Param("since") Instant since);
 
 	/** Drafts and published events still ahead: the "30 at once" of SPEC.md §18.2. */
 	@Query("""
 			select count(e) from Event e
-			where e.ownerUserId = :owner and e.passesAt > :now
+			where e.authorUserId = :author and e.passesAt > :now
 			  and e.status in (app.wildro.event.domain.EventStatus.DRAFT, app.wildro.event.domain.EventStatus.PUBLISHED)
 			""")
-	long countUpcoming(@Param("owner") String owner, @Param("now") Instant now);
+	long countUpcoming(@Param("author") String author, @Param("now") Instant now);
 
+	/** What a person wrote or owns: their personal events and those they wrote for a community. */
 	@EntityGraph(attributePaths = "translations")
-	List<Event> findFirst100ByOwnerUserIdOrderByStartsAtDesc(String owner);
+	@Query("""
+			select e from Event e
+			where e.authorUserId = :user or e.ownerUserId = :user
+			order by e.startsAt desc
+			limit 100
+			""")
+	List<Event> mine(@Param("user") String user);
 
 }

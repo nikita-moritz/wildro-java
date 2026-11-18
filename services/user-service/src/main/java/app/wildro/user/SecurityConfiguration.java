@@ -28,6 +28,9 @@ class SecurityConfiguration {
 			.permitAll()
 			.requestMatchers(HttpMethod.POST, "/v1/webhooks/elvix")
 			.permitAll()
+			// Service to service; the shared token is checked in the controller.
+			.requestMatchers(HttpMethod.GET, "/internal/outbox")
+			.permitAll()
 			.requestMatchers("/v1/me", "/v1/me/**")
 			.authenticated()
 			.anyRequest()
