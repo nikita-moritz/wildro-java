@@ -20,7 +20,7 @@ export default function robots(): MetadataRoute.Robots {
         userAgent: "*",
         allow: "/",
         // The account pages are personal and say nothing to a crawler.
-        disallow: ["/api/", "/*/sign-in", "/*/account", ...FILTER_PARAMS.flatMap((param) => [`/*?${param}=`, `/*&${param}=`])],
+        disallow: ["/api/", "/*/sign-in", "/*/account", "/*/moderation", ...FILTER_PARAMS.flatMap((param) => [`/*?${param}=`, `/*&${param}=`])],
       },
     ],
     sitemap: `${siteUrl()}/sitemap.xml`,

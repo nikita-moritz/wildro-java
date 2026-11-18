@@ -1,30 +1,23 @@
-import { NextResponse } from "next/server";
-
-import { siteUrl } from "@/lib/env";
-import { isLocale } from "@/lib/locales";
+import { localeOf, seeOther } from "@/lib/route-helpers";
 import { routes } from "@/lib/routes";
 import { callUserService, currentSession, fromThisSite } from "@/lib/session";
 
 /**
  * POST /api/account/display-name, a plain form post from the account page, so
  * renaming works without JavaScript. Answers with a 303 back to the page,
- * carrying the outcome in the address. The target is built on SITE_URL, never
- * on request.url: behind Caddy that is this server's own loopback address, and
- * the browser was sent to localhost.
+ * carrying the outcome in the address.
  */
 export async function POST(request: Request): Promise<Response> {
   if (!fromThisSite(request)) {
     return Response.json({ error: "cross_site" }, { status: 403 });
   }
   const form = await request.formData().catch(() => null);
-  const requested = form?.get("locale");
-  const locale = typeof requested === "string" && isLocale(requested) ? requested : "de";
-  const back = (outcome: string) =>
-    NextResponse.redirect(new URL(`${routes.account(locale)}?${outcome}`, siteUrl()), { status: 303 });
+  const locale = localeOf(form);
+  const back = (outcome: string) => seeOther(`${routes.account(locale)}?${outcome}`);
 
   const session = await currentSession();
   if (session.state === "signed-out") {
-    return NextResponse.redirect(new URL(routes.signIn(locale), siteUrl()), { status: 303 });
+    return seeOther(routes.signIn(locale));
   }
   if (session.state === "unavailable") {
     return back("error=failed");

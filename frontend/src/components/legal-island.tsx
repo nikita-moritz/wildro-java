@@ -29,6 +29,9 @@ export function LegalIsland({
       <Link href={routes.privacy(locale)} className="hover:text-foreground">
         {t.footer.privacy}
       </Link>
+      <Link href={routes.terms(locale)} className="hover:text-foreground">
+        {t.footer.terms}
+      </Link>
     </nav>
   );
 }

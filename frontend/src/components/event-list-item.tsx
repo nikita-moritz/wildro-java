@@ -28,6 +28,9 @@ export interface EventCardText {
   kilometres: string;
   stockPhoto: string;
   stockPhotoShort: string;
+  /** Which kind of event it is (SPEC.md §18.2): organised here, or found at a source. */
+  ownBadge: string;
+  sourceBadge: string;
 }
 
 export function eventCardText(t: Dictionary): EventCardText {
@@ -39,6 +42,8 @@ export function eventCardText(t: Dictionary): EventCardText {
     kilometres: t.event.kilometres("{km}"),
     stockPhoto: t.event.stockPhoto,
     stockPhotoShort: t.event.stockPhotoShort,
+    ownBadge: t.event.ownBadge,
+    sourceBadge: t.event.sourceBadge,
   };
 }
 
@@ -130,6 +135,10 @@ export function EventListItem({
             {text.organizer}:{" "}
             <span className="text-foreground/70">
               <Highlighted text={event.organizer} words={words} />
+            </span>
+            {" · "}
+            <span className={event.kind === "OWN" ? "font-medium text-primary" : undefined}>
+              {event.kind === "OWN" ? text.ownBadge : text.sourceBadge}
             </span>
           </Fact>
         </div>

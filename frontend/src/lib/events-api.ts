@@ -5,7 +5,7 @@ import { z } from "zod";
 
 import { eventServiceUrl } from "@/lib/env";
 import { EMPTY_FILTER, filterToParams, type FeedFilter } from "@/lib/feed-filter";
-import type { Locale } from "@/lib/locales";
+import { LOCALES, type Locale } from "@/lib/locales";
 import { ACTIVITY_TYPES, DIFFICULTIES } from "@/lib/vocabulary";
 
 export type { ActivityType, Difficulty } from "@/lib/vocabulary";
@@ -57,6 +57,10 @@ const eventCardSchema = z.object({
   /** The regular adult price, 0 when free; both null when the source names none. */
   priceAmount: z.number().nonnegative().nullable(),
   priceCurrency: z.string().nullable(),
+  /** OWN: organised on wildro (SPEC.md §18.2). */
+  kind: z.enum(["EXTERNAL", "OWN"]),
+  /** The language an own event was written in; null for an external one. */
+  originalLocale: z.enum(LOCALES).nullable(),
 });
 
 const feedPageSchema = z.object({
@@ -104,6 +108,8 @@ const eventPageSchema = z.object({
   price: z.object({ amount: z.number().nonnegative(), currency: z.string().regex(/^[A-Z]{3}$/) }).nullable(),
   eventLinks: z.array(eventLinkSchema),
   communityLinks: z.array(eventLinkSchema),
+  kind: z.enum(["EXTERNAL", "OWN"]),
+  originalLocale: z.enum(LOCALES).nullable(),
   updatedAt: instant,
 });
 

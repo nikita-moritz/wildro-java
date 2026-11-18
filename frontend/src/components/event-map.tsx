@@ -13,6 +13,7 @@ import { ACTIVITY_COLOR, ACTIVITY_ICON } from "@/components/activity";
 import { defaultCover } from "@/lib/covers";
 import type { PointsPage } from "@/lib/events-api";
 import { formatShortDate, formatShortSpan, formatTime } from "@/lib/format";
+import { MAP_STYLE } from "@/lib/map-style";
 import type { Locale } from "@/lib/locales";
 import { PriceBadge } from "@/components/price-badge";
 import { cn } from "@/lib/utils";
@@ -58,7 +59,6 @@ const SOURCE = "events";
 const MARKER_SIZE = 36;
 
 /** Outdoors shows trails, contours and hillshade, which is what these events are about. */
-const STYLE = { light: "mapbox://styles/mapbox/outdoors-v12", dark: "mapbox://styles/mapbox/dark-v11" };
 
 /** The brand green of each theme, as hex: the engine parses colours itself. */
 const BRAND = { light: { fill: "#1b7f45", text: "#ffffff" }, dark: { fill: "#4ade80", text: "#052e16" } };
@@ -199,7 +199,7 @@ export default function EventMap({
     const map = new MapboxMap({
       container: container.current,
       accessToken,
-      style: dark ? STYLE.dark : STYLE.light,
+      style: dark ? MAP_STYLE.dark : MAP_STYLE.light,
       language: locale,
       // The globe is the default; at the zooms an event search happens on it only costs frames.
       projection: "mercator",

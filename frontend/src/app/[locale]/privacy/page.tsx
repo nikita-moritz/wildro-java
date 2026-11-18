@@ -209,6 +209,20 @@ export default async function PrivacyPage({ params }: PageProps<"/[locale]/priva
               die Erfüllung des Nutzungsverhältnisses (Art. 6 Abs. 1 lit. b DSGVO).
             </p>
             <p>
+              Veröffentlichst du ein eigenes Event, ist es mit deinem Anzeigenamen für alle sichtbar, bis du es
+              absagst oder es vergangen ist; vergangene Events bleiben als Archiv sichtbar. Entwürfe siehst nur du.
+              Was du dort einträgst, entscheidest du selbst; Angaben über andere Menschen gehören nicht hinein
+              (siehe Nutzungsregeln). Rechtsgrundlage ist die Erfüllung des Nutzungsverhältnisses (Art. 6 Abs. 1
+              lit. b DSGVO).
+            </p>
+            <p>
+              Meldest du ein Event, speichern wir den gewählten Grund, deinen Text, den Zeitpunkt und, falls du
+              angemeldet bist, die Kennung deines Kontos, um die Meldung zu prüfen (Art. 6 Abs. 1 lit. c DSGVO in
+              Verbindung mit Art. 16 DSA). Deine IP-Adresse speichern wir dafür nicht: Sie wird höchstens eine Stunde
+              lang im Arbeitsspeicher gehalten, um mehr als fünf Meldungen pro Stunde von derselben Adresse
+              abzuweisen.
+            </p>
+            <p>
               Dein Konto kannst du auf der Kontoseite selbst löschen. Dann löschen wir Anzeigenamen und
               E-Mail-Adresse, und deine künftigen eigenen Events werden abgesagt. Eine Kopie deiner Daten schicken
               wir dir auf Anfrage an die oben genannte Adresse.

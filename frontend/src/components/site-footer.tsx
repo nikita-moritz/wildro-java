@@ -34,6 +34,9 @@ export async function SiteFooter({
       <Link href={routes.privacy(locale)} className="transition-colors hover:text-foreground">
         {t.footer.privacy}
       </Link>
+      <Link href={routes.terms(locale)} className="transition-colors hover:text-foreground">
+        {t.footer.terms}
+      </Link>
     </nav>
   );
 

@@ -23,6 +23,12 @@ export const routes = {
   // Not indexed and not in the sitemap: personal pages, closed in robots.ts.
   signIn: (locale: Locale) => `/${locale}/sign-in`,
   account: (locale: Locale) => `/${locale}/account`,
+  myEvents: (locale: Locale) => `/${locale}/account/events`,
+  newEvent: (locale: Locale) => `/${locale}/account/events/new`,
+  editEvent: (locale: Locale, slug: string) => `/${locale}/account/events/${slug}`,
+  moderation: (locale: Locale) => `/${locale}/moderation`,
+  // Public and indexable, like the other legal pages.
+  terms: (locale: Locale) => `/${locale}/terms`,
 } as const;
 
 function withQuery(path: string, page: number, query?: URLSearchParams): string {

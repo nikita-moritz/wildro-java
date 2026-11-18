@@ -1,10 +1,14 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
 import { LeaveControl, LifecycleControl, SessionsControl, SignOutControl } from "@/components/auth/account-controls";
 import { ElvixShell } from "@/components/auth/elvix-shell";
 import { Button } from "@/components/ui/button";
 import { getDictionary } from "@/lib/dictionaries";
+import { formatDay } from "@/lib/format";
+import { moderates } from "@/lib/own-events";
+import { TERMS_VERSION } from "@/lib/terms";
 import { elvixClientId } from "@/lib/env";
 import { isLocale } from "@/lib/locales";
 import { routes } from "@/lib/routes";
@@ -31,7 +35,9 @@ export default async function AccountPage({ params, searchParams }: PageProps<"/
   if (!isLocale(locale)) {
     notFound();
   }
-  const t = getDictionary(locale).auth;
+  const dictionary = getDictionary(locale);
+  const t = dictionary.auth;
+  const own = dictionary.own;
   const query = await searchParams;
   const session = await currentSession();
   if (session.state === "signed-out") {
@@ -51,7 +57,13 @@ export default async function AccountPage({ params, searchParams }: PageProps<"/
   const { me } = session;
   const home = routes.home(locale);
   const notice =
-    query.saved === "1" ? t.saved : query.error === "name" ? t.invalidName : query.error === "failed" ? t.failed : null;
+    query.saved === "1" || query.terms === "1"
+      ? t.saved
+      : query.error === "name"
+        ? t.invalidName
+        : query.error === "failed"
+          ? t.failed
+          : null;
 
   return (
     <ElvixShell clientId={clientId} locale={locale}>
@@ -103,6 +115,52 @@ export default async function AccountPage({ params, searchParams }: PageProps<"/
             <span className="text-sm font-medium">{t.roles}</span>
             <span className="text-sm">{me.roles.join(", ")}</span>
           </div>
+        </section>
+
+        <section className="flex flex-col gap-4 rounded-2xl border bg-card p-5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className="font-semibold">{own.myEventsTitle}</h2>
+            <div className="flex gap-2">
+              {moderates(me.roles) && (
+                <Button asChild variant="outline" size="sm">
+                  <Link href={routes.moderation(locale)}>{own.moderationLink}</Link>
+                </Button>
+              )}
+              <Button asChild size="sm">
+                <Link href={routes.myEvents(locale)}>{own.myEventsTitle}</Link>
+              </Button>
+            </div>
+          </div>
+
+          {/* Blank while no terms are in force: there is nothing to accept yet. */}
+          {me.terms.current && (
+            <div className="flex flex-col gap-2 border-t pt-4 text-sm">
+              <span className="font-medium">{own.termsTitle}</span>
+              {me.terms.upToDate && me.terms.acceptedAt ? (
+                <span className="text-muted-foreground">
+                  {own.termsAccepted} {formatDay(me.terms.acceptedAt, locale)}.{" "}
+                  <Link href={routes.terms(locale)} className="text-primary underline-offset-2 hover:underline">
+                    {own.termsRead}
+                  </Link>
+                </span>
+              ) : (
+                <form method="post" action="/api/account/terms" className="flex flex-col gap-3">
+                  <input type="hidden" name="locale" value={locale} />
+                  {/* The version this page knows; the service refuses a mismatch rather than record consent to unseen text. */}
+                  <input type="hidden" name="version" value={TERMS_VERSION} />
+                  <span className="text-muted-foreground">
+                    {own.termsNeeded}{" "}
+                    <Link href={routes.terms(locale)} className="text-primary underline-offset-2 hover:underline">
+                      {own.termsRead}
+                    </Link>
+                  </span>
+                  <Button type="submit" className="h-11 self-start">
+                    {own.termsAccept}
+                  </Button>
+                </form>
+              )}
+            </div>
+          )}
         </section>
 
         <section className="flex flex-col gap-3">

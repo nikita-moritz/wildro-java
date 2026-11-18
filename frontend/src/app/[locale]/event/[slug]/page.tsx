@@ -18,6 +18,7 @@ import { Suspense } from "react";
 import { ACTIVITY_ICON, DIFFICULTY_STYLE } from "@/components/activity";
 import { PriceBadge } from "@/components/price-badge";
 import { EventLinks } from "@/components/event-links";
+import { ReportForm } from "@/components/report-form";
 import { EventListItem, eventCardText } from "@/components/event-list-item";
 import { SiteFooter } from "@/components/site-footer";
 import { Button } from "@/components/ui/button";
@@ -98,6 +99,10 @@ export default async function EventPageRoute({ params }: PageProps<"/[locale]/ev
   // passes, not a flag that would go stale inside a cached response.
   const passed = (await requestTime()) > Date.parse(event.passesAt);
   const cancelled = event.status === "CANCELLED";
+  const own = event.kind === "OWN";
+  // An own event is written in one language and shown as written (SPEC.md §18.2, question 3).
+  const foreign = own && event.originalLocale !== null && event.originalLocale !== locale;
+  const textLang = foreign && event.originalLocale ? event.originalLocale : undefined;
   const ActivityIcon = ACTIVITY_ICON[event.activityType];
   const spansDays = event.endsAt !== null && !sameDay(event.startsAt, event.endsAt);
   const standIn = defaultCover(event.activityType);
@@ -122,7 +127,9 @@ export default async function EventPageRoute({ params }: PageProps<"/[locale]/ev
             {t.event.back}
           </Link>
 
-          <h1 className="text-2xl leading-tight font-bold">{event.name}</h1>
+          <h1 lang={textLang} className="text-2xl leading-tight font-bold">
+            {event.name}
+          </h1>
 
           {cancelled && (
             <p role="status" className="rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm font-medium text-destructive">
@@ -136,6 +143,7 @@ export default async function EventPageRoute({ params }: PageProps<"/[locale]/ev
           )}
 
           <div className="flex flex-wrap gap-2">
+            {own && <Chip className="border-primary/30 bg-primary/10 text-primary">{t.event.ownBadge}</Chip>}
             <Chip>
               <ActivityIcon className="h-3 w-3 text-muted-foreground" />
               {t.activity[event.activityType]}
@@ -280,7 +288,8 @@ export default async function EventPageRoute({ params }: PageProps<"/[locale]/ev
 
           <div className="flex flex-col gap-2">
             <h2 className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">{t.event.description}</h2>
-            <div className="flex flex-col gap-3 text-sm leading-relaxed">
+            {foreign && <p className="text-xs text-muted-foreground">{t.event.inOrganizerLanguage}</p>}
+            <div lang={textLang} className="flex flex-col gap-3 text-sm leading-relaxed">
               {event.description.split(/\n{2,}/).map((paragraph, index) => (
                 <p key={index} className="whitespace-pre-line">
                   {paragraph}
@@ -308,6 +317,8 @@ export default async function EventPageRoute({ params }: PageProps<"/[locale]/ev
               </Button>
             </div>
           )}
+
+          {event.status === "PUBLISHED" && !passed && <ReportForm slug={event.slug} t={t.report} />}
 
           {passed && (
             <Suspense fallback={null}>
