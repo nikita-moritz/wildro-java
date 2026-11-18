@@ -126,6 +126,9 @@ export default async function AccountPage({ params, searchParams }: PageProps<"/
                   <Link href={routes.moderation(locale)}>{own.moderationLink}</Link>
                 </Button>
               )}
+              <Button asChild variant="outline" size="sm">
+                <Link href={routes.myCommunities(locale)}>{dictionary.community.myTitle}</Link>
+              </Button>
               <Button asChild size="sm">
                 <Link href={routes.myEvents(locale)}>{own.myEventsTitle}</Link>
               </Button>

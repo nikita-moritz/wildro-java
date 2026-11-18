@@ -11,7 +11,11 @@ import { routes } from "@/lib/routes";
  */
 export default function sitemap(): MetadataRoute.Sitemap {
   const site = siteUrl();
-  const pages: Array<(locale: Locale) => string> = [routes.home, (locale) => routes.feed(locale)];
+  const pages: Array<(locale: Locale) => string> = [
+    routes.home,
+    (locale) => routes.feed(locale),
+    (locale) => routes.communities(locale),
+  ];
   return pages.flatMap((path) =>
     LOCALES.map((locale) => ({
       url: `${site}${path(locale)}`,

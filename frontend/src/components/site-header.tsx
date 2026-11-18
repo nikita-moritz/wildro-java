@@ -1,6 +1,6 @@
 "use client";
 
-import { List, Map as MapIcon, Menu, Monitor, Moon, Sun, UserRound, X } from "lucide-react";
+import { List, Map as MapIcon, Menu, Monitor, Moon, Sun, UserRound, Users, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
@@ -52,6 +52,12 @@ export function SiteHeaderBar({ locale, t, pathname = "" }: { locale: Locale; t:
       label: t.nav.events,
       icon: List,
       active: pathname.includes("/events") || pathname.includes("/event/"),
+    },
+    {
+      href: routes.communities(locale),
+      label: t.nav.communities,
+      icon: Users,
+      active: pathname.includes("/communities") || pathname.includes("/community/"),
     },
   ];
 

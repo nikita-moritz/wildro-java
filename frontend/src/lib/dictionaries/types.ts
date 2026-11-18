@@ -30,6 +30,7 @@ export interface Dictionary {
     language: string;
     menu: string;
     account: string;
+    communities: string;
     theme: { toggle: string; light: string; dark: string; system: string };
   };
   home: {
@@ -135,6 +136,7 @@ export interface Dictionary {
     ownBadge: string;
     sourceBadge: string;
     inOrganizerLanguage: string;
+    organizerErased: string;
     kilometres: (value: string) => string;
     metres: (value: string) => string;
   };
@@ -237,6 +239,8 @@ export interface Dictionary {
     termsAccepted: string;
     termsRead: string;
     moderationLink: string;
+    ownerLabel: string;
+    ownerMe: string;
     viewPublic: string;
     back: string;
     errors: Record<"TERMS_REQUIRED" | "DISPLAY_NAME_REQUIRED" | "LIMIT_PER_DAY" | "LIMIT_UPCOMING" | "IN_THE_PAST" | "WRONG_STATE" | "NOT_YOURS" | "NOT_FOUND" | "INVALID" | "UNAVAILABLE" | "GENERIC", string>;
@@ -264,5 +268,51 @@ export interface Dictionary {
     tooMany: string;
     failed: string;
     reasons: Record<"SPAM" | "MISLEADING" | "DANGEROUS" | "ILLEGAL" | "PERSONAL_DATA" | "OTHER", string>;
+  };
+  community: {
+    listTitle: string;
+    listLead: string;
+    listEmpty: string;
+    members: string;
+    area: string;
+    closed: string;
+    upcoming: string;
+    noUpcoming: string;
+    links: string;
+    join: string;
+    leave: string;
+    joined: string;
+    manage: string;
+    signInToJoin: string;
+    membersTitle: string;
+    membersOnly: string;
+    roleOWNER: string;
+    roleADMIN: string;
+    roleMEMBER: string;
+    makeAdmin: string;
+    makeMember: string;
+    remove: string;
+    transfer: string;
+    transferHint: string;
+    close: string;
+    closeConfirm: string;
+    myTitle: string;
+    myLead: string;
+    myEmpty: string;
+    newCommunity: string;
+    editorNew: string;
+    editorEdit: string;
+    fieldName: string;
+    fieldDescription: string;
+    fieldArea: string;
+    fieldLanguage: string;
+    fieldLinks: string;
+    linksHint: string;
+    create: string;
+    save: string;
+    saved: string;
+    done: string;
+    back: string;
+    errors: Record<"NOT_FOUND" | "FORBIDDEN" | "TERMS_REQUIRED" | "DISPLAY_NAME_REQUIRED" | "LIMIT_OWNED" | "INVALID" | "WRONG_STATE" | "OWNER_CANNOT_LEAVE" | "TARGET_NOT_ADMIN" | "UNAVAILABLE" | "GENERIC", string>;
   };
 }

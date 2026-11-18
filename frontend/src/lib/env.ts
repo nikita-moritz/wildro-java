@@ -117,3 +117,14 @@ export function elvixClientId(): string | undefined {
   const id = process.env.ELVIX_CLIENT_ID;
   return id && id.startsWith("elvix_pub_") ? id : undefined;
 }
+
+let communities: string | null | undefined;
+
+/** The community service, reached from this server only. Optional: without it the community pages say so. */
+export function communityServiceUrl(): string | null {
+  if (communities === undefined) {
+    const parsed = url.safeParse(process.env.COMMUNITY_SERVICE_URL);
+    communities = parsed.success ? parsed.data : null;
+  }
+  return communities;
+}

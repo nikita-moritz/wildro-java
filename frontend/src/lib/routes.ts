@@ -27,6 +27,12 @@ export const routes = {
   newEvent: (locale: Locale) => `/${locale}/account/events/new`,
   editEvent: (locale: Locale, slug: string) => `/${locale}/account/events/${slug}`,
   moderation: (locale: Locale) => `/${locale}/moderation`,
+  // Public and indexable: community pages are search traffic (SPEC.md §18.3).
+  communities: (locale: Locale, page = 1) => withQuery(`/${locale}/communities`, page),
+  community: (locale: Locale, slug: string) => `/${locale}/community/${slug}`,
+  myCommunities: (locale: Locale) => `/${locale}/account/communities`,
+  newCommunity: (locale: Locale) => `/${locale}/account/communities/new`,
+  manageCommunity: (locale: Locale, slug: string) => `/${locale}/account/communities/${slug}`,
   // Public and indexable, like the other legal pages.
   terms: (locale: Locale) => `/${locale}/terms`,
 } as const;

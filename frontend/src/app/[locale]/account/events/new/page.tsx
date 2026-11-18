@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 
 import { EventEditor } from "@/components/own/event-editor";
 import { Notice } from "@/components/own/notice";
+import { manages, myCommunities } from "@/lib/communities";
 import { getDictionary } from "@/lib/dictionaries";
 import { mapboxToken } from "@/lib/env";
 import { isLocale } from "@/lib/locales";
@@ -35,6 +36,9 @@ export default async function NewEventPage({ params }: PageProps<"/[locale]/acco
       : !session.me.displayName
         ? t.own.errors.DISPLAY_NAME_REQUIRED
         : null;
+  const writable = session
+    ? ((await myCommunities(session.jwt)) ?? []).filter((each) => manages(each.role) && each.status === "ACTIVE")
+    : [];
 
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-4 py-10">
@@ -56,6 +60,7 @@ export default async function NewEventPage({ params }: PageProps<"/[locale]/acco
           t={{ own: t.own, activity: t.activity, difficulty: t.difficulty }}
           mapboxToken={mapboxToken() ?? null}
           editPath={routes.editEvent(locale, "{slug}")}
+          communities={writable.map(({ slug, name }) => ({ slug, name }))}
         />
       )}
     </main>

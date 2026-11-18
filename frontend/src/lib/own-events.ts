@@ -38,6 +38,8 @@ export const ownEventSchema = z.object({
   communityLinks: z.array(z.string()),
   publishedAt: instant.nullable(),
   updatedAt: instant,
+  communitySlug: z.string().nullable(),
+  organizer: z.string(),
 });
 
 export type OwnEvent = z.infer<typeof ownEventSchema>;

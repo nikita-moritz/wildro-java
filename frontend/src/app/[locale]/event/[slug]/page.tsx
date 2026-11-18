@@ -251,7 +251,15 @@ export default async function EventPageRoute({ params }: PageProps<"/[locale]/ev
             <MetaRow icon={<User className="h-4 w-4" />}>
               <p>
                 <span className="text-muted-foreground">{t.event.organizer}:&nbsp;</span>
-                <span className="font-medium">{event.organizer}</span>
+                {event.organizer === null ? (
+                  <span className="text-muted-foreground">{t.event.organizerErased}</span>
+                ) : event.communitySlug ? (
+                  <Link href={routes.community(locale, event.communitySlug)} className="font-medium text-primary underline-offset-2 hover:underline">
+                    {event.organizer}
+                  </Link>
+                ) : (
+                  <span className="font-medium">{event.organizer}</span>
+                )}
               </p>
             </MetaRow>
             <MetaRow icon={<Footprints className="h-4 w-4" />}>

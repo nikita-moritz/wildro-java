@@ -40,7 +40,7 @@ export const MAX_FEED_PAGE = 100;
 
 const instant = z.iso.datetime({ offset: true });
 
-const eventCardSchema = z.object({
+export const eventCardSchema = z.object({
   slug: z.string(),
   name: z.string(),
   placeName: z.string(),
@@ -95,7 +95,8 @@ const eventPageSchema = z.object({
   passesAt: instant,
   latitude: z.number(),
   longitude: z.number(),
-  organizer: z.string(),
+  /** Null when the author of a personal event deleted their account (SPEC.md §18.1). */
+  organizer: z.string().nullable(),
   sourceUrl: z.string().nullable(),
   sourceCheckedAt: instant.nullable(),
   distanceKm: z.number().nullable(),
@@ -110,6 +111,7 @@ const eventPageSchema = z.object({
   communityLinks: z.array(eventLinkSchema),
   kind: z.enum(["EXTERNAL", "OWN"]),
   originalLocale: z.enum(LOCALES).nullable(),
+  communitySlug: z.string().nullable(),
   updatedAt: instant,
 });
 

@@ -46,6 +46,7 @@ export function EventEditor({
   t,
   mapboxToken,
   editPath,
+  communities = [],
 }: {
   locale: Locale;
   initial: EditorInitial | null;
@@ -53,6 +54,8 @@ export function EventEditor({
   mapboxToken: string | null;
   /** Where to go after saving: the edit page, with {slug} filled in. */
   editPath: string;
+  /** Communities the person may write for, offered on a new event only: ownership is fixed once created. */
+  communities?: { slug: string; name: string }[];
 }) {
   const own = t.own;
   const [textLocale, setTextLocale] = useState<Locale>(initial?.locale ?? locale);
@@ -92,6 +95,7 @@ export function EventEditor({
       maxParticipants: number("maxParticipants"),
       eventLinks: lines("eventLinks"),
       communityLinks: lines("communityLinks"),
+      communitySlug: value("communitySlug") || null,
     };
     setBusy(true);
     setError(null);
@@ -122,6 +126,20 @@ export function EventEditor({
         void submit(event.currentTarget, false);
       }}
     >
+      {!initial && communities.length > 0 && (
+        <label className={LABEL}>
+          {own.ownerLabel}
+          <select name="communitySlug" defaultValue="" className={FIELD}>
+            <option value="">{own.ownerMe}</option>
+            {communities.map((community) => (
+              <option key={community.slug} value={community.slug}>
+                {community.name}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
+
       <label className={LABEL}>
         {own.fieldLanguage}
         <select value={textLocale} onChange={(e) => setTextLocale(e.target.value as Locale)} className={FIELD}>

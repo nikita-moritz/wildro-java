@@ -56,6 +56,9 @@ export default async function EditEventPage({ params, searchParams }: PageProps<
         <span className="rounded-full border px-3 py-1 text-sm">{t.own[`status${event.status}`]}</span>
       </div>
 
+      <p className="text-sm text-muted-foreground">
+        {t.own.ownerLabel}: {event.organizer}
+      </p>
       <Notice text={done} />
       <Notice text={failed} tone="alert" />
       {event.status === "SUSPENDED" && event.suspensionReason && (

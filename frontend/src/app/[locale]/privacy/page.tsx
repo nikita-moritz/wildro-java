@@ -216,6 +216,14 @@ export default async function PrivacyPage({ params }: PageProps<"/[locale]/priva
               lit. b DSGVO).
             </p>
             <p>
+              Trittst du einer Gruppe bei, speichern wir die Mitgliedschaft, deine Rolle darin und deinen
+              Anzeigenamen. Die Namen der Mitglieder sehen nur Mitglieder derselben Gruppe; öffentlich ist nur ihre
+              Zahl. Verlässt du die Gruppe oder löschst du dein Konto, wird die Mitgliedschaft gelöscht. Gehört dir
+              eine Gruppe, geht sie beim Löschen des Kontos an den Admin über, der es am längsten ist, sonst wird
+              sie geschlossen. Rechtsgrundlage ist die Erfüllung des Nutzungsverhältnisses (Art. 6 Abs. 1 lit. b
+              DSGVO).
+            </p>
+            <p>
               Meldest du ein Event, speichern wir den gewählten Grund, deinen Text, den Zeitpunkt und, falls du
               angemeldet bist, die Kennung deines Kontos, um die Meldung zu prüfen (Art. 6 Abs. 1 lit. c DSGVO in
               Verbindung mit Art. 16 DSA). Deine IP-Adresse speichern wir dafür nicht: Sie wird höchstens eine Stunde
