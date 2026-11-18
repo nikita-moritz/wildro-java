@@ -1,6 +1,6 @@
 "use client";
 
-import { List, Map as MapIcon, Menu, Monitor, Moon, Sun, X } from "lucide-react";
+import { List, Map as MapIcon, Menu, Monitor, Moon, Sun, UserRound, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
@@ -14,9 +14,13 @@ import { useMounted } from "@/lib/use-mounted";
 import { cn } from "@/lib/utils";
 
 /**
- * The working version's navigation: logo, Map and Events, the language select
- * and the theme toggle, a hamburger on mobile. Sign in, Communities, the
- * profile and the admin link are gone, because stage one has none of them.
+ * The working version's navigation: logo, Map and Events, the language select,
+ * the theme toggle and the account link, a hamburger on mobile.
+ *
+ * The account link is the same for everyone and does not know whether anyone
+ * is signed in: knowing would mean reading the session on every page, and
+ * every public page would stop being a cached render. The account page itself
+ * sends a signed-out visitor on to the sign-in page.
  *
  * Drawn as islands (owner's call, 2026-10-20): every item is its own pill on a
  * transparent bar, so on the map page the bar floats over the map with nothing
@@ -55,6 +59,25 @@ export function SiteHeaderBar({ locale, t, pathname = "" }: { locale: Locale; t:
     const rest = pathname.split("/").slice(2).join("/");
     router.push(`/${next}${rest ? `/${rest}` : ""}`);
   }
+
+  const accountActive = pathname.endsWith("/account") || pathname.endsWith("/sign-in");
+  const accountLink = (
+    <Link
+      href={routes.account(locale)}
+      aria-label={t.nav.account}
+      title={t.nav.account}
+      aria-current={accountActive ? "page" : undefined}
+      // A plain link, never prefetched: the page behind it reads the session.
+      prefetch={false}
+      className={cn(
+        PILL,
+        "w-10 justify-center",
+        accountActive ? "border-primary/30 bg-primary text-primary-foreground" : "text-foreground hover:bg-muted",
+      )}
+    >
+      <UserRound className="h-4 w-4" />
+    </Link>
+  );
 
   const languageSelect = (
     <select
@@ -107,6 +130,7 @@ export function SiteHeaderBar({ locale, t, pathname = "" }: { locale: Locale; t:
         <div className="pointer-events-auto hidden items-center gap-2 md:flex">
           {languageSelect}
           <ThemeToggle t={t} />
+          {accountLink}
         </div>
 
         <button
@@ -140,6 +164,7 @@ export function SiteHeaderBar({ locale, t, pathname = "" }: { locale: Locale; t:
           <div className="flex items-center gap-2 pt-1">
             {languageSelect}
             <ThemeToggle t={t} />
+            {accountLink}
           </div>
         </div>
       )}

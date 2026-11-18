@@ -29,6 +29,7 @@ export interface Dictionary {
     home: string;
     language: string;
     menu: string;
+    account: string;
     theme: { toggle: string; light: string; dark: string; system: string };
   };
   home: {
@@ -161,5 +162,26 @@ export interface Dictionary {
     title: string;
     body: string;
     retry: string;
+  };
+  auth: {
+    signInTitle: string;
+    signInLead: string;
+    unavailable: string;
+    accountTitle: string;
+    displayName: string;
+    displayNameHint: string;
+    displayNameMissing: string;
+    save: string;
+    saved: string;
+    invalidName: string;
+    email: string;
+    emailNote: string;
+    roles: string;
+    signOut: string;
+    sessionsTitle: string;
+    sessionsLead: string;
+    leaveTitle: string;
+    leaveLead: string;
+    failed: string;
   };
 }

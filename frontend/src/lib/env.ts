@@ -85,3 +85,28 @@ export function statsApiKey(): string | undefined {
   const key = process.env.STATS_API_KEY;
   return key && key.length >= 32 ? key : undefined;
 }
+
+let users: string | null | undefined;
+
+/**
+ * The user service, reached from this server only. Optional like analytics:
+ * without it the site reads exactly as before and only the account pages say
+ * that signing in is not available.
+ */
+export function userServiceUrl(): string | null {
+  if (users === undefined) {
+    const parsed = url.safeParse(process.env.USER_SERVICE_URL);
+    users = parsed.success ? parsed.data : null;
+  }
+  return users;
+}
+
+/**
+ * The elvix application's public clientId. Not a secret: it reaches the
+ * browser in the sign-in form. It is also the audience every token must carry,
+ * which is how this server tells our tokens from another elvix app's.
+ */
+export function elvixClientId(): string | undefined {
+  const id = process.env.ELVIX_CLIENT_ID;
+  return id && id.startsWith("elvix_pub_") ? id : undefined;
+}

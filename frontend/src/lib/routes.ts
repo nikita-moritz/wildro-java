@@ -20,6 +20,9 @@ export const routes = {
   map: (locale: Locale, query?: URLSearchParams) => withQuery(`/${locale}/map`, 1, query),
   legalNotice: (locale: Locale) => `/${locale}/legal-notice`,
   privacy: (locale: Locale) => `/${locale}/privacy`,
+  // Not indexed and not in the sitemap: personal pages, closed in robots.ts.
+  signIn: (locale: Locale) => `/${locale}/sign-in`,
+  account: (locale: Locale) => `/${locale}/account`,
 } as const;
 
 function withQuery(path: string, page: number, query?: URLSearchParams): string {

@@ -23,8 +23,9 @@ export async function generateMetadata({ params }: PageProps<"/[locale]/privacy"
 }
 
 /**
- * Describes what this app does and nothing it does not: no account, no cookie,
- * no analytics, no access log at the proxy. Every sentence here is a claim
+ * Describes what this app does and nothing it does not: an account only for
+ * those who sign in, one cookie only for them, no third-party analytics, no
+ * access log at the proxy. Every sentence here is a claim
  * about the code or the server, so a change there (an access log in Caddy, a
  * counter, an ad, the /go/{id} redirector) is a change here in the same commit.
  */
@@ -52,8 +53,10 @@ export default async function PrivacyPage({ params }: PageProps<"/[locale]/priva
 
           <LegalSection heading="2. Kurz gesagt">
             <p>
-              wildro kann ohne Konto und ohne Anmeldung gelesen werden. Wir setzen keine Cookies, nutzen keine
-              Analyse- oder Tracking-Dienste anderer Anbieter und zeigen keine Werbung. Wie oft welche Seite aufgerufen
+              wildro kann ohne Konto und ohne Anmeldung gelesen werden. Ein Konto brauchst du nur, wenn du selbst
+              etwas veröffentlichen möchtest (Abschnitt 9). Cookies setzen wir nur, wenn du dich anmeldest, und nur
+              das eine, das die Anmeldung braucht. Wir nutzen keine Analyse- oder Tracking-Dienste anderer Anbieter
+              und zeigen keine Werbung. Wie oft welche Seite aufgerufen
               wird, zählen wir selbst, ohne Cookies und ohne deine IP-Adresse zu speichern (Abschnitt 3). Von fremden
               Servern lädt dein Browser nur zweierlei:
               die Karte, und die erst nach deinem Klick (Abschnitt 5), und die Bilder aus unserem Speicher bei Cloudflare
@@ -83,13 +86,21 @@ export default async function PrivacyPage({ params }: PageProps<"/[locale]/priva
               führen ihn mit keinen anderen Daten zusammen. Auf deinem Gerät wird nichts gespeichert. Aufrufe von
               Suchmaschinen und anderen automatischen Programmen zählen wir nicht. Die Einträge löschen wir nach 14
               Monaten. Rechtsgrundlage ist unser berechtigtes Interesse an einer bedarfsgerechten Gestaltung der Seite
-              (Art. 6 Abs. 1 lit. f DSGVO). Du kannst dem jederzeit widersprechen (Abschnitt 10).
+              (Art. 6 Abs. 1 lit. f DSGVO). Du kannst dem jederzeit widersprechen (Abschnitt 11).
             </p>
           </LegalSection>
 
           <LegalSection heading="4. Cookies und lokaler Speicher">
             <p>
-              wildro setzt keine Cookies. Wenn du zwischen hellem und dunklem Design umschaltest, merkt sich dein
+              Solange du nicht angemeldet bist, setzt wildro keine Cookies. Meldest du dich an, setzen wir das Cookie{" "}
+              <code className="text-foreground">wildro_session</code>. Es hält deine Anmeldung fest, ist für Skripte
+              auf der Seite nicht lesbar, wird nur an wildro gesendet und läuft nach 30 Tagen oder mit dem Abmelden
+              ab. Während der Anmeldung legt der Anmeldedienst elvix in deinem Browser außerdem den Eintrag{" "}
+              <code className="text-foreground">elvix.session.token</code> im lokalen Speicher ab. Beides ist für die
+              von dir gewünschte Anmeldung erforderlich (§ 25 Abs. 2 Nr. 2 TDDDG).
+            </p>
+            <p>
+              Wenn du zwischen hellem und dunklem Design umschaltest, merkt sich dein
               Browser diese Wahl im lokalen Speicher (Eintrag <code className="text-foreground">theme</code>), ebenso
               ob du die Events als Liste oder als Kacheln sehen möchtest (Eintrag{" "}
               <code className="text-foreground">wildro-feed-view</code>). Die Einträge bleiben auf deinem Gerät,
@@ -180,7 +191,31 @@ export default async function PrivacyPage({ params }: PageProps<"/[locale]/priva
             </p>
           </LegalSection>
 
-          <LegalSection heading="9. Kontakt per E-Mail">
+          <LegalSection heading="9. Konto und Anmeldung">
+            <p>
+              Die Anmeldung übernimmt elvix, ein Dienst von Edvard Grei (edvone), Jülicher Straße 72a, 52070 Aachen,
+              der die Daten in unserem Auftrag verarbeitet (Art. 28 DSGVO). elvix betreibt seine Server bei der
+              Hetzner Online GmbH in Helsinki, Finnland. Du meldest dich mit Google, einem Passkey oder einem Code per
+              E-Mail an; beim ersten Anmelden entsteht dein Konto. Auf der Anmelde- und der Kontoseite verbindet
+              sich dein Browser dafür direkt mit elvix.is. Wählst du Google, erhält Google Ireland Limited die
+              Angaben, die für die Anmeldung mit deinem Google-Konto nötig sind. Näheres steht in der{" "}
+              <LegalLink href="https://elvix.is/legal/privacy">Datenschutzerklärung von elvix</LegalLink>.
+            </p>
+            <p>
+              Bei uns gespeichert werden genau drei Angaben: die Kennung deines Kontos bei elvix, deine
+              E-Mail-Adresse und dein Anzeigename, den du jederzeit ändern kannst. Dazu kommt, welche Fassung der
+              Nutzungsregeln du wann angenommen hast. Ein Profilbild übernehmen wir nicht. Deine E-Mail-Adresse
+              sieht niemand außer dir; wir schreiben dir nur, wenn es um deine Beiträge geht. Rechtsgrundlage ist
+              die Erfüllung des Nutzungsverhältnisses (Art. 6 Abs. 1 lit. b DSGVO).
+            </p>
+            <p>
+              Dein Konto kannst du auf der Kontoseite selbst löschen. Dann löschen wir Anzeigenamen und
+              E-Mail-Adresse, und deine künftigen eigenen Events werden abgesagt. Eine Kopie deiner Daten schicken
+              wir dir auf Anfrage an die oben genannte Adresse.
+            </p>
+          </LegalSection>
+
+          <LegalSection heading="10. Kontakt per E-Mail">
             <p>
               Schreibst du uns eine E-Mail, verarbeiten wir deine Adresse und den Inhalt deiner Nachricht, um sie zu
               beantworten (Art. 6 Abs. 1 lit. f DSGVO). Unser Postfach wird von Google Workspace bereitgestellt, einem
@@ -190,7 +225,7 @@ export default async function PrivacyPage({ params }: PageProps<"/[locale]/priva
             </p>
           </LegalSection>
 
-          <LegalSection heading="10. Deine Rechte">
+          <LegalSection heading="11. Deine Rechte">
             <p>
               Du hast das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung der Verarbeitung,
               Datenübertragbarkeit und Widerspruch (Art. 15 bis 21 DSGVO). Eine Einwilligung kannst du jederzeit mit

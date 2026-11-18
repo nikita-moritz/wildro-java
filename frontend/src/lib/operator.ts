@@ -15,4 +15,4 @@ export const OPERATOR = {
 } as const;
 
 /** The date the legal texts were last brought in line with what the app does. */
-export const LEGAL_TEXTS_AS_OF = "03.11.2026";
+export const LEGAL_TEXTS_AS_OF = "18.11.2026";

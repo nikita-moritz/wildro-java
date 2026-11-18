@@ -5,16 +5,18 @@ trail runs and rides from national parks, clubs and public groups, in German,
 English and Russian. Visitors read events on a list and a map; the card sends
 them on to the organiser's own page.
 
-This repository is the **Java implementation**: two Spring Boot services behind
-a Next.js frontend. It ran production on wildro.app from 2026-10-20 and stays
+This repository is the **Java implementation**: three Spring Boot services
+behind a Next.js frontend, with sign-in delegated to elvix. It ran production on wildro.app from 2026-10-20 and stays
 live at **https://java.wildro.app**. The same specification was later
 reimplemented in Go; both versions read the same database, so the two can be
 compared request for request.
 
 ```
-browser ─ Caddy ─> frontend (Next.js 16, App Router)
+browser ─ Caddy ─> frontend (Next.js 16, App Router) ──── elvix (sign-in, sessions, roles)
                      ├──> event-service      (Spring Boot 4, Java 25)  ──> PostgreSQL 17 + PostGIS
-                     └──> analytics-service  (Spring Boot 4, Java 25)  ──> own database
+                     ├──> analytics-service  (Spring Boot 4, Java 25)  ──> own database
+                     └──> user-service       (Spring Boot 4, Java 25)  ──> own database
+                              ▲ webhooks from elvix, forwarded byte for byte
 ```
 
 Both services listen on loopback only. The public never reaches them: the
@@ -28,6 +30,7 @@ frontend renders on the server, caches by tag, and is the only thing exposed.
 | `IMPLEMENTATION_PLAN.md` | the plan the services were built from |
 | `services/event-service` | events: public reads (feed, map, event page) and the admin command line that writes them |
 | `services/analytics-service` | cookieless page view counting and the stats behind the dashboard |
+| `services/user-service` | the account: profile, terms mark, what elvix reports (block, deletion), an outbox for the other modules |
 | `frontend` | the site: feed, map, event pages, legal pages, sitemap, revalidation endpoint |
 | `docs/event-import.md` | the import format and the rules for writing an event |
 | `docs/event-sources.md` | what may be published from which kind of source (copyright, GDPR) |
@@ -71,6 +74,20 @@ of the three drift apart.
 type and a database constraint. The address ends up in an `href` on a public
 page and is often written by a model from someone else's text.
 
+**Sign-in is elvix's, the account is ours** (SPEC.md §18.1). Google, passkey
+and email code run in elvix; wildro stores no password, code or session. The
+browser keeps elvix's session token in an httpOnly cookie, the frontend's
+server trades it per request for a ten-minute JWT, and `user-service` is a
+plain OAuth2 resource server: `issuer-uri` plus our clientId as the audience,
+no elvix code on the JVM. The subject of a verified token is the only way a
+request names a person; the address and the name are read from elvix by that
+subject, never taken from the caller. Webhooks (block, deletion) are checked
+by HMAC over the raw body with a five-minute replay window, applied once by
+event id, ordered by elvix's own timestamp, and a deletion writes its
+consequences to an outbox in the same transaction. Public pages never read
+the session, so they stay cached renders; the SDK loads on the sign-in and
+account pages only.
+
 **Analytics without cookies.** A visitor is a daily hash of salt, day, host,
 address and user agent; bots are dropped, the rate is limited, rows older than
 fourteen months are swept.
@@ -105,6 +122,7 @@ Testcontainers) and Bun for the frontend.
 ```
 cd services/event-service && ./mvnw verify
 cd services/analytics-service && ./mvnw verify
+cd services/user-service && ./mvnw verify
 cd frontend && bun install && bun run build
 ```
 
@@ -119,5 +137,5 @@ scripts/events.sh java import events.json --operator NAME          # dry run
 scripts/events.sh java import events.json --operator NAME --write
 ```
 
-CI (`.github/workflows/ci.yml`) builds and tests both services against a real
+CI (`.github/workflows/ci.yml`) builds and tests every service against a real
 PostGIS and typechecks, lints and builds the frontend.

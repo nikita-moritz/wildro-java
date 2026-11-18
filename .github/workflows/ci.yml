@@ -1,6 +1,6 @@
 name: CI
 
-# The gate: both Spring services against a real PostGIS, and the frontend.
+# The gate: every Spring service against a real database, and the frontend.
 # In the working repository the same jobs gate a deploy job on a self-hosted
 # runner; it is left out here, because a public repository must never route a
 # stranger's pull request to a machine that runs production.
@@ -25,7 +25,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        service: [event-service, analytics-service]
+        service: [event-service, analytics-service, user-service]
     defaults:
       run:
         working-directory: services/${{ matrix.service }}

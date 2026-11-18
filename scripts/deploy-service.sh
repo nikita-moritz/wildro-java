@@ -16,7 +16,7 @@ set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SERVICE="${3:-event-service}"
-case "$SERVICE" in event-service | analytics-service) ;; *) echo "unknown service '$SERVICE'"; exit 2 ;; esac
+case "$SERVICE" in event-service | analytics-service | user-service) ;; *) echo "unknown service '$SERVICE'"; exit 2 ;; esac
 SERVICE_DIR="$REPO_ROOT/services/$SERVICE"
 # Which environment. Until 2026-11-17 this took "dev" and "main"; those now run
 # the Go version, and the Java version has one stand, "java" (java.wildro.app).
