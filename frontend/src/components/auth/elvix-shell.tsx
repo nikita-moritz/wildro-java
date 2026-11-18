@@ -1,6 +1,6 @@
 "use client";
 
-import "@elvix.is/sdk/styles.css";
+import "./elvix.css";
 
 import { ElvixProvider } from "@elvix.is/sdk/react";
 

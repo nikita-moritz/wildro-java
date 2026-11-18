@@ -1,0 +1,2 @@
+/* elvix's stylesheet in a layer of its own, ordered in app/globals.css. */
+@import "@elvix.is/sdk/styles.css" layer(elvix);

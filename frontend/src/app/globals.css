@@ -1,3 +1,13 @@
+/*
+  Layer order, declared before anything else so it holds: elvix's SDK ships its
+  own Tailwind build with the same layer names (theme, base, utilities). Loaded
+  as is, its rules joined ours and its variables and form reset overrode this
+  site's classes on the account page. Imported inside its own "elvix" layer
+  (components/auth/elvix.css), placed under ours, it styles its own cards and
+  loses every tie with this site.
+*/
+@layer theme, base, elvix, components, utilities;
+
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";

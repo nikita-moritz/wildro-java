@@ -5,7 +5,7 @@ import { LeaveControl, LifecycleControl, SessionsControl, SignOutControl } from 
 import { ElvixShell } from "@/components/auth/elvix-shell";
 import { Button } from "@/components/ui/button";
 import { getDictionary } from "@/lib/dictionaries";
-import { brand, elvixClientId } from "@/lib/env";
+import { elvixClientId } from "@/lib/env";
 import { isLocale } from "@/lib/locales";
 import { routes } from "@/lib/routes";
 import { currentSession } from "@/lib/session";
@@ -115,7 +115,7 @@ export default async function AccountPage({ params, searchParams }: PageProps<"/
           <h2 className="font-semibold">{t.leaveTitle}</h2>
           <p className="text-sm text-muted-foreground">{t.leaveLead}</p>
           <LeaveControl
-            appName={brand().name}
+            appName="wildro"
             target={home}
             privacyUrl={routes.privacy(locale)}
             termsUrl={routes.legalNotice(locale)}
