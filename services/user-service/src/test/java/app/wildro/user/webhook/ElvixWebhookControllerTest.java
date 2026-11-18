@@ -128,6 +128,12 @@ class ElvixWebhookControllerTest {
 		deliver(event("e1", "user.something_new", NOW, "u1")).andExpect(status().isNoContent());
 	}
 
+	@Test
+	void elvixsTestPingIsAcknowledged() throws Exception {
+		deliver("{\"id\":\"p1\",\"type\":\"test.ping\",\"createdAt\":\"" + NOW + "\"}")
+			.andExpect(status().isNoContent());
+	}
+
 	private ResultActions deliver(String body) throws Exception {
 		return this.mvc.perform(post("/v1/webhooks/elvix").contentType(MediaType.APPLICATION_JSON)
 			.header("Elvix-Signature", sign(body, this.clock.instant()))

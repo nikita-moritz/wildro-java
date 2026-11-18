@@ -2,6 +2,8 @@ package app.wildro.user.webhook;
 
 import java.time.Clock;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -24,6 +26,8 @@ import tools.jackson.databind.json.JsonMapper;
  */
 @RestController
 class ElvixWebhookController {
+
+	private static final Logger log = LoggerFactory.getLogger(ElvixWebhookController.class);
 
 	private final ElvixProperties elvix;
 
@@ -54,8 +58,14 @@ class ElvixWebhookController {
 		catch (JacksonException ex) {
 			return ResponseEntity.badRequest().build();
 		}
-		if (event.id() == null || event.type() == null || event.createdAt() == null
+		if (event.type() == null || !LifecycleHandler.handles(event.type())) {
+			// Signed by elvix and nothing for us: acknowledged, so it is not
+			// retried. Includes elvix's test ping, which carries no application.
+			return ResponseEntity.noContent().build();
+		}
+		if (event.id() == null || event.createdAt() == null
 				|| !this.elvix.applicationId().equals(event.applicationId())) {
+			log.warn("Refused a signed elvix {} event: id, time or application missing or foreign", event.type());
 			return ResponseEntity.badRequest().build();
 		}
 		this.handler.apply(event);

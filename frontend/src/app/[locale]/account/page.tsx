@@ -19,8 +19,10 @@ export async function generateMetadata({ params }: PageProps<"/[locale]/account"
 }
 
 /**
- * Rendered blocking, per request: a signed-out visitor gets a real redirect to
- * the sign-in page rather than a shell that redirects after it has streamed.
+ * Rendered per request, metadata in <head>. A signed-out visitor is sent on to
+ * the sign-in page by the redirect Next streams into the response: a browser
+ * follows it at once, and crawlers are kept out by robots.txt and noindex, so
+ * an HTTP 307 would buy nothing worth a proxy on every request.
  */
 export const instant = false;
 

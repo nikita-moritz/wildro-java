@@ -1,6 +1,7 @@
 package app.wildro.user.webhook;
 
 import java.util.Map;
+import java.util.Set;
 
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
@@ -47,6 +48,14 @@ class LifecycleHandler {
 		this.accounts = accounts;
 		this.directory = directory;
 		this.json = json;
+	}
+
+	private static final Set<String> OTHERS = Set.of("user.deleted", "user.left",
+			"user.profile_updated", "user.identity_changed");
+
+	/** Whether this type changes anything here; every other type is acknowledged and dropped. */
+	static boolean handles(String type) {
+		return STATUS_BY_TYPE.containsKey(type) || OTHERS.contains(type);
 	}
 
 	/**
