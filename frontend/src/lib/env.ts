@@ -25,12 +25,19 @@ export function siteUrl(): string {
 }
 
 /**
- * Which face the site shows: "wildro" on the public host, "demo.w" with grey
- * icons everywhere else, so an installed demo is never mistaken for the real
- * app on a home screen. Read from SITE_URL, which every build and run has.
+ * The hosts that show the real face. java.wildro.app is this implementation's
+ * production, the one a CV links to, so it is branded like wildro.app.
+ */
+const PRODUCTION_HOSTS = new Set(["wildro.app", "java.wildro.app"]);
+
+/**
+ * Which face the site shows: "wildro" on a production host, "demo.w" with grey
+ * icons everywhere else (a local run, a preview), so an installed demo is never
+ * mistaken for the real app on a home screen. Read from SITE_URL, which every
+ * build and run has.
  */
 export function brand(): { name: string; icons: string } {
-  return new URL(siteUrl()).hostname === "wildro.app"
+  return PRODUCTION_HOSTS.has(new URL(siteUrl()).hostname)
     ? { name: "wildro", icons: "/icons" }
     : { name: "demo.w", icons: "/icons/demo" };
 }
