@@ -47,7 +47,6 @@ export function SignInPanel({
       <ElvixSignInForm
         brandColor="#0d874a"
         onBrandColor="#ffffff"
-        theme="auto"
         privacyPolicyUrl={privacyUrl}
         termsOfServiceUrl={termsUrl}
         onAuthenticated={(result) => void handOver(result.token)}
