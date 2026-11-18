@@ -167,6 +167,31 @@ public class Event {
 	@OrderColumn(name = "position")
 	private List<EventLink> links = new ArrayList<>();
 
+	/**
+	 * Own events only (SPEC.md §18.2): the person who owns it, or from §18.3 the
+	 * community, and the person who wrote it. elvix ids; the accounts live in the
+	 * user service.
+	 */
+	@Column(name = "owner_user_id")
+	private String ownerUserId;
+
+	@Column(name = "owner_community_id")
+	private Long ownerCommunityId;
+
+	@Column(name = "author_user_id")
+	private String authorUserId;
+
+	/** The one language an own event was written in; the text is stored under every locale. */
+	@Column(name = "original_locale")
+	private String originalLocale;
+
+	/** When it first went public, for the limit on publications per day. */
+	@Column(name = "published_at")
+	private Instant publishedAt;
+
+	@Column(name = "suspension_reason")
+	private String suspensionReason;
+
 	@Column(name = "created_at", nullable = false, updatable = false)
 	private Instant createdAt = Instant.now();
 
@@ -197,6 +222,12 @@ public class Event {
 		this.price = builder.price;
 		this.translations = new LinkedHashMap<>(builder.translations);
 		this.links = orderedLinks(builder.links);
+		this.ownerUserId = builder.ownerUserId;
+		this.authorUserId = builder.authorUserId;
+		this.originalLocale = builder.originalLocale;
+		if (this.status == EventStatus.PUBLISHED) {
+			this.publishedAt = toMicros(builder.publishedAt);
+		}
 
 		validate();
 		this.passesAt = computePassesAt(this.startsAt, this.endsAt);
@@ -219,6 +250,16 @@ public class Event {
 		if ((this.coverImageUrl == null) != (this.coverCredit == null)) {
 			throw new InvalidEventException("coverCredit",
 					"a cover needs its author and licence, and a credit needs a cover");
+		}
+		if (this.kind == EventKind.OWN && (this.ownerUserId == null || this.authorUserId == null
+				|| this.originalLocale == null || !LOCALES.contains(this.originalLocale))) {
+			throw new InvalidEventException("owner", "an own event needs an owner, an author and its language");
+		}
+		if (this.kind == EventKind.EXTERNAL && (this.ownerUserId != null || this.authorUserId != null)) {
+			throw new InvalidEventException("owner", "an external event belongs to its source, not to a person");
+		}
+		if (this.status == EventStatus.SUSPENDED) {
+			throw new InvalidEventException("status", "suspension is a moderation decision, not a value to write");
 		}
 		if (!this.translations.keySet().equals(LOCALES)) {
 			throw new InvalidEventException("translations",
@@ -308,6 +349,10 @@ public class Event {
 			throw new InvalidEventException("status",
 					"the event is cancelled; reinstating it is not a revision");
 		}
+		if (this.status == EventStatus.SUSPENDED) {
+			throw new InvalidEventException("status",
+					"the event was taken down by moderation; only a moderator can put it back");
+		}
 		if (this.status == EventStatus.PUBLISHED && candidate.status == EventStatus.DRAFT) {
 			throw new InvalidEventException("status",
 					"a published event cannot go back to draft; cancel or delete it explicitly");
@@ -336,6 +381,7 @@ public class Event {
 		addIfDifferent(changed, "coverImageUrl", this.coverImageUrl, candidate.coverImageUrl);
 		addIfDifferent(changed, "coverCredit", this.coverCredit, candidate.coverCredit);
 		addIfDifferent(changed, "price", this.price, candidate.price);
+		addIfDifferent(changed, "locale", this.originalLocale, candidate.originalLocale);
 		for (LinkScope scope : LinkScope.values()) {
 			addIfDifferent(changed, "links/" + scope.documentKey(), links(scope), candidate.links(scope));
 		}
@@ -364,6 +410,7 @@ public class Event {
 		this.coverImageUrl = candidate.coverImageUrl;
 		this.coverCredit = candidate.coverCredit;
 		this.price = candidate.price;
+		this.originalLocale = candidate.originalLocale;
 		this.translations.clear();
 		this.translations.putAll(candidate.translations);
 		// Only when they differ: rewriting an identical list would still bump the row.
@@ -377,6 +424,50 @@ public class Event {
 
 	public void cancel() {
 		this.status = EventStatus.CANCELLED;
+	}
+
+	/** A draft goes public. Publishing is one way: a published event is never a draft again. */
+	public void publish(Instant at) {
+		if (this.status != EventStatus.DRAFT) {
+			throw new InvalidEventException("status", "only a draft can be published");
+		}
+		this.status = EventStatus.PUBLISHED;
+		this.publishedAt = toMicros(at);
+	}
+
+	/** Moderation takes it off the site, for a stated reason (SPEC.md §18.2, DSA Art. 17). */
+	public void suspend(String reason) {
+		if (this.status != EventStatus.PUBLISHED) {
+			throw new InvalidEventException("status", "only a published event can be taken down");
+		}
+		if (reason == null || reason.isBlank()) {
+			throw new InvalidEventException("reason", "a removal states its reason");
+		}
+		this.status = EventStatus.SUSPENDED;
+		this.suspensionReason = reason.strip();
+	}
+
+	/** Moderation reverses its own removal. */
+	public void reinstate() {
+		if (this.status != EventStatus.SUSPENDED) {
+			throw new InvalidEventException("status", "only a suspended event can be put back");
+		}
+		this.status = EventStatus.PUBLISHED;
+		this.suspensionReason = null;
+	}
+
+	/** Whether this person may change it: the owner of a personal event. Moderators are decided by the caller. */
+	public boolean isOwnedBy(String userId) {
+		return this.kind == EventKind.OWN && userId != null && userId.equals(this.ownerUserId);
+	}
+
+	/**
+	 * The owner names themselves anew on every save: a renamed person shows the
+	 * new name on events they edit afterwards.
+	 */
+	public void renameOrganizer(String name) {
+		this.organizer = requireText(name, "organizer");
+		this.searchText = SearchText.of(this.organizer, this.translations);
 	}
 
 	/** Records that a human looked at the source and it still says what we say. */
@@ -513,6 +604,26 @@ public class Event {
 		return Map.copyOf(this.translations);
 	}
 
+	public String getOwnerUserId() {
+		return this.ownerUserId;
+	}
+
+	public String getAuthorUserId() {
+		return this.authorUserId;
+	}
+
+	public String getOriginalLocale() {
+		return this.originalLocale;
+	}
+
+	public Instant getPublishedAt() {
+		return this.publishedAt;
+	}
+
+	public String getSuspensionReason() {
+		return this.suspensionReason;
+	}
+
 	public Instant getCreatedAt() {
 		return this.createdAt;
 	}
@@ -564,6 +675,14 @@ public class Event {
 		private final Map<String, EventTranslation> translations = new LinkedHashMap<>();
 
 		private final List<EventLink> links = new ArrayList<>();
+
+		private String ownerUserId;
+
+		private String authorUserId;
+
+		private String originalLocale;
+
+		private Instant publishedAt;
 
 		public Builder slug(String slug) {
 			this.slug = slug;
@@ -658,6 +777,21 @@ public class Event {
 		/** In the order given; the event puts event links before community links. */
 		public Builder link(EventLink link) {
 			this.links.add(link);
+			return this;
+		}
+
+		/** An own, personal event: owned and written by this person, in this language. */
+		public Builder ownedBy(String userId, String originalLocale) {
+			this.kind = EventKind.OWN;
+			this.ownerUserId = userId;
+			this.authorUserId = userId;
+			this.originalLocale = originalLocale;
+			return this;
+		}
+
+		/** Only read when the event is built published. */
+		public Builder publishedAt(Instant publishedAt) {
+			this.publishedAt = publishedAt;
 			return this;
 		}
 

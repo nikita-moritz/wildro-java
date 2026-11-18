@@ -2,6 +2,7 @@ package app.wildro.event.read;
 
 import app.wildro.event.domain.ActivityType;
 import app.wildro.event.domain.Difficulty;
+import app.wildro.event.domain.EventKind;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -31,5 +32,9 @@ public record EventCard(
 		String coverCredit,
 		/** The regular adult price, zero when free; both null when the source names none. */
 		BigDecimal priceAmount,
-		String priceCurrency) {
+		String priceCurrency,
+		/** OWN shows "organiser on wildro", EXTERNAL "from the source" (SPEC.md §18.2). */
+		EventKind kind,
+		/** The language an own event was written in; null for an external one. */
+		String originalLocale) {
 }

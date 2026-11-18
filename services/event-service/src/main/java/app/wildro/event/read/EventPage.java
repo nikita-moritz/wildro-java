@@ -2,6 +2,7 @@ package app.wildro.event.read;
 
 import app.wildro.event.domain.ActivityType;
 import app.wildro.event.domain.Difficulty;
+import app.wildro.event.domain.EventKind;
 import app.wildro.event.domain.EventStatus;
 import app.wildro.event.domain.LinkNetwork;
 
@@ -46,6 +47,10 @@ public record EventPage(
 		Price price,
 		List<Link> eventLinks,
 		List<Link> communityLinks,
+		/** OWN: organised on wildro, no source to link out to (SPEC.md §18.2). */
+		EventKind kind,
+		/** The language an own event was written in; null for an external one. */
+		String originalLocale,
 		Instant updatedAt) {
 
 	public record Link(LinkNetwork network, String url) {

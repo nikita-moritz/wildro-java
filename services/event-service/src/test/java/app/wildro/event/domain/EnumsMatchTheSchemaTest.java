@@ -35,9 +35,10 @@ class EnumsMatchTheSchemaTest {
 
 	private static final String EVENTS = "db/migration/V2__event.sql";
 
-	private static final String AUDIT = "db/migration/V3__passes_at_and_audit_log.sql";
-
 	private static final String LINKS = "db/migration/V4__event_links.sql";
+
+	/** Redefines the status and both audit constraints; the latest definition is the one that holds. */
+	private static final String STAGE_TWO = "db/migration/V9__own_events_and_reports.sql";
 
 	private static final JsonNode IMPORT_SCHEMA = JsonMapper.builder().build().readTree(resource(ImportSchema.LOCATION));
 
@@ -61,14 +62,15 @@ class EnumsMatchTheSchemaTest {
 	}
 
 	/**
-	 * The import schema offers every status but one on purpose: cancelling is a
-	 * separate command and never a value in a document (SPEC.md §0.1).
+	 * The import schema offers every status but two on purpose: cancelling is a
+	 * separate command (SPEC.md §0.1) and suspension a moderation decision
+	 * (§18.2), never a value in a document.
 	 */
 	@Test
 	void statusesMatch() {
-		assertThat(constraintValues(EVENTS, "events_status_known")).isEqualTo(namesOf(EventStatus.values()));
+		assertThat(constraintValues(STAGE_TWO, "events_status_known")).isEqualTo(namesOf(EventStatus.values()));
 		assertThat(importEnum("status"))
-				.isEqualTo(namesOf(EnumSet.complementOf(EnumSet.of(EventStatus.CANCELLED)).toArray(new EventStatus[0])));
+				.isEqualTo(namesOf(EnumSet.complementOf(EnumSet.of(EventStatus.CANCELLED, EventStatus.SUSPENDED)).toArray(new EventStatus[0])));
 	}
 
 	/** The document names the scopes in lower case, as keys of its links object. */
@@ -91,12 +93,12 @@ class EnumsMatchTheSchemaTest {
 
 	@Test
 	void auditActionsMatch() {
-		assertThat(constraintValues(AUDIT, "audit_log_action_known")).isEqualTo(namesOf(AuditAction.values()));
+		assertThat(constraintValues(STAGE_TWO, "audit_log_action_known")).isEqualTo(namesOf(AuditAction.values()));
 	}
 
 	@Test
 	void auditChannelsMatch() {
-		assertThat(constraintValues(AUDIT, "audit_log_channel_known")).isEqualTo(namesOf(AuditChannel.values()));
+		assertThat(constraintValues(STAGE_TWO, "audit_log_channel_known")).isEqualTo(namesOf(AuditChannel.values()));
 	}
 
 	private static Set<String> importEnum(String property) {

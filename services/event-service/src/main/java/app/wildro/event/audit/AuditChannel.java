@@ -7,6 +7,9 @@ package app.wildro.event.audit;
 public enum AuditChannel {
 
 	CLI,
-	PANEL
+	PANEL,
+
+	/** A signed-in person through the site (stage two, SPEC.md §18.2). */
+	WEB
 
 }

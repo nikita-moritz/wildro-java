@@ -33,7 +33,7 @@ interface EventReadRepository extends Repository<Event, Long> {
 				e.slug, t.name, t.placeName, e.activityType, e.difficulty, e.startsAt, e.endsAt,
 				e.organizer, e.distanceKm, e.elevationGainM, e.coverImageUrl,
 				concat(e.coverCredit.author, ', ', e.coverCredit.license),
-				e.price.amount, e.price.currency)
+				e.price.amount, e.price.currency, e.kind, e.originalLocale)
 			from Event e join e.translations t
 			where key(t) = :locale and e.id in :ids
 			order by e.startsAt asc, e.id asc

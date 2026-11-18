@@ -3,10 +3,12 @@ package app.wildro.event;
 import app.wildro.event.cli.EventCli;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 
 import java.util.Arrays;
 
 @SpringBootApplication
+@ConfigurationPropertiesScan
 public class EventServiceApplication {
 
 	/**

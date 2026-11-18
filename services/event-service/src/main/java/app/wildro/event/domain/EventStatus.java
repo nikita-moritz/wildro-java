@@ -21,6 +21,13 @@ public enum EventStatus {
 	 * year SPEC.md §0.3 promises, leaves the upcoming feed, and says so in its
 	 * machine-readable data.
 	 */
-	CANCELLED
+	CANCELLED,
+
+	/**
+	 * Taken down by moderation after a report (SPEC.md §18.2). Off every public
+	 * list and off its own address, unlike a cancellation; the owner sees why.
+	 * A moderator can put it back.
+	 */
+	SUSPENDED
 
 }

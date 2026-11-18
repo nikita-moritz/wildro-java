@@ -160,14 +160,36 @@ class EventTest {
 
 	@Test
 	void capacityIsVisibleOnAnOwnEvent() {
-		Event event = valid().kind(EventKind.OWN).source(null, null).maxParticipants(12).build();
+		Event event = valid().ownedBy("u1", "de").source(null, null).maxParticipants(12).build();
 
 		assertThat(event.getVisibleCapacity()).isEqualTo(12);
 	}
 
 	@Test
+	void anOwnEventNeedsItsOwnerAndAnExternalOneHasNone() {
+		assertThatThrownBy(() -> valid().kind(EventKind.OWN).source(null, null).build())
+				.isInstanceOf(InvalidEventException.class);
+		assertThatThrownBy(() -> valid().ownedBy("u1", "de").kind(EventKind.EXTERNAL).build())
+				.isInstanceOf(InvalidEventException.class);
+	}
+
+	@Test
+	void suspensionIsAModerationStepNotAStatusToWrite() {
+		assertThatThrownBy(() -> valid().status(EventStatus.SUSPENDED).build())
+				.isInstanceOf(InvalidEventException.class);
+		Event event = valid().status(EventStatus.PUBLISHED).build();
+		event.suspend("Spam");
+		assertThat(event.getStatus()).isEqualTo(EventStatus.SUSPENDED);
+		assertThatThrownBy(() -> event.checkRevisableTo(valid().status(EventStatus.PUBLISHED).build()))
+				.isInstanceOf(InvalidEventException.class);
+		event.reinstate();
+		assertThat(event.getStatus()).isEqualTo(EventStatus.PUBLISHED);
+		assertThat(event.getSuspensionReason()).isNull();
+	}
+
+	@Test
 	void onlyAnExternalEventHasASourceToCheck() {
-		Event own = valid().kind(EventKind.OWN).source(null, null).build();
+		Event own = valid().ownedBy("u1", "de").source(null, null).build();
 
 		assertThatThrownBy(() -> own.markSourceChecked(Instant.now()))
 				.isInstanceOf(IllegalStateException.class);

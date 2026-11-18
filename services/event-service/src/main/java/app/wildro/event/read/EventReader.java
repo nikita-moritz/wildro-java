@@ -24,7 +24,8 @@ import java.util.Optional;
  * What the public may see is decided here once. The feed and the map carry only
  * what is published and still ahead. A single page is reachable while published
  * or cancelled, past or not, because a cancelled or past page keeps its address
- * for a year (SPEC.md §0.3); a draft is not public and does not exist here.
+ * for a year (SPEC.md §0.3); a draft is not public and a suspended event was
+ * taken down, so neither exists here.
  * <p>
  * The Specification step runs through the domain repository, read-only. The
  * public slice's own repository deliberately does not extend
@@ -86,7 +87,9 @@ public class EventReader {
 	@Transactional(readOnly = true)
 	public Optional<EventPage> page(String slug, String locale) {
 		return this.read.findWithTranslationsBySlug(slug)
-				.filter(event -> event.getStatus() != EventStatus.DRAFT)
+				// Published or cancelled: a draft is not public yet, a suspended
+				// event was taken off the site by moderation (SPEC.md §18.2).
+				.filter(event -> event.getStatus() == EventStatus.PUBLISHED || event.getStatus() == EventStatus.CANCELLED)
 				.map(event -> toPage(event, locale));
 	}
 
@@ -117,6 +120,8 @@ public class EventReader {
 						: new EventPage.Price(event.getPrice().getAmount(), event.getPrice().getCurrency()),
 				links(event, LinkScope.EVENT),
 				links(event, LinkScope.COMMUNITY),
+				event.getKind(),
+				event.getOriginalLocale(),
 				event.getUpdatedAt());
 	}
 

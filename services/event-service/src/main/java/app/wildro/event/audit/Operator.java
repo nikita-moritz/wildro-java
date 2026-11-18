@@ -18,6 +18,14 @@ public record Operator(String name, String osUser, AuditChannel channel) {
 		name = name.strip();
 	}
 
+	/**
+	 * A signed-in person acting through the site. Their elvix id is the name; the
+	 * second field says it came over the network rather than from a server account.
+	 */
+	public static Operator web(String userId) {
+		return new Operator(userId, "web", AuditChannel.WEB);
+	}
+
 	/** The operator of a command-line run, with the account taken from the process. */
 	public static Operator cli(String name) {
 		return new Operator(name, System.getProperty("user.name"), AuditChannel.CLI);
