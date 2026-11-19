@@ -27,6 +27,12 @@ public class TestcontainersConfiguration {
 
 	@Bean
 	@Primary
+	app.wildro.community.internal.RecordingInvalidator recordingInvalidator() {
+		return new app.wildro.community.internal.RecordingInvalidator();
+	}
+
+	@Bean
+	@Primary
 	FakePeople fakePeople() {
 		return new FakePeople();
 	}

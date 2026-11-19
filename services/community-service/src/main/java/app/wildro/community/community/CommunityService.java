@@ -2,6 +2,7 @@ package app.wildro.community.community;
 
 import java.time.Clock;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -214,8 +215,11 @@ public class CommunityService {
 	 * closes when there is none. wildro cannot refuse a deletion.
 	 */
 	@Transactional
-	public void erase(String userId) {
+	public List<String> erase(String userId) {
+		List<String> changed = new ArrayList<>();
 		for (Views.Standing standing : this.store.standingsOf(userId)) {
+			// Every page of a group the person was in changes: at least its member count.
+			changed.add(standing.slug());
 			if (standing.role() == Role.OWNER && !"CLOSED".equals(standing.status())) {
 				var heir = this.store.longestAdmin(standing.id());
 				this.store.leave(standing.id(), userId);
@@ -230,6 +234,7 @@ public class CommunityService {
 				this.store.leave(standing.id(), userId);
 			}
 		}
+		return changed;
 	}
 
 	/** SUPERUSER, by a moderation decision (§18.4). */

@@ -5,14 +5,16 @@ import { z } from "zod";
 import { revalidateSecret } from "@/lib/env";
 
 /**
- * Called by the event service after a write, with the tags that write affects.
+ * Called by the event and community services after a write, with the tags it affects.
  * This is how a page changes when its data does, instead of waiting out a
  * timer (AGENTS.md: cache invalidation by tag is one contract).
  *
  * Only these shapes are accepted, so a caller holding the secret still cannot
- * flush arbitrary cache entries: the feed, the map, one event page.
+ * flush arbitrary cache entries: the feed, the map, one event page, the list of
+ * groups, one group's page. The community service calls it too, after an
+ * ownership change or a close it carried out on its own.
  */
-const TAG = /^(events:feed|events:map|event:[a-z0-9]+(-[a-z0-9]+)*)$/;
+const TAG = /^(events:feed|events:map|event:[a-z0-9]+(-[a-z0-9]+)*|communities:list|community:[a-z0-9]+(-[a-z0-9]+)*)$/;
 
 const bodySchema = z.object({
   tags: z.array(z.string().regex(TAG)).min(1).max(50),

@@ -52,10 +52,14 @@ class CommunityEventsTest {
 	@Autowired
 	private JdbcClient jdbc;
 
+	@Autowired
+	private app.wildro.event.internal.RecordingInvalidator cache;
+
 	@BeforeEach
 	void reset() {
 		this.communities.reset();
 		this.writers.reset();
+		this.cache.reset();
 		this.communities.community(7, "trailrunner-aachen", "Trailrunner Aachen", "ACTIVE");
 		this.communities.role("trailrunner-aachen", "admin", "ADMIN");
 		this.communities.role("trailrunner-aachen", "other-admin", "ADMIN");
@@ -94,6 +98,8 @@ class CommunityEventsTest {
 		this.consumers.consume("community-service",
 				List.of(new OutboxConsumers.Entry(1, "community.closed", "7", "{}", Instant.now().toString())));
 		this.mvc.perform(get("/v1/events/" + slug).param("locale", "de")).andExpect(jsonPath("$.status").value("CANCELLED"));
+		// The cached feed and the event's page are dropped, not left to expire.
+		assertThat(this.cache.tags()).containsExactlyInAnyOrder("events:feed", "event:" + slug);
 		assertThat(this.jdbc.sql("SELECT last_id FROM consumer_cursor WHERE source = 'community-service'")
 			.query(Long.class).single()).isEqualTo(1);
 	}

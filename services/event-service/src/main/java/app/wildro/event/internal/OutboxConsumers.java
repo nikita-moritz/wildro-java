@@ -4,6 +4,7 @@ import java.net.http.HttpClient;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -57,6 +58,8 @@ public class OutboxConsumers {
 
 	private final Clock clock;
 
+	private final CacheInvalidator cache;
+
 	private final RestClient users;
 
 	private final RestClient communities;
@@ -66,7 +69,8 @@ public class OutboxConsumers {
 	private final boolean communitiesConfigured;
 
 	OutboxConsumers(RestClient.Builder builder, JdbcClient jdbc, EventRepository events, AuditRecorder audit,
-			TransactionTemplate transactions, Clock clock, @Value("${wildro.users.base-url:}") String usersUrl,
+			TransactionTemplate transactions, Clock clock, CacheInvalidator cache,
+			@Value("${wildro.users.base-url:}") String usersUrl,
 			@Value("${wildro.communities.base-url:}") String communitiesUrl,
 			@Value("${wildro.internal-token:}") String token) {
 		this.jdbc = jdbc;
@@ -74,6 +78,7 @@ public class OutboxConsumers {
 		this.audit = audit;
 		this.transactions = transactions;
 		this.clock = clock;
+		this.cache = cache;
 		boolean tokenSet = token.length() >= 32;
 		this.usersConfigured = tokenSet && !usersUrl.isBlank();
 		this.communitiesConfigured = tokenSet && !communitiesUrl.isBlank();
@@ -112,22 +117,31 @@ public class OutboxConsumers {
 		}
 	}
 
-	/** Applies each entry and moves the cursor past it, one transaction per entry. */
+	/**
+	 * Applies each entry and moves the cursor past it, one transaction per entry,
+	 * then tells the frontend which pages went stale, once the change committed.
+	 */
 	public void consume(String source, List<Entry> entries) {
 		for (Entry entry : entries) {
-			this.transactions.executeWithoutResult((status) -> {
-				switch (entry.type()) {
+			List<String> touched = this.transactions.execute((status) -> {
+				List<String> slugs = switch (entry.type()) {
 					case "user.erased" -> userErased(entry.subject());
 					case "community.closed" -> communityClosed(Long.parseLong(entry.subject()));
-					default -> {
-						// Unknown types are skipped, so a producer can add one without breaking us.
-					}
-				}
+					// Unknown types are skipped, so a producer can add one without breaking us.
+					default -> List.of();
+				};
 				this.jdbc.sql("""
 						INSERT INTO consumer_cursor (source, last_id) VALUES (:s, :id)
 						ON CONFLICT (source) DO UPDATE SET last_id = EXCLUDED.last_id
 						""").param("s", source).param("id", entry.id()).update();
+				return slugs;
 			});
+			if (touched != null && !touched.isEmpty()) {
+				List<String> tags = new ArrayList<>();
+				tags.add("events:feed");
+				touched.forEach((slug) -> tags.add("event:" + slug));
+				this.cache.invalidate(tags);
+			}
 		}
 	}
 
@@ -139,8 +153,10 @@ public class OutboxConsumers {
 			.orElse(0L);
 	}
 
-	private void userErased(String userId) {
+	/** @return the events whose page changed */
+	private List<String> userErased(String userId) {
 		Instant now = this.clock.instant();
+		List<String> touched = new ArrayList<>();
 		for (Event event : this.events.findAll((root, query, cb) -> cb.or(cb.equal(root.get("ownerUserId"), userId),
 				cb.equal(root.get("authorUserId"), userId)))) {
 			if (userId.equals(event.getOwnerUserId()) && !event.hasPassed(now)
@@ -149,18 +165,24 @@ public class OutboxConsumers {
 				this.audit.record(SYSTEM, AuditAction.EVENT_CANCELLED, event, Map.of("cause", "owner account deleted"));
 			}
 			event.eraseAuthor();
+			touched.add(event.getSlug());
 		}
+		return touched;
 	}
 
-	private void communityClosed(long communityId) {
+	/** @return the events whose page changed */
+	private List<String> communityClosed(long communityId) {
 		Instant now = this.clock.instant();
+		List<String> touched = new ArrayList<>();
 		for (Event event : this.events.findAll((root, query, cb) -> cb.equal(root.get("ownerCommunityId"), communityId))) {
 			if (!event.hasPassed(now)
 					&& (event.getStatus() == EventStatus.DRAFT || event.getStatus() == EventStatus.PUBLISHED)) {
 				event.cancel();
 				this.audit.record(SYSTEM, AuditAction.EVENT_CANCELLED, event, Map.of("cause", "community closed"));
+				touched.add(event.getSlug());
 			}
 		}
+		return touched;
 	}
 
 	public record Entry(long id, String type, String subject, String payload, String createdAt) {

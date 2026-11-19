@@ -15,6 +15,12 @@ public class OwnTestConfiguration {
 
 	@Bean
 	@Primary
+	app.wildro.event.internal.RecordingInvalidator recordingInvalidator() {
+		return new app.wildro.event.internal.RecordingInvalidator();
+	}
+
+	@Bean
+	@Primary
 	FakeCommunities fakeCommunities() {
 		return new FakeCommunities();
 	}

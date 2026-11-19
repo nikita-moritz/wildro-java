@@ -2,6 +2,7 @@ package app.wildro.community.internal;
 
 import java.net.http.HttpClient;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -38,14 +39,17 @@ class UserErasureConsumer {
 
 	private final TransactionTemplate transactions;
 
+	private final CacheInvalidator cache;
+
 	private final boolean configured;
 
 	UserErasureConsumer(RestClient.Builder builder, JdbcClient jdbc, CommunityService communities,
-			TransactionTemplate transactions, @Value("${wildro.users.base-url:}") String baseUrl,
+			TransactionTemplate transactions, CacheInvalidator cache, @Value("${wildro.users.base-url:}") String baseUrl,
 			@Value("${wildro.internal-token:}") String token) {
 		this.jdbc = jdbc;
 		this.communities = communities;
 		this.transactions = transactions;
+		this.cache = cache;
 		this.configured = !baseUrl.isBlank() && token.length() >= 32;
 		JdkClientHttpRequestFactory factory = new JdkClientHttpRequestFactory(
 				HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(2)).build());
@@ -81,15 +85,20 @@ class UserErasureConsumer {
 	/** Applies each entry and moves the cursor past it, one transaction per entry. */
 	void consume(List<Entry> entries) {
 		for (Entry entry : entries) {
-			this.transactions.executeWithoutResult((status) -> {
-				if ("user.erased".equals(entry.type())) {
-					this.communities.erase(entry.subject());
-				}
+			List<String> changed = this.transactions.execute((status) -> {
+				List<String> slugs = "user.erased".equals(entry.type()) ? this.communities.erase(entry.subject())
+						: List.<String>of();
 				this.jdbc.sql("""
 						INSERT INTO consumer_cursor (source, last_id) VALUES (:s, :id)
 						ON CONFLICT (source) DO UPDATE SET last_id = EXCLUDED.last_id
 						""").param("s", SOURCE).param("id", entry.id()).update();
+				return slugs;
 			});
+			if (changed != null && !changed.isEmpty()) {
+				List<String> tags = new ArrayList<>(List.of("communities:list"));
+				changed.forEach((slug) -> tags.add("community:" + slug));
+				this.cache.invalidate(tags);
+			}
 		}
 	}
 
