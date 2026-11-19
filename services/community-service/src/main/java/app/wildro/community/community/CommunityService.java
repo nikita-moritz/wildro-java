@@ -32,6 +32,9 @@ import app.wildro.community.people.Person;
 @Service
 public class CommunityService {
 
+	/** The moderation list is a search, not an archive: a longer one is narrowed by typing. */
+	private static final int MODERATED_AT_MOST = 100;
+
 	private final CommunityStore store;
 
 	private final PeopleDirectory people;
@@ -237,7 +240,20 @@ public class CommunityService {
 		return changed;
 	}
 
-	/** SUPERUSER, by a moderation decision (§18.4). */
+	/** The moderation list; names of owner and admins only for whoever may hand over ownership. */
+	@Transactional(readOnly = true)
+	public List<Views.Moderated> moderated(String query, boolean withLeaders) {
+		List<Views.Moderated> rows = this.store.moderated(query == null ? "" : query, MODERATED_AT_MOST);
+		if (!withLeaders) {
+			return rows;
+		}
+		return rows.stream()
+			.map((row) -> new Views.Moderated(row.slug(), row.name(), row.area(), row.status(), row.suspensionReason(),
+					row.memberCount(), row.createdAt(), this.store.leaders(row.slug())))
+			.toList();
+	}
+
+	/** MODERATOR or SUPERUSER, by a moderation decision (§18.1, §18.4). */
 	@Transactional
 	public void suspend(String moderator, String slug, String reason) {
 		CommunityStore.Row row = this.store.find(slug).orElseThrow(() -> new CommunityRefusal(Code.NOT_FOUND, "no such community"));

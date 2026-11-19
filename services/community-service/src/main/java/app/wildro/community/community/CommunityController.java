@@ -8,12 +8,9 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,12 +19,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import app.wildro.community.people.PeopleUnavailableException;
-
 /**
  * {@code /v1/communities}: the list and the page are public (they are search
  * traffic, §18.3); everything else needs the person's elvix JWT and is decided
- * by {@link CommunityService}. Refusals are problem details with a {@code code}.
+ * by {@link CommunityService}. Refusals are problem details with a {@code code}
+ * ({@link Refusals}).
  */
 @RestController
 class CommunityController {
@@ -113,22 +109,6 @@ class CommunityController {
 	ResponseEntity<Void> close(@AuthenticationPrincipal Jwt token, @PathVariable String slug) {
 		this.service.close(token, slug);
 		return ResponseEntity.noContent().build();
-	}
-
-	@ExceptionHandler(CommunityRefusal.class)
-	ProblemDetail refused(CommunityRefusal refusal) {
-		ProblemDetail problem = ProblemDetail.forStatusAndDetail(refusal.code().status(), refusal.getMessage());
-		problem.setType(URI.create("https://java.wildro.app/problems/" + refusal.code().name().toLowerCase()));
-		problem.setProperty("code", refusal.code().name());
-		return problem;
-	}
-
-	@ExceptionHandler(PeopleUnavailableException.class)
-	ProblemDetail unavailable() {
-		ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.SERVICE_UNAVAILABLE,
-				"The account service did not answer. Nothing was written.");
-		problem.setProperty("code", "UNAVAILABLE");
-		return problem;
 	}
 
 	record RoleRequest(@NotNull Role role) {

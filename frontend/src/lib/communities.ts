@@ -154,6 +154,27 @@ export async function membersOf(jwt: string, slug: string): Promise<Member[] | n
   return parsed.success ? parsed.data : null;
 }
 
+export const moderatedSchema = z.object({
+  slug: z.string(),
+  name: z.string(),
+  area: z.string(),
+  status: z.enum(["ACTIVE", "SUSPENDED"]),
+  suspensionReason: z.string().nullable(),
+  memberCount: z.number().int(),
+  createdAt: z.string(),
+  // Filled for a superuser only: the people ownership can pass to.
+  leaders: z.array(memberSchema),
+});
+
+export type Moderated = z.infer<typeof moderatedSchema>;
+
+/** Communities moderation can act on, suspended first; null when the service did not answer or refused. */
+export async function moderatedCommunities(jwt: string, query: string): Promise<Moderated[] | null> {
+  const response = await callCommunityService("GET", `/v1/moderation/communities?q=${encodeURIComponent(query)}`, jwt);
+  const parsed = z.array(moderatedSchema).safeParse(response?.ok ? await response.json().catch(() => null) : null);
+  return parsed.success ? parsed.data : null;
+}
+
 /** A community changed: its page and the list drop their cached render; a close also changes the feed. */
 export function communityChanged(slug: string, feedToo = false) {
   revalidateTag(COMMUNITY_TAGS.page(slug), { expire: 0 });

@@ -192,6 +192,44 @@ public class CommunityStore {
 			.update();
 	}
 
+	/**
+	 * Communities moderation can act on: active and suspended, the suspended
+	 * first, then the newest. {@code query} matches name or address, blank
+	 * matches all.
+	 */
+	List<Views.Moderated> moderated(String query, int limit) {
+		String pattern = "%" + query.strip().toLowerCase().replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_") + "%";
+		return this.jdbc.sql("""
+				SELECT c.slug, c.name, c.area, c.status, c.suspension_reason, c.created_at, count(m.user_id) AS members
+				FROM communities c LEFT JOIN memberships m ON m.community_id = c.id
+				WHERE c.status IN ('ACTIVE', 'SUSPENDED')
+				  AND (lower(c.name) LIKE :pattern OR c.slug LIKE :pattern)
+				GROUP BY c.id
+				ORDER BY CASE c.status WHEN 'SUSPENDED' THEN 0 ELSE 1 END, c.created_at DESC, c.id DESC
+				LIMIT :limit
+				""")
+			.param("pattern", pattern)
+			.param("limit", limit)
+			.query((rs, n) -> new Views.Moderated(rs.getString("slug"), rs.getString("name"), rs.getString("area"),
+					rs.getString("status"), rs.getString("suspension_reason"), rs.getLong("members"),
+					rs.getTimestamp("created_at").toInstant(), List.of()))
+			.list();
+	}
+
+	/** The owner and the admins, owner first. */
+	List<Views.Member> leaders(String slug) {
+		return this.jdbc.sql("""
+				SELECT m.user_id, m.display_name, m.role, m.joined_at
+				FROM memberships m JOIN communities c ON c.id = m.community_id
+				WHERE c.slug = :slug AND m.role IN ('OWNER', 'ADMIN')
+				ORDER BY CASE m.role WHEN 'OWNER' THEN 0 ELSE 1 END, m.role_since, m.joined_at
+				""")
+			.param("slug", slug)
+			.query((rs, n) -> new Views.Member(rs.getString("user_id"), rs.getString("display_name"),
+					Role.valueOf(rs.getString("role")), rs.getTimestamp("joined_at").toInstant()))
+			.list();
+	}
+
 	/** The admin who has held the role longest, the heir when the owner's account is deleted (§18.1). */
 	Optional<String> longestAdmin(long community) {
 		return this.jdbc.sql("""

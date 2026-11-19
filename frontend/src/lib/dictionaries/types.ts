@@ -257,6 +257,18 @@ export interface Dictionary {
     reinstate: string;
     view: string;
     done: string;
+    tabReports: string;
+    tabCommunities: string;
+    communitiesLead: string;
+    communitiesEmpty: string;
+    search: string;
+    searchButton: string;
+    suspendedBadge: string;
+    communityReason: string;
+    transferTo: string;
+    transfer: string;
+    transferHint: string;
+    noAdmins: string;
   };
   report: {
     open: string;

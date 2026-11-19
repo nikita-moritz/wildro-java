@@ -22,6 +22,15 @@ public final class Views {
 	public record Standing(long id, String slug, String name, String status, Role role) {
 	}
 
+	/**
+	 * A community as moderation sees it (§18.4). {@code leaders} are the owner and
+	 * the admins, the only people ownership can pass to; they are filled for a
+	 * superuser only, a moderator decides without names.
+	 */
+	public record Moderated(String slug, String name, String area, String status, String suspensionReason,
+			long memberCount, Instant createdAt, List<Member> leaders) {
+	}
+
 	/** A member, as other members see them. */
 	public record Member(String userId, String displayName, Role role, Instant joinedAt) {
 	}

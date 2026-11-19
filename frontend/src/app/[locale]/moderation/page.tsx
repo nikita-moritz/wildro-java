@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { ModerationTabs } from "@/components/moderation/moderation-tabs";
 import { Notice } from "@/components/own/notice";
 import { Button } from "@/components/ui/button";
 import { getDictionary } from "@/lib/dictionaries";
@@ -42,6 +43,7 @@ export default async function ModerationPage({ params, searchParams }: PageProps
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-4 py-10">
       <h1 className="text-2xl font-semibold tracking-tight">{t.moderation.title}</h1>
+      <ModerationTabs locale={locale} t={t} current="reports" />
       <p className="text-sm text-muted-foreground">{t.moderation.lead}</p>
       <Notice text={query.done === "1" ? t.moderation.done : null} />
       <Notice text={typeof query.error === "string" ? t.own.errors.WRONG_STATE : null} tone="alert" />

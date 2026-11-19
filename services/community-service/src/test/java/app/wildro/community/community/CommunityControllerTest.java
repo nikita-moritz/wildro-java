@@ -156,13 +156,58 @@ class CommunityControllerTest {
 	}
 
 	@Test
-	void theSuperuserTakesACommunityOffTheSite() throws Exception {
+	void aModeratorTakesACommunityOffTheSiteAndPutsItBackWithAnAuditTrail() throws Exception {
 		create("owner", "Group");
-		this.mvc.perform(post("/v1/moderation/communities/group/suspend").with(person("mod", "moderator"))
-			.contentType(MediaType.APPLICATION_JSON).content("{\"reason\":\"Spam\"}")).andExpect(status().isForbidden());
-		this.mvc.perform(post("/v1/moderation/communities/group/suspend").with(person("root", "superuser"))
-			.contentType(MediaType.APPLICATION_JSON).content("{\"reason\":\"Spam\"}")).andExpect(status().isNoContent());
+		suspend("Spam", person("ada")).andExpect(status().isForbidden());
+		suspend(" ", person("mod", "moderator")).andExpect(status().isBadRequest());
+		suspend("Spam", person("mod", "moderator")).andExpect(status().isNoContent());
 		this.mvc.perform(get("/v1/communities/group")).andExpect(status().isNotFound());
+		join("ada").andExpect(status().isNotFound());
+		suspend("Again", person("mod", "moderator")).andExpect(jsonPath("$.code").value("WRONG_STATE"));
+
+		this.mvc.perform(post("/v1/moderation/communities/group/reinstate").with(person("mod", "moderator")))
+			.andExpect(status().isNoContent());
+		this.mvc.perform(get("/v1/communities/group")).andExpect(jsonPath("$.status").value("ACTIVE"));
+		assertThat(count("audit_log WHERE action IN ('COMMUNITY_SUSPENDED', 'COMMUNITY_REINSTATED') AND actor = 'mod'"))
+			.isEqualTo(2);
+	}
+
+	@Test
+	void theListPutsSuspendedFirstAndShowsNamesOnlyToTheSuperuser() throws Exception {
+		create("owner", "Group");
+		join("ada");
+		role("ada", "ADMIN", "owner");
+		create("other", "Wandertreff");
+		suspend("Spam", person("root", "superuser"));
+
+		this.mvc.perform(get("/v1/moderation/communities").with(person("ada"))).andExpect(status().isForbidden());
+		this.mvc.perform(get("/v1/moderation/communities").with(person("mod", "moderator")))
+			.andExpect(jsonPath("$.length()").value(2))
+			.andExpect(jsonPath("$[0].slug").value("group"))
+			.andExpect(jsonPath("$[0].status").value("SUSPENDED"))
+			.andExpect(jsonPath("$[0].suspensionReason").value("Spam"))
+			.andExpect(jsonPath("$[0].memberCount").value(2))
+			.andExpect(jsonPath("$[0].leaders.length()").value(0));
+		this.mvc.perform(get("/v1/moderation/communities").param("q", "WANDER").with(person("mod", "moderator")))
+			.andExpect(jsonPath("$.length()").value(1))
+			.andExpect(jsonPath("$[0].slug").value("wandertreff"));
+		this.mvc.perform(get("/v1/moderation/communities").with(person("root", "superuser")))
+			.andExpect(jsonPath("$[0].leaders.length()").value(2))
+			.andExpect(jsonPath("$[0].leaders[0].role").value("OWNER"))
+			.andExpect(jsonPath("$[0].leaders[1].userId").value("ada"));
+	}
+
+	@Test
+	void onlyTheSuperuserHandsOverOwnershipAndOnlyToAnAdmin() throws Exception {
+		create("owner", "Group");
+		join("ada");
+		moderationTransfer("ada", person("root", "superuser")).andExpect(jsonPath("$.code").value("TARGET_NOT_ADMIN"));
+		role("ada", "ADMIN", "owner");
+		moderationTransfer("ada", person("mod", "moderator")).andExpect(status().isForbidden());
+		moderationTransfer("ada", person("root", "superuser")).andExpect(status().isNoContent());
+		this.mvc.perform(get("/v1/communities/group/me").with(person("ada"))).andExpect(jsonPath("$.role").value("OWNER"));
+		this.mvc.perform(get("/v1/communities/group/me").with(person("owner"))).andExpect(jsonPath("$.role").value("ADMIN"));
+		assertThat(count("audit_log WHERE action = 'OWNERSHIP_TRANSFERRED' AND actor = 'root'")).isEqualTo(1);
 	}
 
 	@Test
@@ -195,6 +240,18 @@ class CommunityControllerTest {
 
 	private ResultActions transfer(String to) throws Exception {
 		return this.mvc.perform(post("/v1/communities/group/transfer").with(person("owner"))
+			.contentType(MediaType.APPLICATION_JSON)
+			.content("{\"userId\":\"" + to + "\"}"));
+	}
+
+	private ResultActions suspend(String reason, JwtRequestPostProcessor as) throws Exception {
+		return this.mvc.perform(post("/v1/moderation/communities/group/suspend").with(as)
+			.contentType(MediaType.APPLICATION_JSON)
+			.content("{\"reason\":\"" + reason + "\"}"));
+	}
+
+	private ResultActions moderationTransfer(String to, JwtRequestPostProcessor as) throws Exception {
+		return this.mvc.perform(post("/v1/moderation/communities/group/transfer").with(as)
 			.contentType(MediaType.APPLICATION_JSON)
 			.content("{\"userId\":\"" + to + "\"}"));
 	}

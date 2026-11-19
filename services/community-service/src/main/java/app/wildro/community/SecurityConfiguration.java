@@ -34,8 +34,12 @@ class SecurityConfiguration {
 			.permitAll()
 			.requestMatchers("/v1/communities", "/v1/communities/**", "/v1/me/communities")
 			.authenticated()
-			.requestMatchers("/v1/moderation/**")
+			// Ownership is the superuser's to move (§18.4); taking down and putting back
+			// is also the moderator's (§18.1, roles table).
+			.requestMatchers(HttpMethod.POST, "/v1/moderation/communities/*/transfer")
 			.hasRole("superuser")
+			.requestMatchers("/v1/moderation/**")
+			.hasAnyRole("moderator", "superuser")
 			.anyRequest()
 			.denyAll())
 			.oauth2ResourceServer((server) -> server.jwt(Customizer.withDefaults()))
