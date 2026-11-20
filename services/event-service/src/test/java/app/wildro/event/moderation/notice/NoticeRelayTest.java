@@ -27,6 +27,7 @@ import app.wildro.event.domain.EventRepository;
 import app.wildro.event.domain.EventStatus;
 import app.wildro.event.domain.EventTranslation;
 import app.wildro.event.domain.GeoPoints;
+import app.wildro.event.internal.OutboxConsumers;
 import app.wildro.event.moderation.ModerationService;
 import app.wildro.event.own.OwnTestConfiguration;
 
@@ -48,6 +49,9 @@ class NoticeRelayTest {
 	private JdbcClient jdbc;
 
 	@Autowired
+	private OutboxConsumers consumers;
+
+	@Autowired
 	private FakeMailer mailer;
 
 	@Autowired
@@ -56,6 +60,7 @@ class NoticeRelayTest {
 	@BeforeEach
 	void clean() {
 		this.jdbc.sql("DELETE FROM notice_outbox").update();
+		this.jdbc.sql("DELETE FROM consumer_cursor").update();
 		this.jdbc.sql("DELETE FROM reports").update();
 		this.jdbc.sql("DELETE FROM audit_log").update();
 		this.jdbc.sql("DELETE FROM events").update();
@@ -111,6 +116,37 @@ class NoticeRelayTest {
 		suspend(ownEvent("tour", "de"), "Spam");
 		assertThat(this.relay.deliver()).isZero();
 		assertThat(this.jdbc.sql("SELECT attempts FROM notice_outbox").query(Integer.class).single()).isZero();
+	}
+
+	@Test
+	void aSuspendedGroupsOwnerGetsTheReasonInTheGroupsLanguageExactlyOnce() {
+		this.contacts.emails.put("owner-1", "ada@example.org");
+		var entry = new OutboxConsumers.Entry(41, "community.suspended", "7",
+				"{\"ownerUserId\":\"owner-1\",\"name\":\"Trailrunner Aachen\",\"locale\":\"en\",\"reason\":\"Ads, not hikes.\"}",
+				Instant.now().toString());
+		this.consumers.consume("community-service", List.of(entry));
+		// Applied together with the cursor: the next pull starts after it.
+		assertThat(this.jdbc.sql("SELECT last_id FROM consumer_cursor WHERE source = 'community-service'")
+			.query(Long.class)
+			.single()).isEqualTo(41);
+
+		assertThat(this.relay.deliver()).isEqualTo(1);
+		assertThat(this.relay.deliver()).isZero();
+		FakeMailer.Sent mail = this.mailer.sent.get(0);
+		assertThat(mail.to()).isEqualTo("ada@example.org");
+		assertThat(mail.subject()).isEqualTo("Your group on wildro was removed: Trailrunner Aachen");
+		assertThat(mail.text()).contains("Ads, not hikes.").contains("/en/terms").doesNotContain("—").doesNotContain("–");
+	}
+
+	@Test
+	void aNoticeAboutAnEventThatNoLongerExistsIsClosedNotSentAsNull() {
+		this.contacts.emails.put("owner-1", "ada@example.org");
+		suspend(ownEvent("tour", "de"), "Spam");
+		this.jdbc.sql("DELETE FROM events").update();
+
+		assertThat(this.relay.deliver()).isZero();
+		assertThat(this.mailer.sent).isEmpty();
+		assertThat(this.jdbc.sql("SELECT abandoned_at IS NOT NULL FROM notice_outbox").query(Boolean.class).single()).isTrue();
 	}
 
 	private void suspend(Event event, String reason) {

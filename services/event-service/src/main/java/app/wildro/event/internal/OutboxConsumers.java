@@ -39,6 +39,8 @@ import app.wildro.event.domain.EventStatus;
  * event they wrote stops showing their name (§18.1).</li>
  * <li>community.closed: the community's future events are cancelled; pages stay
  * at their addresses, marked cancelled (§18.3).</li>
+ * <li>community.suspended: the owner's statement of reasons (DSA Art. 17) is
+ * queued for the notice relay, which already sends those of events.</li>
  * </ul>
  */
 @Component
@@ -127,6 +129,7 @@ public class OutboxConsumers {
 				List<String> slugs = switch (entry.type()) {
 					case "user.erased" -> userErased(entry.subject());
 					case "community.closed" -> communityClosed(Long.parseLong(entry.subject()));
+					case "community.suspended" -> communitySuspended(entry.payload());
 					// Unknown types are skipped, so a producer can add one without breaking us.
 					default -> List.of();
 				};
@@ -183,6 +186,21 @@ public class OutboxConsumers {
 			}
 		}
 		return touched;
+	}
+
+	/**
+	 * Queues the owner's statement of reasons for the relay that sends the event
+	 * notices. The payload is stored as it came: owner, group name, language and
+	 * reason. No page of this service changes.
+	 */
+	private List<String> communitySuspended(String payload) {
+		this.jdbc.sql("""
+				INSERT INTO notice_outbox (kind, recipient_user_id, payload)
+				SELECT 'COMMUNITY_SUSPENDED', p->>'ownerUserId', p
+				FROM (SELECT CAST(:payload AS jsonb) AS p) AS entry
+				WHERE p->>'ownerUserId' IS NOT NULL
+				""").param("payload", payload).update();
+		return List.of();
 	}
 
 	public record Entry(long id, String type, String subject, String payload, String createdAt) {

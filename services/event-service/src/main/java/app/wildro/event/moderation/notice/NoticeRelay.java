@@ -65,11 +65,13 @@ public class NoticeRelay {
 		}
 		Instant now = this.clock.instant();
 		List<Pending> pending = this.jdbc.sql("""
-				SELECT n.id, n.recipient_user_id, n.payload::text AS payload, n.attempts,
-				       e.original_locale, t.name
+				SELECT n.id, n.kind, n.recipient_user_id, n.payload::text AS payload, n.attempts,
+				       coalesce(e.original_locale, n.payload->>'locale') AS locale,
+				       coalesce(t.name, n.payload->>'name') AS name
 				FROM notice_outbox n
-				JOIN events e ON e.id = n.event_id
-				JOIN event_translations t ON t.event_id = e.id AND t.locale = coalesce(e.original_locale, 'de')
+				-- An event notice names its event; a group notice carries name and language itself.
+				LEFT JOIN events e ON e.id = n.event_id
+				LEFT JOIN event_translations t ON t.event_id = e.id AND t.locale = coalesce(e.original_locale, 'de')
 				WHERE n.sent_at IS NULL AND n.abandoned_at IS NULL
 				  AND (n.next_attempt_at IS NULL OR n.next_attempt_at <= :now)
 				ORDER BY n.id
@@ -77,11 +79,15 @@ public class NoticeRelay {
 				FOR UPDATE OF n SKIP LOCKED
 				""")
 			.param("now", Timestamp.from(now))
-			.query((rs, i) -> new Pending(rs.getLong("id"), rs.getString("recipient_user_id"), rs.getString("payload"),
-					rs.getInt("attempts"), rs.getString("original_locale"), rs.getString("name")))
+			.query((rs, i) -> new Pending(rs.getLong("id"), rs.getString("kind"), rs.getString("recipient_user_id"),
+					rs.getString("payload"), rs.getInt("attempts"), rs.getString("locale"), rs.getString("name")))
 			.list();
 		int sent = 0;
 		for (Pending notice : pending) {
+			if (notice.name() == null) {
+				abandon(notice.id(), "what the notice is about no longer exists", now);
+				continue;
+			}
 			try {
 				Optional<String> to = this.contacts.emailOf(notice.recipient());
 				if (to.isEmpty()) {
@@ -89,8 +95,10 @@ public class NoticeRelay {
 					continue;
 				}
 				String reason = this.json.readTree(notice.payload()).get("reason").asString();
-				NoticeText.Mail mail = NoticeText.suspended(notice.locale(), notice.eventName(),
-						this.siteUrl + "/" + (notice.locale() == null ? "de" : notice.locale()) + "/terms", reason);
+				String terms = this.siteUrl + "/" + (notice.locale() == null ? "de" : notice.locale()) + "/terms";
+				NoticeText.Mail mail = "COMMUNITY_SUSPENDED".equals(notice.kind())
+						? NoticeText.communitySuspended(notice.locale(), notice.name(), terms, reason)
+						: NoticeText.suspended(notice.locale(), notice.name(), terms, reason);
 				this.mailer.send(to.get(), mail.subject(), mail.text());
 				this.jdbc.sql("UPDATE notice_outbox SET sent_at = :at, attempts = attempts + 1 WHERE id = :id")
 					.param("at", Timestamp.from(now))
@@ -131,7 +139,7 @@ public class NoticeRelay {
 			.update();
 	}
 
-	record Pending(long id, String recipient, String payload, int attempts, String locale, String eventName) {
+	record Pending(long id, String kind, String recipient, String payload, int attempts, String locale, String name) {
 	}
 
 }

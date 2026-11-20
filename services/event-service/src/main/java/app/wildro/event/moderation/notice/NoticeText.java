@@ -62,4 +62,55 @@ final class NoticeText {
 		};
 	}
 
+	/** The same statement for a group: written in the group's language, sent to its owner. */
+	static Mail communitySuspended(String locale, String communityName, String termsUrl, String reason) {
+		return switch (locale == null ? "de" : locale) {
+			case "en" -> new Mail("Your group on wildro was removed: " + communityName, """
+					Hello,
+
+					we have removed your group "%s" from wildro. It is no longer shown in the list of groups or at its address, and nobody can join it.
+
+					Reason:
+					%s
+
+					The decision rests on our terms of use: %s
+					It was taken by a person from our moderation, not by an automated system.
+
+					If you disagree, reply to this email. We will review the decision again and tell you the outcome.
+
+					wildro
+					""".formatted(communityName, reason, termsUrl));
+			case "ru" -> new Mail("Твоя группа на wildro снята: " + communityName, """
+					Здравствуй,
+
+					мы сняли твою группу «%s» с wildro. Её больше нет в списке групп и по её адресу, вступить в неё нельзя.
+
+					Причина:
+					%s
+
+					Решение основано на правилах площадки: %s
+					Его принял человек из модерации, а не автоматическая система.
+
+					Если ты с решением не согласен или не согласна, ответь на это письмо. Мы пересмотрим решение и сообщим результат.
+
+					wildro
+					""".formatted(communityName, reason, termsUrl));
+			default -> new Mail("Deine Gruppe auf wildro wurde entfernt: " + communityName, """
+					Hallo,
+
+					wir haben deine Gruppe „%s“ von wildro entfernt. Sie erscheint nicht mehr in der Liste der Gruppen und unter ihrer Adresse, und niemand kann ihr beitreten.
+
+					Grund:
+					%s
+
+					Die Entscheidung stützt sich auf unsere Nutzungsregeln: %s
+					Getroffen hat sie ein Mensch aus unserer Moderation, kein automatisches System.
+
+					Bist du anderer Meinung, antworte auf diese E-Mail. Wir prüfen die Entscheidung erneut und teilen dir das Ergebnis mit.
+
+					wildro
+					""".formatted(communityName, reason, termsUrl));
+		};
+	}
+
 }
