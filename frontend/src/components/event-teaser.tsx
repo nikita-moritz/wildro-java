@@ -25,7 +25,7 @@ export function EventTeaser({ event, locale, t }: { event: EventCard; locale: Lo
       href={routes.event(locale, event.slug)}
       className="group relative flex flex-col overflow-hidden rounded-2xl border bg-card transition-all hover:border-primary/40 hover:shadow-lg focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
     >
-      <div className="relative h-40 overflow-hidden bg-linear-to-br from-primary/20 via-primary/5 to-transparent">
+      <div className="relative h-40 overflow-hidden bg-muted">
         {event.coverImageUrl ? (
           // A freely licensed photo in our own storage; its credit is the title and is in full on the event page.
           // eslint-disable-next-line @next/next/no-img-element

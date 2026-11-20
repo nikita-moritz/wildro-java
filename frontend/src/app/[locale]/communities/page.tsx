@@ -1,8 +1,10 @@
+import { Plus } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { SiteFooter } from "@/components/site-footer";
+import { Button } from "@/components/ui/button";
 import { listCommunities } from "@/lib/communities";
 import { getDictionary } from "@/lib/dictionaries";
 import { isLocale } from "@/lib/locales";
@@ -34,9 +36,18 @@ export default async function CommunitiesPage({ params, searchParams }: PageProp
   return (
     <>
       <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-4 py-10">
-        <div className="flex flex-col gap-2">
-          <h1 className="text-3xl font-semibold tracking-tight">{t.community.listTitle}</h1>
-          <p className="text-muted-foreground">{t.community.listLead}</p>
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div className="flex flex-col gap-2">
+            <h1 className="text-3xl font-semibold tracking-tight">{t.community.listTitle}</h1>
+            <p className="text-muted-foreground">{t.community.listLead}</p>
+          </div>
+          {/* The same for everyone, so the page stays one cached render; signed out, the editor sends on to sign-in. */}
+          <Button asChild size="touch">
+            <Link href={routes.newCommunity(locale)} prefetch={false}>
+              <Plus aria-hidden className="h-4 w-4" />
+              {t.community.newCommunity}
+            </Link>
+          </Button>
         </div>
         {list.items.length === 0 ? (
           <p className="text-sm text-muted-foreground">{t.community.listEmpty}</p>

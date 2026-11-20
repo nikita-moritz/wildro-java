@@ -32,11 +32,11 @@ import { cn } from "@/lib/utils";
  * itself up under it by that much.
  */
 
-type HeaderText = Pick<Dictionary, "site" | "nav">;
+type HeaderText = Pick<Dictionary, "site" | "nav" | "footer">;
 
 /** One island: the look every item of the bar shares. 44px to the touch on phones, 40px with a mouse. */
 const PILL =
-  "flex h-11 md:h-10 items-center rounded-full border bg-card/95 shadow-md backdrop-blur transition-colors focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none";
+  "flex h-11 lg:h-10 items-center rounded-full border bg-card/95 shadow-md backdrop-blur transition-colors focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none";
 
 export function SiteHeader({ locale, t }: { locale: Locale; t: HeaderText }) {
   return <SiteHeaderBar locale={locale} t={t} pathname={usePathname()} />;
@@ -88,7 +88,7 @@ export function SiteHeaderBar({ locale, t, pathname = "" }: { locale: Locale; t:
       onClick={close}
       className={cn(
         PILL,
-        "w-11 justify-center md:w-10",
+        "w-11 justify-center lg:w-10",
         accountActive ? "border-primary/30 bg-primary text-primary-foreground" : "text-foreground hover:bg-muted",
       )}
     >
@@ -120,7 +120,7 @@ export function SiteHeaderBar({ locale, t, pathname = "" }: { locale: Locale; t:
             </span>
           </Link>
 
-          <nav className="hidden items-center gap-2 md:flex">
+          <nav className="hidden items-center gap-2 lg:flex">
             {links.map(({ href, label, icon: Icon, active }) => (
               <Link
                 key={href}
@@ -140,7 +140,7 @@ export function SiteHeaderBar({ locale, t, pathname = "" }: { locale: Locale; t:
           </nav>
         </div>
 
-        <div className="pointer-events-auto hidden items-center gap-2 md:flex">
+        <div className="pointer-events-auto hidden items-center gap-2 lg:flex">
           {languageMenu("end")}
           <ThemeMenu t={t} align="end" />
           {accountLink}
@@ -151,7 +151,7 @@ export function SiteHeaderBar({ locale, t, pathname = "" }: { locale: Locale; t:
           aria-label={t.nav.menu}
           aria-expanded={open}
           onClick={() => setOpenOn(open ? null : pathname)}
-          className={cn(PILL, "pointer-events-auto w-11 justify-center text-foreground hover:bg-muted md:hidden")}
+          className={cn(PILL, "pointer-events-auto w-11 justify-center text-foreground hover:bg-muted lg:hidden")}
         >
           {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
@@ -159,7 +159,7 @@ export function SiteHeaderBar({ locale, t, pathname = "" }: { locale: Locale; t:
 
       {open && (
         // Over the page, not in its flow: opening the menu must not push the map or the list down.
-        <div className="pointer-events-auto absolute inset-x-3 top-full flex flex-col gap-2 rounded-2xl border bg-card/95 p-3 shadow-xl backdrop-blur md:hidden">
+        <div className="pointer-events-auto absolute inset-x-3 top-full flex flex-col gap-2 rounded-2xl border bg-card/95 p-3 shadow-xl backdrop-blur lg:hidden">
           {links.map(({ href, label, icon: Icon, active }) => (
             <Link
               key={href}
@@ -190,6 +190,18 @@ export function SiteHeaderBar({ locale, t, pathname = "" }: { locale: Locale; t:
             {languageMenu("start")}
             <ThemeMenu t={t} align="start" />
           </div>
+          {/* The imprint one tap away on every page (§ 5 DDG): on a phone the footer of a growing list is out of reach. */}
+          <nav aria-label={t.footer.legalNotice} className="flex flex-wrap gap-x-5 border-t pt-1 text-sm text-muted-foreground">
+            {[
+              { href: routes.legalNotice(locale), label: t.footer.legalNotice },
+              { href: routes.privacy(locale), label: t.footer.privacy },
+              { href: routes.terms(locale), label: t.footer.terms },
+            ].map(({ href, label }) => (
+              <Link key={href} href={href} onClick={close} className="flex min-h-11 items-center hover:text-foreground">
+                {label}
+              </Link>
+            ))}
+          </nav>
         </div>
       )}
     </header>
@@ -215,7 +227,7 @@ function ThemeMenu({ t, align }: { t: HeaderText; align: "start" | "end" }) {
       <DropdownMenuTrigger
         aria-label={label}
         title={label}
-        className={cn(PILL, "w-11 cursor-pointer justify-center text-foreground hover:bg-muted data-[state=open]:bg-muted md:w-10")}
+        className={cn(PILL, "w-11 cursor-pointer justify-center text-foreground hover:bg-muted data-[state=open]:bg-muted lg:w-10")}
       >
         <Icon className="h-4 w-4" />
       </DropdownMenuTrigger>

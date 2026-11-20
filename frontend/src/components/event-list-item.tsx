@@ -50,10 +50,10 @@ export function eventCardText(t: Dictionary): EventCardText {
 /**
  * One event of the events list, as a row or as a tile (SPEC.md §0.3.2).
  *
- * The row is the working version's: title, tags, a grid of facts. There is no
- * places bar (external events count no places) and the organiser shows for
- * everyone, as plain text from the source. The tile puts the event's photo on
- * top and keeps name, tags with the price, date and place.
+ * The row has the photo on the left, then title, tags and the facts; the tile
+ * puts the photo on top and keeps name, tags with the price, date and place.
+ * There is no places bar (external events count no places) and the organiser
+ * shows for everyone, as plain text from the source.
  *
  * Both are this one markup, switched by the `tiles:` CSS variant from the
  * attribute on <html> (lib/feed-view.ts), so changing the view re-renders
@@ -81,12 +81,12 @@ export function EventListItem({
 
   return (
     <li
-      className="fade-up group relative flex flex-col overflow-hidden rounded-xl border bg-card transition-all hover:border-primary/30 hover:bg-muted/30 focus-within:ring-2 focus-within:ring-ring/50"
+      className="fade-up group relative flex overflow-hidden rounded-xl border bg-card tiles:flex-col transition-all hover:border-primary/30 hover:bg-muted/30 focus-within:ring-2 focus-within:ring-ring/50"
       style={{ animationDelay: `${Math.min(index * 40, 300)}ms` }}
     >
       <Cover event={event} text={text} />
 
-      <div className="flex flex-1 flex-col p-4 tiles:p-3.5">
+      <div className="flex min-w-0 flex-1 flex-col p-3.5 sm:p-4 tiles:p-3.5">
         <h3 className="mb-2.5 text-sm leading-snug font-semibold tiles:line-clamp-2">
           <Link href={routes.event(locale, event.slug)} className="after:absolute after:inset-0 focus-visible:outline-none">
             <Highlighted text={event.name} words={words} />
@@ -112,7 +112,7 @@ export function EventListItem({
           <PriceBadge amount={event.priceAmount} currency={event.priceCurrency} locale={locale} labels={text.price} />
         </div>
 
-        <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 tiles:grid-cols-1">
+        <div className="grid grid-cols-1 gap-x-4 gap-y-1.5 sm:grid-cols-2 tiles:grid-cols-1">
           <Fact icon={Calendar}>
             {formatMediumDate(event.startsAt, locale)}
             {spansDays && event.endsAt && (
@@ -148,9 +148,8 @@ export function EventListItem({
 }
 
 /**
- * The tile's photo, hidden in the list. Lazy, so a list visitor's browser never
- * fetches it: an image that is not displayed never comes near the viewport.
- * Without a photo of its own an event shows its activity's stand-in, marked as
+ * The photo: a thumbnail on the left of a row, the top of a tile. Lazy, so the
+ * rows further down load as they come near. Without a photo of its own an event shows its activity's stand-in, marked as
  * such, as on the event page.
  */
 function Cover({ event, text }: { event: EventCard; text: EventCardText }) {
@@ -158,7 +157,7 @@ function Cover({ event, text }: { event: EventCard; text: EventCardText }) {
   const image = "h-full w-full object-cover transition-transform duration-500 group-hover:scale-105";
 
   return (
-    <div className="relative hidden aspect-video overflow-hidden bg-linear-to-br from-primary/20 via-primary/5 to-transparent tiles:block">
+    <div className="relative w-24 shrink-0 self-stretch overflow-hidden bg-muted sm:w-36 tiles:aspect-video tiles:w-full tiles:self-auto">
       {event.coverImageUrl ? (
         // A freely licensed photo in our own storage; its credit is the title and is in full on the event page.
         // eslint-disable-next-line @next/next/no-img-element
@@ -177,7 +176,7 @@ function Cover({ event, text }: { event: EventCard; text: EventCardText }) {
           <img
             src={standIn.small}
             srcSet={standIn.srcSet}
-            sizes="(min-width: 640px) 24rem, 100vw"
+            sizes="(min-width: 640px) 24rem, 50vw"
             width={standIn.width}
             height={standIn.height}
             alt=""
@@ -187,13 +186,13 @@ function Cover({ event, text }: { event: EventCard; text: EventCardText }) {
           />
           <span
             title={text.stockPhoto}
-            className="absolute bottom-2 left-2 rounded-md bg-background/85 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground backdrop-blur"
+            className="absolute bottom-1.5 left-1.5 rounded-md bg-background/85 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground backdrop-blur"
           >
             {text.stockPhotoShort}
           </span>
         </>
       ) : (
-        <LogoMark className="absolute -right-2 -bottom-4 h-32 w-32 bg-primary/15" />
+        <LogoMark className="absolute -right-2 -bottom-4 h-24 w-24 bg-primary/15 tiles:h-32 tiles:w-32" />
       )}
     </div>
   );
@@ -221,7 +220,7 @@ function Fact({
   className?: string;
 }) {
   return (
-    <div className={cn("flex min-w-0 items-start gap-1.5 text-xs text-muted-foreground", wide && "col-span-2", className)}>
+    <div className={cn("flex min-w-0 items-start gap-1.5 text-xs text-muted-foreground", wide && "sm:col-span-2", className)}>
       <Icon className="mt-px h-3.5 w-3.5 shrink-0 text-muted-foreground/60" />
       <span title={title} className={cn("min-w-0", lines === 1 ? "truncate" : "line-clamp-2 wrap-break-word")}>
         {children}

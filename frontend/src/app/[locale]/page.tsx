@@ -51,11 +51,6 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
     <>
       <main className="flex-1">
         <section className="relative overflow-hidden border-b">
-          {/* A soft glow instead of a photograph, as in the working version: events carry no photos yet. */}
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-x-0 -top-40 h-80 bg-[radial-gradient(60%_100%_at_50%_100%,color-mix(in_oklch,var(--primary)_18%,transparent),transparent)]"
-          />
           <div className="relative mx-auto w-full max-w-5xl px-4 pt-16 pb-16 sm:pt-24">
             <span className="inline-flex items-center gap-2 rounded-full border bg-card/60 px-3 py-1 text-xs font-medium text-muted-foreground backdrop-blur">
               <span className="relative flex h-2 w-2">

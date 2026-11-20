@@ -63,7 +63,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
   }
   const t = getDictionary(locale);
   // Only strings cross into the client header; the dictionary also holds functions.
-  const headerText = { site: { ...t.site, name: brand().name }, nav: t.nav };
+  const headerText = { site: { ...t.site, name: brand().name }, nav: t.nav, footer: t.footer };
 
   return (
     // next-themes sets the theme class before React hydrates, which React would

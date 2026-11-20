@@ -108,7 +108,12 @@ export default async function FeedPage({ params, searchParams }: PageProps<"/[lo
             floats as on the map (§ 5 DDG). Before the list in the markup, so the Tab
             key reaches it: after it, a growing list would keep it out of reach.
           */}
-          <LegalIsland locale={locale} t={t} className="legal-island fixed bottom-3 left-3 z-30" />
+          <LegalIsland
+            locale={locale}
+            t={t}
+            // Beside the column only where there is room for it; narrower screens have the links in the menu.
+            className="legal-island fixed bottom-3 left-3 z-30 hidden lg:flex lg:flex-col lg:gap-1 xl:flex-row xl:gap-4"
+          />
 
           {page > 1 && (
             <FeedPageLink href={routes.feed(locale, page - 1, filterQuery)} rel="prev" className="self-start">
