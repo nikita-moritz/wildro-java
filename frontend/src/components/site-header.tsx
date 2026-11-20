@@ -1,21 +1,25 @@
 "use client";
 
-import { List, Map as MapIcon, Menu, Monitor, Moon, Sun, UserRound, Users, X } from "lucide-react";
+import { Check, List, Map as MapIcon, Menu, Monitor, Moon, Sun, UserRound, Users, X } from "lucide-react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
 
+import { LanguageMenu } from "@/components/language-menu";
 import { LogoMark } from "@/components/logo-mark";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import type { Dictionary } from "@/lib/dictionaries";
-import { LOCALES, type Locale } from "@/lib/locales";
+import type { Locale } from "@/lib/locales";
 import { routes } from "@/lib/routes";
 import { useMounted } from "@/lib/use-mounted";
 import { cn } from "@/lib/utils";
 
 /**
- * The working version's navigation: logo, Map and Events, the language select,
- * the theme toggle and the account link, a hamburger on mobile.
+ * The working version's navigation: logo, Map, Events and Groups, the language menu,
+ * the theme menu and the account link, a hamburger on mobile. Language and theme
+ * are menus of the same kind, opening downwards; in the mobile panel the account
+ * is a labelled row like the sections, not a bare icon.
  *
  * The account link is the same for everyone and does not know whether anyone
  * is signed in: knowing would mean reading the session on every page, and
@@ -30,11 +34,9 @@ import { cn } from "@/lib/utils";
 
 type HeaderText = Pick<Dictionary, "site" | "nav">;
 
-const LABELS: Record<Locale, string> = { de: "DE", en: "EN", ru: "RU" };
-
-/** One island: the look every item of the bar shares. */
+/** One island: the look every item of the bar shares. 44px to the touch on phones, 40px with a mouse. */
 const PILL =
-  "flex h-10 items-center rounded-full border bg-card/95 shadow-md backdrop-blur transition-colors focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none";
+  "flex h-11 md:h-10 items-center rounded-full border bg-card/95 shadow-md backdrop-blur transition-colors focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none";
 
 export function SiteHeader({ locale, t }: { locale: Locale; t: HeaderText }) {
   return <SiteHeaderBar locale={locale} t={t} pathname={usePathname()} />;
@@ -42,8 +44,19 @@ export function SiteHeader({ locale, t }: { locale: Locale; t: HeaderText }) {
 
 /** The same bar before the path is known: rendered inside Suspense's fallback. */
 export function SiteHeaderBar({ locale, t, pathname = "" }: { locale: Locale; t: HeaderText; pathname?: string }) {
-  const router = useRouter();
-  const [open, setOpen] = useState(false);
+  // The mobile menu is open for the page it was opened on: any navigation closes it.
+  const [openOn, setOpenOn] = useState<string | null>(null);
+  const open = openOn === pathname;
+  const close = () => setOpenOn(null);
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+    const onKey = (event: KeyboardEvent) => event.key === "Escape" && setOpenOn(null);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
 
   const links = [
     { href: routes.map(locale), label: t.nav.map, icon: MapIcon, active: pathname.endsWith("/map") },
@@ -61,12 +74,9 @@ export function SiteHeaderBar({ locale, t, pathname = "" }: { locale: Locale; t:
     },
   ];
 
-  function switchLanguage(next: string) {
-    const rest = pathname.split("/").slice(2).join("/");
-    router.push(`/${next}${rest ? `/${rest}` : ""}`);
-  }
-
-  const accountActive = pathname.endsWith("/account") || pathname.endsWith("/sign-in");
+  const accountActive = ["/account", "/sign-in", "/moderation"].some(
+    (section) => pathname.endsWith(section) || pathname.includes(`${section}/`),
+  );
   const accountLink = (
     <Link
       href={routes.account(locale)}
@@ -75,9 +85,10 @@ export function SiteHeaderBar({ locale, t, pathname = "" }: { locale: Locale; t:
       aria-current={accountActive ? "page" : undefined}
       // A plain link, never prefetched: the page behind it reads the session.
       prefetch={false}
+      onClick={close}
       className={cn(
         PILL,
-        "w-10 justify-center",
+        "w-11 justify-center md:w-10",
         accountActive ? "border-primary/30 bg-primary text-primary-foreground" : "text-foreground hover:bg-muted",
       )}
     >
@@ -85,19 +96,15 @@ export function SiteHeaderBar({ locale, t, pathname = "" }: { locale: Locale; t:
     </Link>
   );
 
-  const languageSelect = (
-    <select
-      aria-label={t.nav.language}
-      value={locale}
-      onChange={(event) => switchLanguage(event.target.value)}
-      className={cn(PILL, "cursor-pointer appearance-none px-4 text-sm font-medium text-foreground hover:bg-muted")}
-    >
-      {LOCALES.map((each) => (
-        <option key={each} value={each}>
-          {LABELS[each]}
-        </option>
-      ))}
-    </select>
+  const languageMenu = (align: "start" | "end") => (
+    <LanguageMenu
+      align={align}
+      locale={locale}
+      pathname={pathname}
+      label={t.nav.language}
+      onNavigate={close}
+      className={cn(PILL, "cursor-pointer text-foreground hover:bg-muted data-[state=open]:bg-muted")}
+    />
   );
 
   return (
@@ -134,8 +141,8 @@ export function SiteHeaderBar({ locale, t, pathname = "" }: { locale: Locale; t:
         </div>
 
         <div className="pointer-events-auto hidden items-center gap-2 md:flex">
-          {languageSelect}
-          <ThemeToggle t={t} />
+          {languageMenu("end")}
+          <ThemeMenu t={t} align="end" />
           {accountLink}
         </div>
 
@@ -143,8 +150,8 @@ export function SiteHeaderBar({ locale, t, pathname = "" }: { locale: Locale; t:
           type="button"
           aria-label={t.nav.menu}
           aria-expanded={open}
-          onClick={() => setOpen(!open)}
-          className={cn(PILL, "pointer-events-auto w-10 justify-center text-foreground hover:bg-muted md:hidden")}
+          onClick={() => setOpenOn(open ? null : pathname)}
+          className={cn(PILL, "pointer-events-auto w-11 justify-center text-foreground hover:bg-muted md:hidden")}
         >
           {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
@@ -157,7 +164,7 @@ export function SiteHeaderBar({ locale, t, pathname = "" }: { locale: Locale; t:
             <Link
               key={href}
               href={href}
-              onClick={() => setOpen(false)}
+              onClick={close}
               aria-current={active ? "page" : undefined}
               className={cn(
                 "flex min-h-11 items-center gap-2 rounded-full border px-4 text-sm font-medium transition-colors",
@@ -167,10 +174,21 @@ export function SiteHeaderBar({ locale, t, pathname = "" }: { locale: Locale; t:
               <Icon className="h-4 w-4" /> {label}
             </Link>
           ))}
-          <div className="flex items-center gap-2 pt-1">
-            {languageSelect}
-            <ThemeToggle t={t} />
-            {accountLink}
+          <Link
+            href={routes.account(locale)}
+            prefetch={false}
+            onClick={close}
+            aria-current={accountActive ? "page" : undefined}
+            className={cn(
+              "flex min-h-11 items-center gap-2 rounded-full border px-4 text-sm font-medium transition-colors",
+              accountActive ? "border-primary/30 bg-primary text-primary-foreground" : "bg-card hover:bg-muted",
+            )}
+          >
+            <UserRound className="h-4 w-4" /> {t.nav.account}
+          </Link>
+          <div className="flex items-center gap-2 border-t pt-3">
+            {languageMenu("start")}
+            <ThemeMenu t={t} align="start" />
           </div>
         </div>
       )}
@@ -178,24 +196,44 @@ export function SiteHeaderBar({ locale, t, pathname = "" }: { locale: Locale; t:
   );
 }
 
-/** Cycles dark, light, system, as the working version does, and shows where it stands. */
-function ThemeToggle({ t }: { t: HeaderText }) {
+const THEMES = [
+  { value: "light", icon: Sun },
+  { value: "dark", icon: Moon },
+  { value: "system", icon: Monitor },
+] as const;
+
+/** Light, dark or as the device: a menu like the language one, the button shows what is set. */
+function ThemeMenu({ t, align }: { t: HeaderText; align: "start" | "end" }) {
   const { theme, setTheme } = useTheme();
   const mounted = useMounted();
-  const current = mounted ? theme : "system";
-  const next = current === "dark" ? "light" : current === "light" ? "system" : "dark";
-  const Icon = current === "dark" ? Sun : current === "light" ? Moon : Monitor;
-  const label = `${t.nav.theme.toggle}: ${t.nav.theme[next as "light" | "dark" | "system"]}`;
+  const current = THEMES.find((each) => each.value === (mounted ? theme : "system")) ?? THEMES[2];
+  const Icon = current.icon;
+  const label = `${t.nav.theme.toggle}: ${t.nav.theme[current.value]}`;
 
   return (
-    <button
-      type="button"
-      aria-label={label}
-      title={label}
-      onClick={() => setTheme(next)}
-      className={cn(PILL, "w-10 justify-center text-foreground hover:bg-muted")}
-    >
-      <Icon className="h-4 w-4" />
-    </button>
+    <DropdownMenu modal={false}>
+      <DropdownMenuTrigger
+        aria-label={label}
+        title={label}
+        className={cn(PILL, "w-11 cursor-pointer justify-center text-foreground hover:bg-muted data-[state=open]:bg-muted md:w-10")}
+      >
+        <Icon className="h-4 w-4" />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align={align}>
+        {THEMES.map(({ value, icon: ItemIcon }) => (
+          <DropdownMenuItem
+            key={value}
+            onSelect={() => setTheme(value)}
+            className={value === current.value ? "font-semibold" : undefined}
+          >
+            <span className="flex items-center gap-2">
+              <ItemIcon aria-hidden className="h-4 w-4 text-muted-foreground" />
+              {t.nav.theme[value]}
+            </span>
+            {value === current.value ? <Check aria-hidden className="h-4 w-4 text-primary" /> : null}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
