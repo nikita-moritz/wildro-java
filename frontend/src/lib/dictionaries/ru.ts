@@ -14,6 +14,7 @@ export const ru: Dictionary = {
     home: "Главная",
     language: "Язык",
     menu: "Меню",
+    back: "Назад",
     account: "Аккаунт",
     communities: "Группы",
     theme: { toggle: "Сменить тему", light: "Светлая", dark: "Тёмная", system: "Системная" },

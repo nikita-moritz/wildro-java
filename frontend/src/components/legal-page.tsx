@@ -7,15 +7,19 @@ export function LegalPage({
   title,
   subtitle,
   germanOnly,
+  back,
   children,
 }: {
   title: string;
   subtitle: string;
   germanOnly: string | null;
+  /** The way back up the site, drawn above the title. */
+  back?: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
     <div className="mx-auto flex max-w-2xl flex-col px-4 py-12">
+      {back}
       <h1 className="text-3xl font-semibold tracking-tight">{title}</h1>
       {germanOnly && (
         <p role="note" className="mt-4 rounded-lg bg-muted px-4 py-3 text-sm">

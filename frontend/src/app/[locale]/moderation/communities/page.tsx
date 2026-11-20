@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { BackLink } from "@/components/back-link";
 import { ModerationTabs } from "@/components/moderation/moderation-tabs";
 import { Notice } from "@/components/own/notice";
 import { Button } from "@/components/ui/button";
@@ -57,6 +58,7 @@ export default async function ModerateCommunitiesPage({ params, searchParams }: 
 
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-4 py-10">
+      <BackLink href={routes.account(locale)} label={t.nav.back} className="-mb-4" />
       <h1 className="text-2xl font-semibold tracking-tight">{m.title}</h1>
       <ModerationTabs locale={locale} t={t} current="communities" />
       <p className="text-sm text-muted-foreground">{m.communitiesLead}</p>

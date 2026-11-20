@@ -37,7 +37,7 @@ export function ReportForm({ slug, t }: { slug: string; t: Dictionary["report"] 
   }
   return (
     <details className="group text-sm">
-      <summary className="flex w-fit cursor-pointer items-center gap-1.5 text-muted-foreground hover:text-foreground">
+      <summary className="-ml-2 flex min-h-11 w-fit cursor-pointer items-center gap-1.5 rounded-full px-2 text-muted-foreground hover:text-foreground">
         <Flag className="h-3.5 w-3.5" />
         {t.open}
       </summary>

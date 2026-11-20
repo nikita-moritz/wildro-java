@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
+import { BackLink } from "@/components/back-link";
 import { MembershipIsland } from "@/components/community/membership-island";
 import { EventListItem, eventCardText } from "@/components/event-list-item";
 import { SiteFooter } from "@/components/site-footer";
@@ -53,6 +54,7 @@ export default async function CommunityPage({ params }: PageProps<"/[locale]/com
   return (
     <>
       <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-4 py-10">
+        <BackLink href={routes.communities(locale)} label={t.nav.back} className="-mb-4" />
         <div className="flex flex-col gap-2">
           <h1 lang={community.locale} className="text-3xl font-semibold tracking-tight">
             {community.name}

@@ -290,7 +290,7 @@ export function FiltersPanel({
           </fieldset>
         )}
 
-        <Button type="submit" className="w-full gap-2" disabled={pending}>
+        <Button type="submit" size="touch" className="w-full" disabled={pending}>
           {pending && <Loader2 className="h-4 w-4 animate-spin" />}
           {t.apply}
         </Button>

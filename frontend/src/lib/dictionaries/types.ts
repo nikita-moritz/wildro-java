@@ -29,6 +29,7 @@ export interface Dictionary {
     home: string;
     language: string;
     menu: string;
+    back: string;
     account: string;
     communities: string;
     theme: { toggle: string; light: string; dark: string; system: string };

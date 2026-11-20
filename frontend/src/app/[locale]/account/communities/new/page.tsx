@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { BackLink } from "@/components/back-link";
 import { CommunityEditor } from "@/components/community/community-editor";
 import { Notice } from "@/components/own/notice";
 import { getDictionary } from "@/lib/dictionaries";
@@ -35,9 +35,7 @@ export default async function NewCommunityPage({ params }: PageProps<"/[locale]/
         : null;
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-4 py-10">
-      <Link href={routes.myCommunities(locale)} className="text-sm text-muted-foreground hover:text-foreground">
-        {t.community.back}
-      </Link>
+      <BackLink href={routes.myCommunities(locale)} label={t.community.back} />
       <h1 className="text-2xl font-semibold tracking-tight">{t.community.editorNew}</h1>
       {blocker ? (
         <Notice text={blocker} tone="alert" />

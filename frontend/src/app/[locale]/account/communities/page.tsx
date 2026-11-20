@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { BackLink } from "@/components/back-link";
 import { Notice } from "@/components/own/notice";
 import { Button } from "@/components/ui/button";
 import { myCommunities } from "@/lib/communities";
@@ -31,9 +32,7 @@ export default async function MyCommunitiesPage({ params }: PageProps<"/[locale]
 
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-4 py-10">
-      <Link href={routes.account(locale)} className="text-sm text-muted-foreground hover:text-foreground">
-        {t.community.back}
-      </Link>
+      <BackLink href={routes.account(locale)} label={t.community.back} />
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-semibold tracking-tight">{t.community.myTitle}</h1>
         <Button asChild className="h-11">

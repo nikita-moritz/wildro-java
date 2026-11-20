@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
+import { BackLink } from "@/components/back-link";
 import { LegalLink, LegalPage, LegalSection } from "@/components/legal-page";
 import { MapConsentWithdraw } from "@/components/map-consent";
 import { SiteFooter } from "@/components/site-footer";
@@ -42,6 +43,7 @@ export default async function PrivacyPage({ params }: PageProps<"/[locale]/priva
           title={t.legal.privacyTitle}
           subtitle={`Stand: ${LEGAL_TEXTS_AS_OF}`}
           germanOnly={t.legal.germanOnly}
+          back={<BackLink href={routes.home(locale)} label={t.nav.back} />}
         >
           <LegalSection heading="1. Verantwortlicher">
             <p>

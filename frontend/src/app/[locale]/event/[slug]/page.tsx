@@ -1,5 +1,4 @@
 import {
-  ArrowLeft,
   ArrowRight,
   Calendar,
   ExternalLink,
@@ -16,6 +15,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
 import { ACTIVITY_ICON, DIFFICULTY_STYLE } from "@/components/activity";
+import { BackLink } from "@/components/back-link";
 import { PriceBadge } from "@/components/price-badge";
 import { EventLinks } from "@/components/event-links";
 import { ReportForm } from "@/components/report-form";
@@ -119,13 +119,7 @@ export default async function EventPageRoute({ params }: PageProps<"/[locale]/ev
             dangerouslySetInnerHTML={{ __html: serialiseJsonLd(jsonLd(event, locale, t)) }}
           />
 
-          <Link
-            href={routes.feed(locale)}
-            className="flex w-fit items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            {t.event.back}
-          </Link>
+          <BackLink href={routes.feed(locale)} label={t.event.back} />
 
           <h1 lang={textLang} className="text-2xl leading-tight font-bold">
             {event.name}
@@ -317,7 +311,7 @@ export default async function EventPageRoute({ params }: PageProps<"/[locale]/ev
                 {event.sourceCheckedAt && t.event.lastChecked(formatDay(event.sourceCheckedAt, locale))}
               </p>
               {/* nofollow: the link is attribution and the way to sign up, not an endorsement. */}
-              <Button asChild className="w-full gap-2">
+              <Button asChild size="touch" className="w-full">
                 <a href={event.sourceUrl} target="_blank" rel="nofollow noopener noreferrer">
                   {t.event.toSource}
                   <ExternalLink className="h-4 w-4" />

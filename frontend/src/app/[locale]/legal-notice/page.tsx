@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
+import { BackLink } from "@/components/back-link";
 import { LegalLink, LegalPage, LegalSection } from "@/components/legal-page";
 import { SiteFooter } from "@/components/site-footer";
 import { getDictionary } from "@/lib/dictionaries";
@@ -31,7 +32,8 @@ export default async function LegalNoticePage({ params }: PageProps<"/[locale]/l
   return (
     <>
       <main className="flex-1">
-        <LegalPage title={t.legal.legalNoticeTitle} subtitle="Angaben gemäß § 5 DDG" germanOnly={t.legal.germanOnly}>
+        <LegalPage title={t.legal.legalNoticeTitle} subtitle="Angaben gemäß § 5 DDG" germanOnly={t.legal.germanOnly}
+          back={<BackLink href={routes.home(locale)} label={t.nav.back} />}>
           <LegalSection heading="Diensteanbieter">
             <p className="whitespace-pre-line">
               {[OPERATOR.name, OPERATOR.street, OPERATOR.city, OPERATOR.country].join("\n")}

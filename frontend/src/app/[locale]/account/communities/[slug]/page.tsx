@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { BackLink } from "@/components/back-link";
 import { CommunityEditor } from "@/components/community/community-editor";
 import { Notice } from "@/components/own/notice";
 import { Button } from "@/components/ui/button";
@@ -70,9 +71,7 @@ export default async function ManageCommunityPage({ params, searchParams }: Page
 
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-8 px-4 py-10">
-      <Link href={routes.myCommunities(locale)} className="text-sm text-muted-foreground hover:text-foreground">
-        {c.back}
-      </Link>
+      <BackLink href={routes.myCommunities(locale)} label={c.back} />
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-semibold tracking-tight">{community.name}</h1>
         <span className="rounded-full border px-3 py-1 text-sm">{c[`role${role}`]}</span>

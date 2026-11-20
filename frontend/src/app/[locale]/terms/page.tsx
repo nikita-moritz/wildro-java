@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { BackLink } from "@/components/back-link";
 import { SiteFooter } from "@/components/site-footer";
 import { getDictionary } from "@/lib/dictionaries";
 import { isLocale } from "@/lib/locales";
@@ -33,6 +34,7 @@ export default async function TermsPage({ params }: PageProps<"/[locale]/terms">
     <>
       <main className="flex-1">
         <div className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-12">
+          <BackLink href={routes.home(locale)} label={t.nav.back} className="-mb-4" />
           <h1 className="text-3xl font-semibold tracking-tight">{terms.title}</h1>
           <p className="text-sm text-muted-foreground">Stand: {TERMS_AS_OF}</p>
           {terms.note && (

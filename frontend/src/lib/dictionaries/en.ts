@@ -14,6 +14,7 @@ export const en: Dictionary = {
     home: "Home",
     language: "Language",
     menu: "Menu",
+    back: "Back",
     account: "Account",
     communities: "Groups",
     theme: { toggle: "Change theme", light: "Light", dark: "Dark", system: "System" },

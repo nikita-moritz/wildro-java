@@ -72,8 +72,8 @@ export function MapConsent({
         <h2 className="text-lg font-semibold">{t.title}</h2>
         <p className="text-sm leading-relaxed text-muted-foreground">{t.body}</p>
         <div className="mt-1 flex flex-wrap items-center gap-4">
-          <Button onClick={grant}>{t.button}</Button>
-          <Link href={privacyHref} className="text-sm text-muted-foreground underline-offset-2 hover:underline">
+          <Button size="touch" onClick={grant}>{t.button}</Button>
+          <Link href={privacyHref} className="flex min-h-11 items-center text-sm text-muted-foreground underline-offset-2 hover:underline">
             {t.privacyLink}
           </Link>
         </div>
