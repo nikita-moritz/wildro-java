@@ -173,6 +173,21 @@ class CommunityControllerTest {
 	}
 
 	@Test
+	void aSuspensionQueuesTheOwnersStatementOfReasonsInTheSameTransaction() throws Exception {
+		create("owner", "Group");
+		suspend("Werbung statt Wandern", person("mod", "moderator")).andExpect(status().isNoContent());
+
+		var payload = this.jdbc.sql("""
+				SELECT concat_ws('|', payload->>'ownerUserId', payload->>'name', payload->>'locale', payload->>'reason')
+				FROM outbox WHERE type = 'community.suspended'
+				""").query(String.class).single();
+		assertThat(payload).isEqualTo("owner|Group|de|Werbung statt Wandern");
+		// Refused, nothing written: no second notice for a second attempt.
+		suspend("Again", person("mod", "moderator")).andExpect(status().isConflict());
+		assertThat(count("outbox WHERE type = 'community.suspended'")).isEqualTo(1);
+	}
+
+	@Test
 	void theListPutsSuspendedFirstAndShowsNamesOnlyToTheSuperuser() throws Exception {
 		create("owner", "Group");
 		join("ada");

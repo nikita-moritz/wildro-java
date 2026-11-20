@@ -5,6 +5,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -262,6 +263,10 @@ public class CommunityService {
 		}
 		this.store.setStatus(row.id(), "SUSPENDED", reason.strip(), null);
 		this.store.audit(moderator, "COMMUNITY_SUSPENDED", row.id(), Map.of("reason", reason.strip()));
+		// The owner's statement of reasons (DSA Art. 17), delivered by the event
+		// service's notice relay. The address is looked up when it is sent, never here.
+		ownerOf(row.id()).ifPresent((owner) -> this.store.outbox("community.suspended", row.id(),
+				Map.of("ownerUserId", owner, "name", row.name(), "locale", row.locale(), "reason", reason.strip())));
 	}
 
 	@Transactional
@@ -278,9 +283,12 @@ public class CommunityService {
 	@Transactional
 	public void transferByModeration(String moderator, String slug, String toUserId) {
 		CommunityStore.Row row = this.store.find(slug).orElseThrow(() -> new CommunityRefusal(Code.NOT_FOUND, "no such community"));
-		String owner = this.store.members(row.id()).stream().filter((m) -> m.role() == Role.OWNER)
-			.map(Views.Member::userId).findFirst().orElse(null);
-		handOver(row.id(), owner, toUserId, moderator);
+		handOver(row.id(), ownerOf(row.id()).orElse(null), toUserId, moderator);
+	}
+
+	private Optional<String> ownerOf(long community) {
+		return this.store.members(community).stream().filter((m) -> m.role() == Role.OWNER)
+			.map(Views.Member::userId).findFirst();
 	}
 
 	private Person publisher(Jwt token) {
