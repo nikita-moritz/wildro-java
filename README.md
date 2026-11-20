@@ -95,6 +95,7 @@ never applied twice.
 |---|---|---|
 | `user.erased` | user-service, from elvix's deletion webhook | community-service: memberships go; an owned group passes to the longest-serving admin or closes. event-service: the person's future personal events are cancelled, their name leaves past ones |
 | `community.closed` | community-service | event-service: the group's future events are cancelled; pages stay at their addresses, marked cancelled |
+| `community.suspended` | community-service, on a moderator's decision | event-service: the owner's statement of reasons joins the queue of event notices and goes out by email in the group's language; the community service sends no mail itself |
 
 **Webhooks are verified on the raw body.** elvix signs `"<t>.<body>"` with
 HMAC-SHA256; the frontend forwards the bytes unchanged, the user service
