@@ -141,7 +141,7 @@ export const en: Dictionary = {
     YOGA: "Yoga",
     CAMPING: "Camping",
   },
-  install: { title: "Add wildro to your home screen", body: "One tap to outdoor events around Aachen, like an app.", iosBody: "Tap Share below, then “Add to Home Screen”.", install: "Install", close: "Close" },
+  install: { title: "Add wildro to your home screen", body: "One tap to outdoor events around Aachen, like an app.", iosSteps: ["Tap Share in the browser bar. In Safari 26 it sits in the “⋯” menu.", "Choose “Add to Home Screen”. If it is missing, tap “View More”.", "Tap “Add”."], install: "Install", gotIt: "Got it", close: "Close" },
   price: { free: "Free", paid: "Paid" },
   difficulty: {
     EASY: "Easy",

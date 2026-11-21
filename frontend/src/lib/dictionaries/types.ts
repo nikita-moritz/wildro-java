@@ -146,7 +146,7 @@ export interface Dictionary {
   /** The badge on a card and a page, and the filter's choices. */
   price: { free: string; paid: string };
   /** The offer to add wildro to a phone's home screen. */
-  install: { title: string; body: string; iosBody: string; install: string; close: string };
+  install: { title: string; body: string; iosSteps: [string, string, string]; install: string; gotIt: string; close: string };
   footer: {
     legalNotice: string;
     privacy: string;

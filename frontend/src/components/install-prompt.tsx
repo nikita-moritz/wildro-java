@@ -1,6 +1,6 @@
 "use client";
 
-import { Share, X } from "lucide-react";
+import { X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 // Chrome's install event; not in the DOM typings yet.
@@ -9,16 +9,20 @@ type InstallEvent = Event & { prompt: () => Promise<void> };
 export interface InstallText {
   title: string;
   body: string;
-  iosBody: string;
+  iosSteps: [string, string, string];
   install: string;
+  gotIt: string;
   close: string;
 }
 
 /**
  * "Add to home screen" on phones (app/manifest.ts makes the site installable),
  * taken over from evolution-space. Android and Chrome hand over their install
- * event, so the button opens the system dialog; iOS has no such API, so Safari
- * visitors get the two taps to do by hand. Shown a few seconds after load,
+ * event, so the button opens the system dialog. iOS has no such API, and a
+ * share sheet opened by the page lacks "Add to Home Screen" (only the browser's
+ * own one has it), so an iPhone gets the steps, numbered, and no button that
+ * pretends to install: the only button there closes the hint. A Share icon in
+ * the text used to look like that button and did nothing when tapped. Shown a few seconds after load,
  * never inside the installed app. Closing it holds for this visit only:
  * remembering it would write to the device, which the privacy policy does not
  * list.
@@ -44,9 +48,8 @@ export function InstallPrompt({ t, icon }: { t: InstallText; icon: string }) {
     };
     window.addEventListener("beforeinstallprompt", onPrompt);
 
-    // iPhone and iPad Safari only: other iOS browsers cannot add to the home screen.
-    const ua = navigator.userAgent;
-    const ios = /iPhone|iPad|iPod/.test(ua) && !/CriOS|FxiOS|EdgiOS/.test(ua);
+    // Every iOS browser: Safari, and since iOS 16.4 Chrome, Edge and Firefox add to the home screen too.
+    const ios = /iPhone|iPad|iPod/.test(navigator.userAgent);
     const iosTimer = ios ? setTimeout(() => setMode("ios"), 4000) : undefined;
 
     return () => {
@@ -80,16 +83,15 @@ export function InstallPrompt({ t, icon }: { t: InstallText; icon: string }) {
         <img src={icon} alt="" width={48} height={48} className="h-12 w-12 shrink-0 rounded-xl" />
         <div>
           <p className="text-base font-semibold">{t.title}</p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {mode === "ios" ? (
-              <>
-                <Share className="mr-1 inline h-4 w-4 align-[-2px]" aria-hidden />
-                {t.iosBody}
-              </>
-            ) : (
-              t.body
-            )}
-          </p>
+          {mode === "ios" ? (
+            <ol className="mt-2 flex list-decimal flex-col gap-1 pl-4 text-sm text-muted-foreground">
+              {t.iosSteps.map((step) => (
+                <li key={step}>{step}</li>
+              ))}
+            </ol>
+          ) : (
+            <p className="mt-1 text-sm text-muted-foreground">{t.body}</p>
+          )}
         </div>
       </div>
       {mode === "android" && (
@@ -99,6 +101,15 @@ export function InstallPrompt({ t, icon }: { t: InstallText; icon: string }) {
           className="mt-4 min-h-11 w-full rounded-full bg-primary text-sm font-medium text-primary-foreground"
         >
           {t.install}
+        </button>
+      )}
+      {mode === "ios" && (
+        <button
+          type="button"
+          onClick={() => setMode(null)}
+          className="mt-4 min-h-11 w-full rounded-full border text-sm font-medium"
+        >
+          {t.gotIt}
         </button>
       )}
     </div>
