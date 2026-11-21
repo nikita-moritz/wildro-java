@@ -141,7 +141,7 @@ export const de: Dictionary = {
     YOGA: "Yoga",
     CAMPING: "Camping",
   },
-  install: { title: "wildro auf den Startbildschirm", body: "Mit einem Fingertipp zu den Outdoor-Events rund um Aachen, wie eine App.", iosSteps: ["Tippe in der Leiste des Browsers auf Teilen. In Safari 26 steckt es im Menü „⋯“.", "Wähle „Zum Home-Bildschirm“. Fehlt der Punkt, tippe auf „Mehr anzeigen“.", "Tippe auf „Hinzufügen“."], install: "Installieren", gotIt: "Verstanden", close: "Schließen" },
+  install: { title: "wildro auf den Startbildschirm", body: "Mit einem Fingertipp zu den Outdoor-Events rund um Aachen, wie eine App.", iosSteps: ["Tippe in der Leiste unten auf „⋯“ und dann auf Teilen.", "Wähle „Zum Home-Bildschirm“. Fehlt der Punkt, tippe auf „Mehr anzeigen“.", "Tippe auf „Hinzufügen“."], install: "Installieren", gotIt: "Verstanden", close: "Schließen" },
   price: { free: "Kostenlos", paid: "Kostenpflichtig" },
   difficulty: {
     EASY: "Leicht",
