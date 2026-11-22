@@ -195,6 +195,13 @@ export const ru: Dictionary = {
   own: {
     myEventsTitle: "Мои события",
     myEventsLead: "Черновики видишь только ты. Опубликованные события сразу появляются в ленте и на карте.",
+    sectionMine: "Мои",
+    sectionGroupEvents: "Из моих групп",
+    groupEventsEmpty: "В твоих группах пока ничего не запланировано.",
+    sectionLeading: "Группы, которые я веду",
+    sectionMember: "Группы, где я участник",
+    groupsEmpty: "Ты пока не состоишь ни в одной группе.",
+    findGroups: "Найти группы",
     newEvent: "Новое событие",
     empty: "У тебя пока нет своих событий.",
     statusDRAFT: "Черновик",

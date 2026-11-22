@@ -195,6 +195,13 @@ export const en: Dictionary = {
   own: {
     myEventsTitle: "My events",
     myEventsLead: "Only you see drafts. Published events appear at once in the list and on the map.",
+    sectionMine: "By me",
+    sectionGroupEvents: "From my groups",
+    groupEventsEmpty: "Nothing coming up in your groups right now.",
+    sectionLeading: "Groups I run",
+    sectionMember: "Groups I belong to",
+    groupsEmpty: "You are not in any group yet.",
+    findGroups: "Discover groups",
     newEvent: "New event",
     empty: "You have no events of your own yet.",
     statusDRAFT: "Draft",

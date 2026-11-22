@@ -195,6 +195,13 @@ export interface Dictionary {
   own: {
     myEventsTitle: string;
     myEventsLead: string;
+    sectionMine: string;
+    sectionGroupEvents: string;
+    groupEventsEmpty: string;
+    sectionLeading: string;
+    sectionMember: string;
+    groupsEmpty: string;
+    findGroups: string;
     newEvent: string;
     empty: string;
     statusDRAFT: string;

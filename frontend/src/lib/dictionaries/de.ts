@@ -195,6 +195,13 @@ export const de: Dictionary = {
   own: {
     myEventsTitle: "Meine Events",
     myEventsLead: "Entwürfe sieht nur du. Veröffentlichte Events erscheinen sofort in der Liste und auf der Karte.",
+    sectionMine: "Von mir",
+    sectionGroupEvents: "Aus meinen Gruppen",
+    groupEventsEmpty: "In deinen Gruppen steht gerade nichts an.",
+    sectionLeading: "Gruppen, die ich leite",
+    sectionMember: "Gruppen, in denen ich Mitglied bin",
+    groupsEmpty: "Du bist noch in keiner Gruppe.",
+    findGroups: "Gruppen entdecken",
     newEvent: "Neues Event",
     empty: "Du hast noch keine eigenen Events.",
     statusDRAFT: "Entwurf",
