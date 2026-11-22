@@ -113,4 +113,54 @@ final class NoticeText {
 		};
 	}
 
+	static Mail communityLogoRemoved(String locale, String communityName, String termsUrl, String reason) {
+		return switch (locale == null ? "de" : locale) {
+			case "en" -> new Mail("The picture of your group on wildro was removed: " + communityName, """
+					Hello,
+
+					we have removed the picture of your group "%s" on wildro. The group itself stays as it is; you can upload another picture in its settings.
+
+					Reason:
+					%s
+
+					The decision rests on our terms of use: %s
+					It was taken by a person from our moderation, not by an automated system.
+
+					If you disagree, reply to this email. We will review the decision again and tell you the outcome.
+
+					wildro
+					""".formatted(communityName, reason, termsUrl));
+			case "ru" -> new Mail("Картинка твоей группы на wildro снята: " + communityName, """
+					Здравствуй,
+
+					мы сняли картинку твоей группы «%s» на wildro. Сама группа осталась как была, новую картинку можно загрузить в её настройках.
+
+					Причина:
+					%s
+
+					Решение основано на правилах площадки: %s
+					Его принял человек из модерации, а не автоматическая система.
+
+					Если ты с решением не согласен или не согласна, ответь на это письмо. Мы пересмотрим решение и сообщим результат.
+
+					wildro
+					""".formatted(communityName, reason, termsUrl));
+			default -> new Mail("Das Bild deiner Gruppe auf wildro wurde entfernt: " + communityName, """
+					Hallo,
+
+					wir haben das Bild deiner Gruppe „%s“ auf wildro entfernt. Die Gruppe selbst bleibt, wie sie ist; ein anderes Bild kannst du in ihren Einstellungen hochladen.
+
+					Grund:
+					%s
+
+					Die Entscheidung stützt sich auf unsere Nutzungsregeln: %s
+					Getroffen hat sie ein Mensch aus unserer Moderation, kein automatisches System.
+
+					Bist du anderer Meinung, antworte auf diese E-Mail. Wir prüfen die Entscheidung erneut und teilen dir das Ergebnis mit.
+
+					wildro
+					""".formatted(communityName, reason, termsUrl));
+		};
+	}
+
 }

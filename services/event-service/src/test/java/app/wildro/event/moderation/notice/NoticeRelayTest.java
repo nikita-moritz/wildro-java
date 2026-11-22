@@ -139,6 +139,19 @@ class NoticeRelayTest {
 	}
 
 	@Test
+	void aGroupWhosePictureWasTakenDownTellsItsOwnerWhy() {
+		this.contacts.emails.put("owner-1", "ada@example.org");
+		this.consumers.consume("community-service", List.of(new OutboxConsumers.Entry(42, "community.logo_removed", "7",
+				"{\"ownerUserId\":\"owner-1\",\"name\":\"Trailrunner Aachen\",\"locale\":\"de\",\"reason\":\"Erkennbare Personen.\"}",
+				Instant.now().toString())));
+
+		assertThat(this.relay.deliver()).isEqualTo(1);
+		FakeMailer.Sent mail = this.mailer.sent.get(0);
+		assertThat(mail.subject()).isEqualTo("Das Bild deiner Gruppe auf wildro wurde entfernt: Trailrunner Aachen");
+		assertThat(mail.text()).contains("Erkennbare Personen.").contains("/de/terms").doesNotContain("—").doesNotContain("–");
+	}
+
+	@Test
 	void aNoticeAboutAnEventThatNoLongerExistsIsClosedNotSentAsNull() {
 		this.contacts.emails.put("owner-1", "ada@example.org");
 		suspend(ownEvent("tour", "de"), "Spam");

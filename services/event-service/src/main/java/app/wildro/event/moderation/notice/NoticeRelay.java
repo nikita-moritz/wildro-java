@@ -96,9 +96,11 @@ public class NoticeRelay {
 				}
 				String reason = this.json.readTree(notice.payload()).get("reason").asString();
 				String terms = this.siteUrl + "/" + (notice.locale() == null ? "de" : notice.locale()) + "/terms";
-				NoticeText.Mail mail = "COMMUNITY_SUSPENDED".equals(notice.kind())
-						? NoticeText.communitySuspended(notice.locale(), notice.name(), terms, reason)
-						: NoticeText.suspended(notice.locale(), notice.name(), terms, reason);
+				NoticeText.Mail mail = switch (notice.kind()) {
+					case "COMMUNITY_SUSPENDED" -> NoticeText.communitySuspended(notice.locale(), notice.name(), terms, reason);
+					case "COMMUNITY_LOGO_REMOVED" -> NoticeText.communityLogoRemoved(notice.locale(), notice.name(), terms, reason);
+					default -> NoticeText.suspended(notice.locale(), notice.name(), terms, reason);
+				};
 				this.mailer.send(to.get(), mail.subject(), mail.text());
 				this.jdbc.sql("UPDATE notice_outbox SET sent_at = :at, attempts = attempts + 1 WHERE id = :id")
 					.param("at", Timestamp.from(now))
