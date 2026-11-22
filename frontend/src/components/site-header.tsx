@@ -36,7 +36,10 @@ type HeaderText = Pick<Dictionary, "site" | "nav" | "footer">;
 
 /** One island: the look every item of the bar shares. 44px to the touch on phones, 40px with a mouse. */
 const PILL =
-  "flex h-11 lg:h-10 items-center rounded-full border bg-card/95 shadow-md backdrop-blur transition-colors focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none";
+  "flex h-11 lg:h-10 items-center rounded-full border bg-card/95 shadow-md backdrop-blur transition-[color,background-color,border-color,box-shadow] duration-150 focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none " +
+  // One light for every button of the bar: logo, sections, language, theme,
+  // account, menu. On hover, and while a menu it opens is open.
+  "hover:border-primary/50 hover:ring-4 hover:ring-primary/20 data-[state=open]:border-primary/50 data-[state=open]:ring-4 data-[state=open]:ring-primary/20";
 
 export function SiteHeader({ locale, t }: { locale: Locale; t: HeaderText }) {
   return <SiteHeaderBar locale={locale} t={t} pathname={usePathname()} />;
@@ -113,7 +116,7 @@ export function SiteHeaderBar({ locale, t, pathname = "" }: { locale: Locale; t:
     <header className="pointer-events-none sticky top-0 z-50">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 px-3">
         <div className="flex items-center gap-2">
-          <Link href={routes.home(locale)} className={cn(PILL, "pointer-events-auto group gap-2 px-4 text-base font-bold")}>
+          <Link href={routes.home(locale)} className={cn(PILL, "pointer-events-auto group gap-2 px-4 text-base font-bold hover:bg-muted")}>
             <LogoMark />
             <span className="hidden transition-transform duration-200 group-hover:scale-105 sm:inline-block">
               {t.site.name}
