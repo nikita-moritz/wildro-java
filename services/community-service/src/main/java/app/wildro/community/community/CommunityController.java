@@ -111,6 +111,20 @@ class CommunityController {
 		return ResponseEntity.noContent().build();
 	}
 
+	/**
+	 * The group's picture, as WebP bytes. The frontend's server scales the upload
+	 * and strips its metadata before it comes here; this checks the rest.
+	 */
+	@PutMapping(path = "/v1/communities/{slug}/logo", consumes = "image/webp")
+	Views.Page setLogo(@AuthenticationPrincipal Jwt token, @PathVariable String slug, @RequestBody byte[] webp) {
+		return this.service.setLogo(token, slug, webp);
+	}
+
+	@PostMapping("/v1/communities/{slug}/logo/remove")
+	Views.Page removeLogo(@AuthenticationPrincipal Jwt token, @PathVariable String slug) {
+		return this.service.removeLogo(token, slug);
+	}
+
 	record RoleRequest(@NotNull Role role) {
 	}
 

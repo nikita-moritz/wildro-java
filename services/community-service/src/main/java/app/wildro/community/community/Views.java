@@ -10,12 +10,12 @@ public final class Views {
 	}
 
 	/** A row of the public list. */
-	public record Summary(String slug, String name, String area, String locale, long memberCount) {
+	public record Summary(String slug, String name, String area, String locale, long memberCount, String logoUrl) {
 	}
 
 	/** The public page. Only the number of members, never their names (§18.3). */
 	public record Page(long id, String slug, String name, String description, String area, String locale,
-			String status, List<String> links, long memberCount, Instant createdAt, Instant closedAt) {
+			String status, List<String> links, long memberCount, Instant createdAt, Instant closedAt, String logoUrl) {
 	}
 
 	/** The caller's standing in one community; {@code role} null when not a member. */
@@ -28,7 +28,7 @@ public final class Views {
 	 * superuser only, a moderator decides without names.
 	 */
 	public record Moderated(String slug, String name, String area, String status, String suspensionReason,
-			long memberCount, Instant createdAt, List<Member> leaders, List<OpenReport> reports) {
+			long memberCount, Instant createdAt, String logoUrl, List<Member> leaders, List<OpenReport> reports) {
 	}
 
 	/** A report moderation has not decided on yet (DSA Art. 16). No reporter: none is stored. */

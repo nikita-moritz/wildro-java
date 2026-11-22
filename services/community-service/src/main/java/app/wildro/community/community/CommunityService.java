@@ -11,6 +11,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import app.wildro.community.community.CommunityRefusal.Code;
 import app.wildro.community.people.PeopleDirectory;
@@ -28,6 +30,8 @@ import app.wildro.community.people.Person;
  * <li>Closing cancels the community's future events (through the outbox), and
  * the community stays visible as closed so links keep working.</li>
  * <li>One person owns at most three communities that are not closed.</li>
+ * <li>An OWNER or ADMIN sets the group's picture; moderation may take the
+ * picture alone down, with a reason the owner is sent (§18.3, 2026-11-22).</li>
  * </ul>
  */
 @Service
@@ -44,17 +48,24 @@ public class CommunityService {
 
 	private final int ownedAtMost;
 
-	CommunityService(CommunityStore store, PeopleDirectory people, Clock clock,
+	private final LogoFiles logos;
+
+	CommunityService(CommunityStore store, PeopleDirectory people, Clock clock, LogoFiles logos,
 			@Value("${wildro.communities.owned-at-most}") int ownedAtMost) {
 		this.store = store;
 		this.people = people;
 		this.clock = clock;
+		this.logos = logos;
 		this.ownedAtMost = ownedAtMost;
 	}
 
 	@Transactional(readOnly = true)
 	public List<Views.Summary> list(int page, int size) {
-		return this.store.listActive(page, size);
+		return this.store.listActive(page, size)
+			.stream()
+			.map((s) -> new Views.Summary(s.slug(), s.name(), s.area(), s.locale(), s.memberCount(),
+					this.logos.urlOf(s.logoUrl())))
+			.toList();
 	}
 
 	/** The public page; a suspended community is off the site. */
@@ -63,7 +74,7 @@ public class CommunityService {
 		CommunityStore.Row row = visible(slug);
 		return new Views.Page(row.id(), row.slug(), row.name(), row.description(), row.area(), row.locale(),
 				row.status(), this.store.links(row.id()), this.store.memberCount(row.id()), row.createdAt(),
-				row.closedAt());
+				row.closedAt(), this.logos.urlOf(row.logoFile()));
 	}
 
 	/** The caller's role here, also what the event service asks before an event is written in this community's name. */
@@ -251,7 +262,7 @@ public class CommunityService {
 		Map<String, List<Views.OpenReport>> reports = this.store.openReports(rows.stream().map(Views.Moderated::slug).toList());
 		return rows.stream()
 			.map((row) -> new Views.Moderated(row.slug(), row.name(), row.area(), row.status(), row.suspensionReason(),
-					row.memberCount(), row.createdAt(), withLeaders ? this.store.leaders(row.slug()) : List.of(),
+					row.memberCount(), row.createdAt(), this.logos.urlOf(row.logoUrl()), withLeaders ? this.store.leaders(row.slug()) : List.of(),
 					reports.getOrDefault(row.slug(), List.of())))
 			.toList();
 	}
@@ -272,6 +283,63 @@ public class CommunityService {
 		long community = this.store.dismissReport(reportId, moderator, this.clock.instant())
 			.orElseThrow(() -> new CommunityRefusal(Code.NOT_FOUND, "no such open report"));
 		this.store.audit(moderator, "REPORT_DISMISSED", community, Map.of("report", reportId));
+	}
+
+	/** OWNER or ADMIN of an active group: the picture is replaced, the old file goes once this is committed. */
+	@Transactional
+	public Views.Page setLogo(Jwt token, String slug, byte[] webp) {
+		CommunityStore.Row row = active(slug);
+		requireRole(row, token.getSubject(), true);
+		String file = this.logos.store(row.id(), webp);
+		if (!file.equals(row.logoFile())) {
+			this.store.setLogo(row.id(), file);
+			this.store.audit(token.getSubject(), "LOGO_CHANGED", row.id(), Map.of("file", file));
+			deleteAfterCommit(row.logoFile());
+		}
+		return page(slug);
+	}
+
+	/** OWNER or ADMIN takes the picture away again. */
+	@Transactional
+	public Views.Page removeLogo(Jwt token, String slug) {
+		CommunityStore.Row row = active(slug);
+		requireRole(row, token.getSubject(), true);
+		if (row.logoFile() != null) {
+			this.store.setLogo(row.id(), null);
+			this.store.audit(token.getSubject(), "LOGO_CHANGED", row.id(), Map.of("removed", row.logoFile()));
+			deleteAfterCommit(row.logoFile());
+		}
+		return page(slug);
+	}
+
+	/**
+	 * MODERATOR or SUPERUSER takes the picture alone down: the group stays. The
+	 * owner gets the reason (DSA Art. 17) through the event service's notice relay.
+	 */
+	@Transactional
+	public void removeLogoByModeration(String moderator, String slug, String reason) {
+		CommunityStore.Row row = this.store.find(slug).orElseThrow(() -> new CommunityRefusal(Code.NOT_FOUND, "no such community"));
+		if (row.logoFile() == null || blank(reason)) {
+			throw new CommunityRefusal(Code.WRONG_STATE, "only a picture that is there is taken down, with a reason");
+		}
+		this.store.setLogo(row.id(), null);
+		this.store.audit(moderator, "LOGO_REMOVED", row.id(), Map.of("file", row.logoFile(), "reason", reason.strip()));
+		ownerOf(row.id()).ifPresent((owner) -> this.store.outbox("community.logo_removed", row.id(),
+				Map.of("ownerUserId", owner, "name", row.name(), "locale", row.locale(), "reason", reason.strip())));
+		deleteAfterCommit(row.logoFile());
+	}
+
+	/** A rolled back change must still find its picture, so the file goes only after the commit. */
+	private void deleteAfterCommit(String file) {
+		if (file == null) {
+			return;
+		}
+		TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+			@Override
+			public void afterCommit() {
+				CommunityService.this.logos.delete(file);
+			}
+		});
 	}
 
 	/** MODERATOR or SUPERUSER, by a moderation decision (§18.1, §18.4). */

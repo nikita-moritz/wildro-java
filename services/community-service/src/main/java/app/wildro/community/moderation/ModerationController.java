@@ -64,6 +64,14 @@ class ModerationController {
 		return ResponseEntity.noContent().build();
 	}
 
+	/** The picture alone comes down; the group stays and its owner is told why. */
+	@PostMapping("/v1/moderation/communities/{slug}/logo/remove")
+	ResponseEntity<Void> removeLogo(@AuthenticationPrincipal Jwt token, @PathVariable String slug,
+			@Valid @RequestBody Reason request) {
+		this.service.removeLogoByModeration(token.getSubject(), slug, request.reason());
+		return ResponseEntity.noContent().build();
+	}
+
 	@PostMapping("/v1/moderation/reports/{id}/dismiss")
 	ResponseEntity<Void> dismiss(@AuthenticationPrincipal Jwt token, @PathVariable long id) {
 		this.service.dismissReport(token.getSubject(), id);

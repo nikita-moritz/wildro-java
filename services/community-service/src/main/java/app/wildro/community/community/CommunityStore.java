@@ -25,17 +25,18 @@ public class CommunityStore {
 	}
 
 	public record Row(long id, String slug, String name, String description, String area, String locale, String status,
-			Instant createdAt, Instant closedAt) {
+			Instant createdAt, Instant closedAt, String logoFile) {
 	}
 
 	public Optional<Row> find(String slug) {
 		return this.jdbc.sql("""
-				SELECT id, slug, name, description, area, locale, status, created_at, closed_at
+				SELECT id, slug, name, description, area, locale, status, created_at, closed_at, logo_file
 				FROM communities WHERE slug = :slug
 				""").param("slug", slug).query((rs, n) -> new Row(rs.getLong("id"), rs.getString("slug"),
 				rs.getString("name"), rs.getString("description"), rs.getString("area"), rs.getString("locale"),
 				rs.getString("status"), rs.getTimestamp("created_at").toInstant(),
-				rs.getTimestamp("closed_at") == null ? null : rs.getTimestamp("closed_at").toInstant()))
+				rs.getTimestamp("closed_at") == null ? null : rs.getTimestamp("closed_at").toInstant(),
+				rs.getString("logo_file")))
 			.optional();
 	}
 
@@ -104,7 +105,7 @@ public class CommunityStore {
 
 	List<Views.Summary> listActive(int page, int size) {
 		return this.jdbc.sql("""
-				SELECT c.slug, c.name, c.area, c.locale, count(m.user_id) AS members
+				SELECT c.slug, c.name, c.area, c.locale, c.logo_file, count(m.user_id) AS members
 				FROM communities c LEFT JOIN memberships m ON m.community_id = c.id
 				WHERE c.status = 'ACTIVE'
 				GROUP BY c.id ORDER BY count(m.user_id) DESC, c.id
@@ -112,8 +113,9 @@ public class CommunityStore {
 				""")
 			.param("limit", size + 1)
 			.param("offset", page * size)
+			// logoUrl carries the file name here; the service turns it into the address.
 			.query((rs, n) -> new Views.Summary(rs.getString("slug"), rs.getString("name"), rs.getString("area"),
-					rs.getString("locale"), rs.getLong("members")))
+					rs.getString("locale"), rs.getLong("members"), rs.getString("logo_file")))
 			.list();
 	}
 
@@ -192,6 +194,13 @@ public class CommunityStore {
 			.update();
 	}
 
+	void setLogo(long community, String file) {
+		this.jdbc.sql("UPDATE communities SET logo_file = :f, updated_at = now() WHERE id = :id")
+			.param("f", file)
+			.param("id", community)
+			.update();
+	}
+
 	void report(long community, String reason, String details) {
 		this.jdbc.sql("INSERT INTO community_reports (community_id, reason, details) VALUES (:c, :r, :d)")
 			.param("c", community)
@@ -247,7 +256,7 @@ public class CommunityStore {
 	List<Views.Moderated> moderated(String query, int limit) {
 		String pattern = "%" + query.strip().toLowerCase().replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_") + "%";
 		return this.jdbc.sql("""
-				SELECT c.slug, c.name, c.area, c.status, c.suspension_reason, c.created_at, count(m.user_id) AS members
+				SELECT c.slug, c.name, c.area, c.status, c.suspension_reason, c.created_at, c.logo_file, count(m.user_id) AS members
 				FROM communities c LEFT JOIN memberships m ON m.community_id = c.id
 				WHERE c.status IN ('ACTIVE', 'SUSPENDED')
 				  AND (lower(c.name) LIKE :pattern OR c.slug LIKE :pattern)
@@ -260,7 +269,7 @@ public class CommunityStore {
 			.param("limit", limit)
 			.query((rs, n) -> new Views.Moderated(rs.getString("slug"), rs.getString("name"), rs.getString("area"),
 					rs.getString("status"), rs.getString("suspension_reason"), rs.getLong("members"),
-					rs.getTimestamp("created_at").toInstant(), List.of(), List.of()))
+					rs.getTimestamp("created_at").toInstant(), rs.getString("logo_file"), List.of(), List.of()))
 			.list();
 	}
 
