@@ -32,6 +32,9 @@ class SecurityConfiguration {
 			.authenticated()
 			.requestMatchers(HttpMethod.GET, "/v1/communities", "/v1/communities/*")
 			.permitAll()
+			// Reports are open to guests (DSA Art. 16), rate limited by address.
+			.requestMatchers(HttpMethod.POST, "/v1/communities/*/reports")
+			.permitAll()
 			.requestMatchers("/v1/communities", "/v1/communities/**", "/v1/me/communities")
 			.authenticated()
 			// Ownership is the superuser's to move (§18.4); taking down and putting back

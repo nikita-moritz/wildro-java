@@ -28,7 +28,11 @@ public final class Views {
 	 * superuser only, a moderator decides without names.
 	 */
 	public record Moderated(String slug, String name, String area, String status, String suspensionReason,
-			long memberCount, Instant createdAt, List<Member> leaders) {
+			long memberCount, Instant createdAt, List<Member> leaders, List<OpenReport> reports) {
+	}
+
+	/** A report moderation has not decided on yet (DSA Art. 16). No reporter: none is stored. */
+	public record OpenReport(long id, String reason, String details, Instant createdAt) {
 	}
 
 	/** A member, as other members see them. */

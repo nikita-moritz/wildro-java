@@ -64,6 +64,12 @@ class ModerationController {
 		return ResponseEntity.noContent().build();
 	}
 
+	@PostMapping("/v1/moderation/reports/{id}/dismiss")
+	ResponseEntity<Void> dismiss(@AuthenticationPrincipal Jwt token, @PathVariable long id) {
+		this.service.dismissReport(token.getSubject(), id);
+		return ResponseEntity.noContent().build();
+	}
+
 	record Reason(@NotBlank @Size(max = 2000) String reason) {
 	}
 

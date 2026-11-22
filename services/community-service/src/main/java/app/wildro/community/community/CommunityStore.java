@@ -192,10 +192,57 @@ public class CommunityStore {
 			.update();
 	}
 
+	void report(long community, String reason, String details) {
+		this.jdbc.sql("INSERT INTO community_reports (community_id, reason, details) VALUES (:c, :r, :d)")
+			.param("c", community)
+			.param("r", reason)
+			.param("d", details)
+			.update();
+	}
+
+	/** Open reports of the given communities, oldest first, by address. */
+	Map<String, List<Views.OpenReport>> openReports(List<String> slugs) {
+		if (slugs.isEmpty()) {
+			return Map.of();
+		}
+		Map<String, List<Views.OpenReport>> bySlug = new java.util.HashMap<>();
+		this.jdbc.sql("""
+				SELECT c.slug, r.id, r.reason, r.details, r.created_at
+				FROM community_reports r JOIN communities c ON c.id = r.community_id
+				WHERE r.status = 'OPEN' AND c.slug IN (:slugs)
+				ORDER BY r.created_at, r.id
+				""")
+			.param("slugs", slugs)
+			.query((rs, n) -> {
+				bySlug.computeIfAbsent(rs.getString("slug"), (key) -> new java.util.ArrayList<>())
+					.add(new Views.OpenReport(rs.getLong("id"), rs.getString("reason"), rs.getString("details"),
+							rs.getTimestamp("created_at").toInstant()));
+				return null;
+			})
+			.list();
+		return bySlug;
+	}
+
+	/** Closes every open report of the community as acted upon. */
+	void closeReports(long community, String moderator, Instant at) {
+		this.jdbc.sql("""
+				UPDATE community_reports SET status = 'ACTIONED', resolved_at = :at, resolved_by = :by
+				WHERE community_id = :c AND status = 'OPEN'
+				""").param("at", Timestamp.from(at)).param("by", moderator).param("c", community).update();
+	}
+
+	/** @return the community of the report, when it was open and is now dismissed */
+	Optional<Long> dismissReport(long report, String moderator, Instant at) {
+		return this.jdbc.sql("""
+				UPDATE community_reports SET status = 'DISMISSED', resolved_at = :at, resolved_by = :by
+				WHERE id = :id AND status = 'OPEN' RETURNING community_id
+				""").param("at", Timestamp.from(at)).param("by", moderator).param("id", report).query(Long.class).optional();
+	}
+
 	/**
-	 * Communities moderation can act on: active and suspended, the suspended
-	 * first, then the newest. {@code query} matches name or address, blank
-	 * matches all.
+	 * Communities moderation can act on: active and suspended. Those with open
+	 * reports come first, then the suspended, then the newest. {@code query}
+	 * matches name or address, blank matches all.
 	 */
 	List<Views.Moderated> moderated(String query, int limit) {
 		String pattern = "%" + query.strip().toLowerCase().replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_") + "%";
@@ -205,14 +252,15 @@ public class CommunityStore {
 				WHERE c.status IN ('ACTIVE', 'SUSPENDED')
 				  AND (lower(c.name) LIKE :pattern OR c.slug LIKE :pattern)
 				GROUP BY c.id
-				ORDER BY CASE c.status WHEN 'SUSPENDED' THEN 0 ELSE 1 END, c.created_at DESC, c.id DESC
+				ORDER BY EXISTS (SELECT 1 FROM community_reports r WHERE r.community_id = c.id AND r.status = 'OPEN') DESC,
+				         CASE c.status WHEN 'SUSPENDED' THEN 0 ELSE 1 END, c.created_at DESC, c.id DESC
 				LIMIT :limit
 				""")
 			.param("pattern", pattern)
 			.param("limit", limit)
 			.query((rs, n) -> new Views.Moderated(rs.getString("slug"), rs.getString("name"), rs.getString("area"),
 					rs.getString("status"), rs.getString("suspension_reason"), rs.getLong("members"),
-					rs.getTimestamp("created_at").toInstant(), List.of()))
+					rs.getTimestamp("created_at").toInstant(), List.of(), List.of()))
 			.list();
 	}
 

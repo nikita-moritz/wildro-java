@@ -241,17 +241,37 @@ public class CommunityService {
 		return changed;
 	}
 
-	/** The moderation list; names of owner and admins only for whoever may hand over ownership. */
+	/**
+	 * The moderation list with each community's open reports; names of owner and
+	 * admins only for whoever may hand over ownership.
+	 */
 	@Transactional(readOnly = true)
 	public List<Views.Moderated> moderated(String query, boolean withLeaders) {
 		List<Views.Moderated> rows = this.store.moderated(query == null ? "" : query, MODERATED_AT_MOST);
-		if (!withLeaders) {
-			return rows;
-		}
+		Map<String, List<Views.OpenReport>> reports = this.store.openReports(rows.stream().map(Views.Moderated::slug).toList());
 		return rows.stream()
 			.map((row) -> new Views.Moderated(row.slug(), row.name(), row.area(), row.status(), row.suspensionReason(),
-					row.memberCount(), row.createdAt(), this.store.leaders(row.slug())))
+					row.memberCount(), row.createdAt(), withLeaders ? this.store.leaders(row.slug()) : List.of(),
+					reports.getOrDefault(row.slug(), List.of())))
 			.toList();
+	}
+
+	/**
+	 * Anyone, guests included, reports what the public sees: an active community
+	 * (DSA Art. 16). The reason is one of the moderation's list, checked by the caller.
+	 */
+	@Transactional
+	public void report(String slug, String reason, String details) {
+		CommunityStore.Row row = active(slug);
+		this.store.report(row.id(), reason, details.strip());
+	}
+
+	/** The report was unfounded: closed, the community untouched, the decision audited. */
+	@Transactional
+	public void dismissReport(String moderator, long reportId) {
+		long community = this.store.dismissReport(reportId, moderator, this.clock.instant())
+			.orElseThrow(() -> new CommunityRefusal(Code.NOT_FOUND, "no such open report"));
+		this.store.audit(moderator, "REPORT_DISMISSED", community, Map.of("report", reportId));
 	}
 
 	/** MODERATOR or SUPERUSER, by a moderation decision (§18.1, §18.4). */
@@ -262,6 +282,7 @@ public class CommunityService {
 			throw new CommunityRefusal(Code.WRONG_STATE, "only an active community is taken down, with a reason");
 		}
 		this.store.setStatus(row.id(), "SUSPENDED", reason.strip(), null);
+		this.store.closeReports(row.id(), moderator, this.clock.instant());
 		this.store.audit(moderator, "COMMUNITY_SUSPENDED", row.id(), Map.of("reason", reason.strip()));
 		// The owner's statement of reasons (DSA Art. 17), delivered by the event
 		// service's notice relay. The address is looked up when it is sent, never here.

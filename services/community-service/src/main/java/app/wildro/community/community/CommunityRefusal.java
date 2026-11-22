@@ -16,6 +16,7 @@ public class CommunityRefusal extends RuntimeException {
 		WRONG_STATE(HttpStatus.CONFLICT),
 		OWNER_CANNOT_LEAVE(HttpStatus.CONFLICT),
 		TARGET_NOT_ADMIN(HttpStatus.CONFLICT),
+		TOO_MANY(HttpStatus.TOO_MANY_REQUESTS),
 		UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE);
 
 		private final HttpStatus status;
