@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 
 import { BackLink } from "@/components/back-link";
 import { CommunityEditor } from "@/components/community/community-editor";
+import { CommunityLogo } from "@/components/community/community-logo";
 import { Notice } from "@/components/own/notice";
 import { Button } from "@/components/ui/button";
 import { getCommunity, getCommunityEvents, manages, membersOf, standingIn } from "@/lib/communities";
@@ -82,6 +83,40 @@ export default async function ManageCommunityPage({ params, searchParams }: Page
       <Button asChild variant="outline" className="h-11 self-start">
         <Link href={routes.community(locale, slug)}>{t.own.viewPublic}</Link>
       </Button>
+
+      {manages(role) && active && (
+        <section className="flex flex-col gap-3">
+          <h2 className="font-semibold">{c.logoTitle}</h2>
+          <div className="flex items-center gap-4">
+            <CommunityLogo url={community.logoUrl} name={community.name} size={80} />
+            <p className="text-sm text-muted-foreground">{c.logoHint}</p>
+          </div>
+          {/* A plain multipart form: the server scales the picture, nothing runs in the browser. */}
+          <form
+            method="post"
+            action={`/api/communities/${encodeURIComponent(slug)}/logo`}
+            encType="multipart/form-data"
+            className="flex flex-wrap items-center gap-2"
+          >
+            <input type="hidden" name="locale" value={locale} />
+            <input type="hidden" name="intent" value="upload" />
+            <label className="flex min-h-11 w-full cursor-pointer items-center rounded-lg border bg-background px-3 text-sm sm:w-auto sm:flex-1">
+              <span className="sr-only">{c.logoChoose}</span>
+              <input
+                type="file"
+                name="logo"
+                required
+                accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
+                className="w-full text-sm file:mr-3 file:rounded-full file:border-0 file:bg-muted file:px-3 file:py-1.5 file:text-sm file:font-medium"
+              />
+            </label>
+            <Button type="submit" className="h-11">
+              {c.logoUpload}
+            </Button>
+          </form>
+          {community.logoUrl && form("logo", { intent: "remove" }, c.logoRemove, "outline", true)}
+        </section>
+      )}
 
       {manages(role) && active && (
         <section className="flex flex-col gap-4">

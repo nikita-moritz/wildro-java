@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { CommunityLogo } from "@/components/community/community-logo";
 import { SiteFooter } from "@/components/site-footer";
 import { Button } from "@/components/ui/button";
 import { listCommunities } from "@/lib/communities";
@@ -57,14 +58,17 @@ export default async function CommunitiesPage({ params, searchParams }: PageProp
               <li key={community.slug}>
                 <Link
                   href={routes.community(locale, community.slug)}
-                  className="flex h-full flex-col gap-1 rounded-xl border bg-card p-4 transition-colors hover:bg-muted"
+                  className="flex h-full items-start gap-3 rounded-xl border bg-card p-4 transition-colors hover:bg-muted"
                 >
-                  <span lang={community.locale} className="font-medium">
-                    {community.name}
-                  </span>
-                  <span className="text-sm text-muted-foreground">{community.area}</span>
-                  <span className="text-xs text-muted-foreground">
-                    {t.community.members.replace("{n}", String(community.memberCount))}
+                  <CommunityLogo url={community.logoUrl} name={community.name} />
+                  <span className="flex min-w-0 flex-col gap-1">
+                    <span lang={community.locale} className="font-medium">
+                      {community.name}
+                    </span>
+                    <span className="text-sm text-muted-foreground">{community.area}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {t.community.members.replace("{n}", String(community.memberCount))}
+                    </span>
                   </span>
                 </Link>
               </li>

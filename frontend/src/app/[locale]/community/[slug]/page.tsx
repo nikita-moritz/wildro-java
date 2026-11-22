@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { BackLink } from "@/components/back-link";
+import { CommunityLogo } from "@/components/community/community-logo";
 import { MembershipIsland } from "@/components/community/membership-island";
 import { EventListItem, eventCardText } from "@/components/event-list-item";
 import { ReportForm } from "@/components/report-form";
@@ -56,13 +57,16 @@ export default async function CommunityPage({ params }: PageProps<"/[locale]/com
     <>
       <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-4 py-10">
         <BackLink href={routes.communities(locale)} label={t.nav.back} className="-mb-4" />
-        <div className="flex flex-col gap-2">
-          <h1 lang={community.locale} className="text-3xl font-semibold tracking-tight">
-            {community.name}
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            {community.area} · {t.community.members.replace("{n}", String(community.memberCount))}
-          </p>
+        <div className="flex items-center gap-4">
+          <CommunityLogo url={community.logoUrl} name={community.name} size={72} />
+          <div className="flex min-w-0 flex-col gap-2">
+            <h1 lang={community.locale} className="text-3xl font-semibold tracking-tight">
+              {community.name}
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              {community.area} · {t.community.members.replace("{n}", String(community.memberCount))}
+            </p>
+          </div>
         </div>
 
         {!active && (

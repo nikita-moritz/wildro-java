@@ -272,6 +272,8 @@ export interface Dictionary {
     transfer: string;
     transferHint: string;
     noAdmins: string;
+    logoReason: string;
+    logoRemove: string;
   };
   report: {
     open: string;
@@ -330,6 +332,11 @@ export interface Dictionary {
     saved: string;
     done: string;
     back: string;
-    errors: Record<"NOT_FOUND" | "FORBIDDEN" | "TERMS_REQUIRED" | "DISPLAY_NAME_REQUIRED" | "LIMIT_OWNED" | "INVALID" | "WRONG_STATE" | "OWNER_CANNOT_LEAVE" | "TARGET_NOT_ADMIN" | "UNAVAILABLE" | "GENERIC", string>;
+    errors: Record<"NOT_FOUND" | "FORBIDDEN" | "TERMS_REQUIRED" | "DISPLAY_NAME_REQUIRED" | "LIMIT_OWNED" | "INVALID" | "WRONG_STATE" | "OWNER_CANNOT_LEAVE" | "TARGET_NOT_ADMIN" | "NO_FILE" | "TOO_LARGE" | "NOT_AN_IMAGE" | "UNAVAILABLE" | "GENERIC", string>;
+    logoTitle: string;
+    logoHint: string;
+    logoChoose: string;
+    logoUpload: string;
+    logoRemove: string;
   };
 }

@@ -226,8 +226,16 @@ export default async function PrivacyPage({ params }: PageProps<"/[locale]/priva
               DSGVO).
             </p>
             <p>
-              Meldest du ein Event, speichern wir den gewählten Grund, deinen Text, den Zeitpunkt und, falls du
-              angemeldet bist, die Kennung deines Kontos, um die Meldung zu prüfen (Art. 6 Abs. 1 lit. c DSGVO in
+              Inhaber und Admins einer Gruppe können ein Bild für sie hochladen, etwa ein Logo. Beim Hochladen
+              schneiden wir es auf 512 mal 512 Pixel zu, speichern es als WebP und entfernen dabei alle Metadaten,
+              auch Standort und Kamera. Das Bild liegt auf unserem Server bei der Hetzner Online GmbH in Deutschland
+              und ist öffentlich mit der Gruppe zu sehen, bis es ersetzt oder entfernt wird; dann löschen wir die
+              Datei. Erkennbare Personen gehören nur mit ihrer Einwilligung hinein (siehe Nutzungsregeln).
+              Rechtsgrundlage ist die Erfüllung des Nutzungsverhältnisses (Art. 6 Abs. 1 lit. b DSGVO).
+            </p>
+            <p>
+              Meldest du ein Event oder eine Gruppe, speichern wir den gewählten Grund, deinen Text, den Zeitpunkt
+              und, bei einem Event, falls du angemeldet bist, die Kennung deines Kontos, um die Meldung zu prüfen (Art. 6 Abs. 1 lit. c DSGVO in
               Verbindung mit Art. 16 DSA). Deine IP-Adresse speichern wir dafür nicht: Sie wird höchstens eine Stunde
               lang im Arbeitsspeicher gehalten, um mehr als fünf Meldungen pro Stunde von derselben Adresse
               abzuweisen.

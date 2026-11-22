@@ -5,7 +5,7 @@ import { localeOf, seeOther, text } from "@/lib/route-helpers";
 import { currentSession, fromThisSite } from "@/lib/session";
 
 /**
- * POST /api/moderation/communities/{suspend|reinstate|transfer|dismiss}, forms on the
+ * POST /api/moderation/communities/{suspend|reinstate|transfer|dismiss|logo-remove}, forms on the
  * community moderation page. The roles are the community service's to check:
  * taking down and putting back for moderators, handing over for superusers.
  */
@@ -36,6 +36,7 @@ export async function POST(request: Request, { params }: RouteContext<"/api/mode
     suspend: () => callCommunityService("POST", `${path}/suspend`, session.jwt, { reason: text(form, "reason") }),
     reinstate: () => callCommunityService("POST", `${path}/reinstate`, session.jwt),
     transfer: () => callCommunityService("POST", `${path}/transfer`, session.jwt, { userId: text(form, "user") }),
+    "logo-remove": () => callCommunityService("POST", `${path}/logo/remove`, session.jwt, { reason: text(form, "reason") }),
     dismiss: () =>
       callCommunityService("POST", `/v1/moderation/reports/${encodeURIComponent(text(form, "report"))}/dismiss`, session.jwt),
   };
@@ -58,7 +59,7 @@ export async function POST(request: Request, { params }: RouteContext<"/api/mode
   }
   // Taking down or putting back changes the public page and the list; a new
   // owner or a dismissed report changes neither.
-  if (action === "suspend" || action === "reinstate") {
+  if (action === "suspend" || action === "reinstate" || action === "logo-remove") {
     communityChanged(slug);
   }
   return seeOther(back("done", "1"));

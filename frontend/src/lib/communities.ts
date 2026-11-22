@@ -27,6 +27,7 @@ const summarySchema = z.object({
   area: z.string(),
   locale: z.enum(LOCALES),
   memberCount: z.number().int(),
+  logoUrl: z.string().nullish().transform((value) => value ?? null),
 });
 
 const listSchema = z.object({ items: z.array(summarySchema), page: z.number().int(), hasNext: z.boolean() });
@@ -43,6 +44,7 @@ export const communityPageSchema = z.object({
   memberCount: z.number().int(),
   createdAt: z.string(),
   closedAt: z.string().nullable(),
+  logoUrl: z.string().nullish().transform((value) => value ?? null),
 });
 
 export type CommunityPage = z.infer<typeof communityPageSchema>;
@@ -175,6 +177,7 @@ export const moderatedSchema = z.object({
   suspensionReason: z.string().nullable(),
   memberCount: z.number().int(),
   createdAt: z.string(),
+  logoUrl: z.string().nullish().transform((value) => value ?? null),
   // Filled for a superuser only: the people ownership can pass to.
   leaders: z.array(memberSchema),
   reports: z.array(

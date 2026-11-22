@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { BackLink } from "@/components/back-link";
+import { CommunityLogo } from "@/components/community/community-logo";
 import { ModerationTabs } from "@/components/moderation/moderation-tabs";
 import { Notice } from "@/components/own/notice";
 import { Button } from "@/components/ui/button";
@@ -96,13 +97,16 @@ export default async function ModerateCommunitiesPage({ params, searchParams }: 
             return (
               <li key={community.slug} className="flex flex-col gap-3 rounded-xl border bg-card p-4">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  {suspended ? (
-                    <span className="font-medium">{community.name}</span>
-                  ) : (
-                    <Link href={routes.community(locale, community.slug)} className="font-medium underline-offset-2 hover:underline">
-                      {community.name}
-                    </Link>
-                  )}
+                  <span className="flex min-w-0 items-center gap-3">
+                    <CommunityLogo url={community.logoUrl} name={community.name} size={40} />
+                    {suspended ? (
+                      <span className="font-medium">{community.name}</span>
+                    ) : (
+                      <Link href={routes.community(locale, community.slug)} className="font-medium underline-offset-2 hover:underline">
+                        {community.name}
+                      </Link>
+                    )}
+                  </span>
                   {suspended ? (
                     <span className="rounded-full border border-destructive/30 bg-destructive/10 px-2.5 py-0.5 text-xs font-medium text-destructive">
                       {m.suspendedBadge}
@@ -119,6 +123,24 @@ export default async function ModerateCommunitiesPage({ params, searchParams }: 
                     {owner.displayName}
                   </p>
                 ) : null}
+
+                {community.logoUrl && (
+                  // The picture alone: the group stays, the owner is told the reason.
+                  <form method="post" action="/api/moderation/communities/logo-remove" className="flex flex-col gap-2 rounded-lg border p-3">
+                    {hidden(community.slug)}
+                    <div className="flex items-center gap-3">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={community.logoUrl} alt="" width={96} height={96} className="h-24 w-24 rounded-lg border object-cover" />
+                      <label className="flex flex-1 flex-col gap-1.5 text-sm font-medium">
+                        {m.logoReason}
+                        <textarea name="reason" required maxLength={2000} rows={2} className="w-full rounded-lg border bg-background px-3 py-2 text-base" />
+                      </label>
+                    </div>
+                    <Button type="submit" variant="outline" className="h-11 self-start">
+                      {m.logoRemove}
+                    </Button>
+                  </form>
+                )}
 
                 {community.reports.length > 0 && (
                   // The open reports, oldest first. Removing the group below settles them all.

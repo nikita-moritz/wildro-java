@@ -12,12 +12,16 @@ const CODES = new Set([
   "WRONG_STATE",
   "OWNER_CANNOT_LEAVE",
   "TARGET_NOT_ADMIN",
+  "NO_FILE",
+  "TOO_LARGE",
+  "NOT_AN_IMAGE",
   "UNAVAILABLE",
   "GENERIC",
 ]);
 
 export type CommunityCode = "NOT_FOUND" | "FORBIDDEN" | "TERMS_REQUIRED" | "DISPLAY_NAME_REQUIRED" | "LIMIT_OWNED" |
-  "INVALID" | "WRONG_STATE" | "OWNER_CANNOT_LEAVE" | "TARGET_NOT_ADMIN" | "UNAVAILABLE" | "GENERIC";
+  "INVALID" | "WRONG_STATE" | "OWNER_CANNOT_LEAVE" | "TARGET_NOT_ADMIN" | "NO_FILE" | "TOO_LARGE" | "NOT_AN_IMAGE" |
+  "UNAVAILABLE" | "GENERIC";
 
 export function communityCode(value: unknown): CommunityCode {
   return typeof value === "string" && CODES.has(value) ? (value as CommunityCode) : "GENERIC";
