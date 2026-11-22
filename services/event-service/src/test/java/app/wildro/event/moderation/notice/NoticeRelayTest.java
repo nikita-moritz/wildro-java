@@ -152,6 +152,22 @@ class NoticeRelayTest {
 	}
 
 	@Test
+	void anOwnerWhosePictureWasTakenDownLearnsWhyAndThatTheEventStays() {
+		this.contacts.emails.put("owner-1", "ada@example.org");
+		Event event = ownEvent("tour", "en");
+		this.jdbc.sql("""
+				INSERT INTO notice_outbox (kind, recipient_user_id, event_id, payload)
+				VALUES ('EVENT_COVER_REMOVED', 'owner-1', :event, '{"reason":"Faces without consent."}'::jsonb)
+				""").param("event", event.getId()).update();
+
+		assertThat(this.relay.deliver()).isEqualTo(1);
+		FakeMailer.Sent mail = this.mailer.sent.get(0);
+		assertThat(mail.subject()).isEqualTo("The picture of your event on wildro was removed: Tour tour");
+		assertThat(mail.text()).contains("Faces without consent.").contains("The event itself stays").contains("/en/terms")
+			.doesNotContain("—").doesNotContain("–");
+	}
+
+	@Test
 	void aNoticeAboutAnEventThatNoLongerExistsIsClosedNotSentAsNull() {
 		this.contacts.emails.put("owner-1", "ada@example.org");
 		suspend(ownEvent("tour", "de"), "Spam");

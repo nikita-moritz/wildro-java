@@ -23,6 +23,7 @@ import app.wildro.event.domain.EventStatus;
 import app.wildro.event.domain.EventTranslation;
 import app.wildro.event.domain.GeoPoints;
 import app.wildro.event.domain.LinkScope;
+import app.wildro.event.media.CoverFiles;
 import app.wildro.event.own.OwnEventRefusal.Code;
 
 /**
@@ -55,8 +56,10 @@ public class OwnEventService {
 
 	private final Clock clock;
 
+	private final CoverFiles covers;
+
 	OwnEventService(EventRepository events, OwnEventRepository own, WriterDirectory writers,
-			CommunityGateway communities, AuditRecorder audit, OwnProperties limits, Clock clock) {
+			CommunityGateway communities, AuditRecorder audit, OwnProperties limits, Clock clock, CoverFiles covers) {
 		this.events = events;
 		this.own = own;
 		this.writers = writers;
@@ -64,6 +67,7 @@ public class OwnEventService {
 		this.audit = audit;
 		this.limits = limits;
 		this.clock = clock;
+		this.covers = covers;
 	}
 
 	@Transactional
@@ -115,6 +119,10 @@ public class OwnEventService {
 		else {
 			builder.ownedBy(event.getOwnerUserId(), request.locale());
 		}
+		// The editor does not carry the picture: it stays as it is.
+		if (event.getCoverFile() != null) {
+			builder.uploadedCover(event.getCoverFile(), event.getCoverImageUrl());
+		}
 		Event candidate = builder.slug(event.getSlug())
 			.status(event.getStatus() == EventStatus.PUBLISHED ? EventStatus.PUBLISHED : EventStatus.DRAFT)
 			.publishedAt(event.getPublishedAt())
@@ -158,6 +166,52 @@ public class OwnEventService {
 		event.cancel();
 		this.audit.record(Operator.web(token.getSubject()), AuditAction.EVENT_CANCELLED, event, Map.of());
 		return OwnEventView.of(event);
+	}
+
+	/**
+	 * The organiser's own picture for an event still ahead, draft or published.
+	 * Whoever may edit the event may set it; the old file goes after the commit.
+	 */
+	@Transactional
+	public OwnEventView uploadCover(Jwt token, Authentication authentication, String slug, byte[] webp) {
+		Event event = changeableCover(token, authentication, slug);
+		if (!this.covers.enabled()) {
+			throw new OwnEventRefusal(Code.UNAVAILABLE, "pictures are not configured");
+		}
+		if (!CoverFiles.acceptable(webp)) {
+			throw new OwnEventRefusal(Code.INVALID, "a WebP picture of at most " + CoverFiles.MAX_BYTES + " bytes");
+		}
+		String file = this.covers.store(event.getId(), webp);
+		if (!file.equals(event.getCoverFile())) {
+			this.covers.deleteAfterCommit(event.uploadCover(file, this.covers.urlOf(file)));
+			this.audit.record(Operator.web(token.getSubject()), AuditAction.COVER_CHANGED, event, Map.of("file", file));
+		}
+		return OwnEventView.of(event);
+	}
+
+	/** Takes the uploaded picture away again; the activity's stand-in shows instead. */
+	@Transactional
+	public OwnEventView removeCover(Jwt token, Authentication authentication, String slug) {
+		Event event = changeableCover(token, authentication, slug);
+		String previous = event.removeUploadedCover();
+		if (previous != null) {
+			this.covers.deleteAfterCommit(previous);
+			this.audit.record(Operator.web(token.getSubject()), AuditAction.COVER_CHANGED, event,
+					Map.of("removed", previous));
+		}
+		return OwnEventView.of(event);
+	}
+
+	private Event changeableCover(Jwt token, Authentication authentication, String slug) {
+		Event event = find(slug);
+		organizerFor(event, token, authentication);
+		if (event.getStatus() != EventStatus.DRAFT && event.getStatus() != EventStatus.PUBLISHED) {
+			throw new OwnEventRefusal(Code.WRONG_STATE, "the event is " + event.getStatus());
+		}
+		if (event.hasPassed(this.clock.instant())) {
+			throw new OwnEventRefusal(Code.IN_THE_PAST, "a past event is archive and is not edited");
+		}
+		return event;
 	}
 
 	@Transactional(readOnly = true)

@@ -144,7 +144,15 @@ public class Event {
 	@Column(name = "cover_image_url")
 	private String coverImageUrl;
 
-	/** Always present with a cover and absent without one; see {@link CoverCredit}. */
+	/**
+	 * The organiser's own uploaded picture of an own event, by file name; its
+	 * address is in {@link #coverImageUrl}, so the read path does not tell the
+	 * two kinds of cover apart. Null for an imported cover (see V14).
+	 */
+	@Column(name = "cover_file")
+	private String coverFile;
+
+	/** Always present with an imported cover, absent without one and with an uploaded one; see {@link CoverCredit}. */
 	@jakarta.persistence.Embedded
 	private CoverCredit coverCredit;
 
@@ -226,6 +234,7 @@ public class Event {
 		this.elevationGainM = builder.elevationGainM;
 		this.maxParticipants = builder.maxParticipants;
 		this.coverImageUrl = builder.coverImageUrl;
+		this.coverFile = builder.coverFile;
 		this.coverCredit = builder.coverCredit;
 		this.price = builder.price;
 		this.translations = new LinkedHashMap<>(builder.translations);
@@ -257,9 +266,13 @@ public class Event {
 		if (this.maxParticipants != null && this.maxParticipants <= 0) {
 			throw new InvalidEventException("maxParticipants", "must be positive");
 		}
-		if ((this.coverImageUrl == null) != (this.coverCredit == null)) {
+		if (this.coverFile == null && (this.coverImageUrl == null) != (this.coverCredit == null)) {
 			throw new InvalidEventException("coverCredit",
 					"a cover needs its author and licence, and a credit needs a cover");
+		}
+		if (this.coverFile != null
+				&& (this.kind != EventKind.OWN || this.coverImageUrl == null || this.coverCredit != null)) {
+			throw new InvalidEventException("cover", "an uploaded picture belongs to an own event and carries no credit");
 		}
 		if (this.kind == EventKind.OWN && ((this.ownerUserId == null) == (this.ownerCommunityId == null)
 				|| this.authorUserId == null || this.originalLocale == null || !LOCALES.contains(this.originalLocale))) {
@@ -390,6 +403,7 @@ public class Event {
 		addIfDifferent(changed, "elevationGainM", this.elevationGainM, candidate.elevationGainM);
 		addIfDifferent(changed, "maxParticipants", this.maxParticipants, candidate.maxParticipants);
 		addIfDifferent(changed, "coverImageUrl", this.coverImageUrl, candidate.coverImageUrl);
+		addIfDifferent(changed, "coverFile", this.coverFile, candidate.coverFile);
 		addIfDifferent(changed, "coverCredit", this.coverCredit, candidate.coverCredit);
 		addIfDifferent(changed, "price", this.price, candidate.price);
 		addIfDifferent(changed, "locale", this.originalLocale, candidate.originalLocale);
@@ -419,6 +433,7 @@ public class Event {
 		this.elevationGainM = candidate.elevationGainM;
 		this.maxParticipants = candidate.maxParticipants;
 		this.coverImageUrl = candidate.coverImageUrl;
+		this.coverFile = candidate.coverFile;
 		this.coverCredit = candidate.coverCredit;
 		this.price = candidate.price;
 		this.originalLocale = candidate.originalLocale;
@@ -465,6 +480,34 @@ public class Event {
 		}
 		this.status = EventStatus.PUBLISHED;
 		this.suspensionReason = null;
+	}
+
+	/**
+	 * The organiser's own picture replaces whatever cover there was.
+	 * @return the file it replaces, to be deleted once this is committed, or null
+	 */
+	public String uploadCover(String file, String url) {
+		if (this.kind != EventKind.OWN) {
+			throw new InvalidEventException("cover", "only an own event takes an uploaded picture");
+		}
+		String previous = this.coverFile;
+		this.coverFile = file;
+		this.coverImageUrl = url;
+		this.coverCredit = null;
+		return previous;
+	}
+
+	/**
+	 * The uploaded picture goes; the event shows its activity's stand-in again.
+	 * @return the file that went, or null when there was none
+	 */
+	public String removeUploadedCover() {
+		String previous = this.coverFile;
+		if (previous != null) {
+			this.coverFile = null;
+			this.coverImageUrl = null;
+		}
+		return previous;
 	}
 
 	/** The author's account is gone (§18.1): their name leaves the event, the event stays. */
@@ -608,6 +651,10 @@ public class Event {
 		return this.coverImageUrl;
 	}
 
+	public String getCoverFile() {
+		return this.coverFile;
+	}
+
 	public CoverCredit getCoverCredit() {
 		return this.coverCredit;
 	}
@@ -701,6 +748,8 @@ public class Event {
 
 		private String coverImageUrl;
 
+		private String coverFile;
+
 		private CoverCredit coverCredit;
 
 		private Price price;
@@ -789,6 +838,13 @@ public class Event {
 
 		public Builder coverImageUrl(String coverImageUrl) {
 			this.coverImageUrl = coverImageUrl;
+			return this;
+		}
+
+		/** An uploaded picture carried over unchanged, as an editor's revision does. */
+		public Builder uploadedCover(String file, String url) {
+			this.coverFile = file;
+			this.coverImageUrl = url;
 			return this;
 		}
 

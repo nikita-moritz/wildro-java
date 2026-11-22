@@ -99,6 +99,7 @@ public class NoticeRelay {
 				NoticeText.Mail mail = switch (notice.kind()) {
 					case "COMMUNITY_SUSPENDED" -> NoticeText.communitySuspended(notice.locale(), notice.name(), terms, reason);
 					case "COMMUNITY_LOGO_REMOVED" -> NoticeText.communityLogoRemoved(notice.locale(), notice.name(), terms, reason);
+					case "EVENT_COVER_REMOVED" -> NoticeText.coverRemoved(notice.locale(), notice.name(), terms, reason);
 					default -> NoticeText.suspended(notice.locale(), notice.name(), terms, reason);
 				};
 				this.mailer.send(to.get(), mail.subject(), mail.text());

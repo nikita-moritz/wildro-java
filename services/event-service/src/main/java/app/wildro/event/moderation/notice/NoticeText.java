@@ -163,4 +163,54 @@ final class NoticeText {
 		};
 	}
 
+	static Mail coverRemoved(String locale, String eventName, String termsUrl, String reason) {
+		return switch (locale == null ? "de" : locale) {
+			case "en" -> new Mail("The picture of your event on wildro was removed: " + eventName, """
+					Hello,
+
+					we have removed the picture you uploaded for your event "%s" on wildro. The event itself stays as it is and now shows a stand-in picture; you can upload another one in your account.
+
+					Reason:
+					%s
+
+					The decision rests on our terms of use: %s
+					It was taken by a person from our moderation, not by an automated system.
+
+					If you disagree, reply to this email. We will review the decision again and tell you the outcome.
+
+					wildro
+					""".formatted(eventName, reason, termsUrl));
+			case "ru" -> new Mail("Картинка твоего события на wildro снята: " + eventName, """
+					Здравствуй,
+
+					мы сняли картинку, которую ты загрузил или загрузила к событию «%s» на wildro. Само событие осталось как было и теперь показывает картинку по умолчанию, новую можно загрузить в аккаунте.
+
+					Причина:
+					%s
+
+					Решение основано на правилах площадки: %s
+					Его принял человек из модерации, а не автоматическая система.
+
+					Если ты с решением не согласен или не согласна, ответь на это письмо. Мы пересмотрим решение и сообщим результат.
+
+					wildro
+					""".formatted(eventName, reason, termsUrl));
+			default -> new Mail("Das Bild deines Events auf wildro wurde entfernt: " + eventName, """
+					Hallo,
+
+					wir haben das Bild entfernt, das du für dein Event „%s“ auf wildro hochgeladen hast. Das Event selbst bleibt, wie es ist, und zeigt jetzt ein Symbolbild; ein anderes Bild kannst du in deinem Konto hochladen.
+
+					Grund:
+					%s
+
+					Die Entscheidung stützt sich auf unsere Nutzungsregeln: %s
+					Getroffen hat sie ein Mensch aus unserer Moderation, kein automatisches System.
+
+					Bist du anderer Meinung, antworte auf diese E-Mail. Wir prüfen die Entscheidung erneut und teilen dir das Ergebnis mit.
+
+					wildro
+					""".formatted(eventName, reason, termsUrl));
+		};
+	}
+
 }

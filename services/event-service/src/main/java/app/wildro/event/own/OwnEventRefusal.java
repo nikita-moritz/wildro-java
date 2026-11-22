@@ -17,7 +17,9 @@ public class OwnEventRefusal extends RuntimeException {
 		LIMIT_PER_DAY(HttpStatus.TOO_MANY_REQUESTS),
 		LIMIT_UPCOMING(HttpStatus.CONFLICT),
 		IN_THE_PAST(HttpStatus.UNPROCESSABLE_CONTENT),
-		WRONG_STATE(HttpStatus.CONFLICT);
+		WRONG_STATE(HttpStatus.CONFLICT),
+		INVALID(HttpStatus.UNPROCESSABLE_CONTENT),
+		UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE);
 
 		private final HttpStatus status;
 

@@ -67,6 +67,14 @@ class ModerationController {
 		return ResponseEntity.noContent().build();
 	}
 
+	/** The organiser's own picture alone comes down; the event stays and its owner is told why. */
+	@PostMapping("/v1/moderation/events/{slug}/cover/remove")
+	ResponseEntity<Void> removeCover(@AuthenticationPrincipal Jwt token, @PathVariable String slug,
+			@Valid @RequestBody SuspendRequest request) {
+		this.moderation.removeCover(slug, request.reason(), token.getSubject());
+		return ResponseEntity.noContent().build();
+	}
+
 	@PostMapping("/v1/moderation/reports/{id}/dismiss")
 	ResponseEntity<Void> dismiss(@AuthenticationPrincipal Jwt token, @PathVariable long id) {
 		this.moderation.dismiss(id, token.getSubject());

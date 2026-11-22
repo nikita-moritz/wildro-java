@@ -40,6 +40,8 @@ class EnumsMatchTheSchemaTest {
 	/** Redefines the status and both audit constraints; the latest definition is the one that holds. */
 	private static final String STAGE_TWO = "db/migration/V9__own_events_and_reports.sql";
 
+	private static final String COVERS = "db/migration/V14__uploaded_cover.sql";
+
 	private static final JsonNode IMPORT_SCHEMA = JsonMapper.builder().build().readTree(resource(ImportSchema.LOCATION));
 
 	@Test
@@ -93,7 +95,7 @@ class EnumsMatchTheSchemaTest {
 
 	@Test
 	void auditActionsMatch() {
-		assertThat(constraintValues(STAGE_TWO, "audit_log_action_known")).isEqualTo(namesOf(AuditAction.values()));
+		assertThat(constraintValues(COVERS, "audit_log_action_known")).isEqualTo(namesOf(AuditAction.values()));
 	}
 
 	@Test

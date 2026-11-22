@@ -20,7 +20,9 @@ public record OwnEventView(String slug, EventStatus status, String suspensionRea
 		String placeName, String description, ActivityType activityType, Difficulty difficulty, Instant startsAt,
 		Instant endsAt, Instant passesAt, double latitude, double longitude, BigDecimal distanceKm,
 		Integer elevationGainM, Integer maxParticipants, List<String> eventLinks, List<String> communityLinks,
-		Instant publishedAt, Instant updatedAt, String communitySlug, String organizer) {
+		Instant publishedAt, Instant updatedAt, String communitySlug, String organizer,
+		/** The organiser's own picture, null while the activity's stand-in shows. */
+		String coverImageUrl) {
 
 	static OwnEventView of(Event event) {
 		EventTranslation text = event.translation(event.getOriginalLocale());
@@ -30,7 +32,7 @@ public record OwnEventView(String slug, EventStatus status, String suspensionRea
 				event.getPassesAt(), event.getStartPoint().getY(), event.getStartPoint().getX(), event.getDistanceKm(),
 				event.getElevationGainM(), event.getVisibleCapacity(), urls(event, LinkScope.EVENT),
 				urls(event, LinkScope.COMMUNITY), event.getPublishedAt(), event.getUpdatedAt(),
-				event.getCommunitySlug(), event.getOrganizer());
+				event.getCommunitySlug(), event.getOrganizer(), event.getCoverFile() == null ? null : event.getCoverImageUrl());
 	}
 
 	private static List<String> urls(Event event, LinkScope scope) {

@@ -16,6 +16,7 @@ import app.wildro.event.audit.Operator;
 import app.wildro.event.domain.Event;
 import app.wildro.event.domain.EventRepository;
 import app.wildro.event.domain.EventStatus;
+import app.wildro.event.media.CoverFiles;
 import tools.jackson.databind.json.JsonMapper;
 
 /**
@@ -36,12 +37,16 @@ public class ModerationService {
 
 	private final Clock clock;
 
-	ModerationService(JdbcClient jdbc, EventRepository events, AuditRecorder audit, JsonMapper json, Clock clock) {
+	private final CoverFiles covers;
+
+	ModerationService(JdbcClient jdbc, EventRepository events, AuditRecorder audit, JsonMapper json, Clock clock,
+			CoverFiles covers) {
 		this.jdbc = jdbc;
 		this.events = events;
 		this.audit = audit;
 		this.json = json;
 		this.clock = clock;
+		this.covers = covers;
 	}
 
 	/** Only what the public can see can be reported: a published event. */
@@ -65,7 +70,8 @@ public class ModerationService {
 	@Transactional(readOnly = true)
 	public List<OpenReport> openReports() {
 		return this.jdbc.sql("""
-				SELECT r.id, r.reason, r.details, r.created_at, e.slug, e.kind, e.status, t.name, e.organizer
+				SELECT r.id, r.reason, r.details, r.created_at, e.slug, e.kind, e.status, t.name, e.organizer,
+				       CASE WHEN e.cover_file IS NOT NULL THEN e.cover_image_url END AS uploaded_cover
 				FROM reports r
 				JOIN events e ON e.id = r.event_id
 				JOIN event_translations t ON t.event_id = e.id AND t.locale = coalesce(e.original_locale, 'de')
@@ -75,7 +81,8 @@ public class ModerationService {
 				""")
 			.query((rs, n) -> new OpenReport(rs.getLong("id"), ReportReason.valueOf(rs.getString("reason")),
 					rs.getString("details"), rs.getTimestamp("created_at").toInstant(), rs.getString("slug"),
-					rs.getString("kind"), rs.getString("status"), rs.getString("name"), rs.getString("organizer")))
+					rs.getString("kind"), rs.getString("status"), rs.getString("name"), rs.getString("organizer"),
+					rs.getString("uploaded_cover")))
 			.list();
 	}
 
@@ -111,6 +118,35 @@ public class ModerationService {
 				Map.of("reason", event.getSuspensionReason()));
 	}
 
+	/**
+	 * Takes the organiser's own picture down and leaves the event up, with a
+	 * reason the owner (or, for a group's event, its author) is sent, DSA Art. 17.
+	 */
+	@Transactional
+	public void removeCover(String slug, String reason, String moderatorId) {
+		Event event = find(slug);
+		if (event.getCoverFile() == null || reason == null || reason.isBlank()) {
+			throw new ModerationRefusal(ModerationRefusal.Code.WRONG_STATE,
+					"only an uploaded picture is taken down, with a reason");
+		}
+		String file = event.removeUploadedCover();
+		String recipient = event.getOwnerUserId() != null ? event.getOwnerUserId() : event.getAuthorUserId();
+		if (recipient != null) {
+			this.jdbc.sql("""
+					INSERT INTO notice_outbox (kind, recipient_user_id, event_id, payload)
+					VALUES ('EVENT_COVER_REMOVED', :to, :event, CAST(:payload AS jsonb))
+					""")
+				.param("to", recipient)
+				.param("event", event.getId())
+				.param("payload", this.json.writeValueAsString(Map.of("slug", event.getSlug(), "reason", reason.strip(),
+						"decidedAt", this.clock.instant().toString())))
+				.update();
+		}
+		this.audit.record(Operator.web(moderatorId), AuditAction.COVER_REMOVED, event,
+				Map.of("file", file, "reason", reason.strip()));
+		this.covers.deleteAfterCommit(file);
+	}
+
 	@Transactional
 	public void reinstate(String slug, String moderatorId) {
 		Event event = find(slug);
@@ -141,8 +177,9 @@ public class ModerationService {
 			.orElseThrow(() -> new ModerationRefusal(ModerationRefusal.Code.NOT_FOUND, "no such event"));
 	}
 
+	/** {@code uploadedCover}: the organiser's own picture, which moderation may take down alone; null otherwise. */
 	public record OpenReport(long id, ReportReason reason, String details, Instant createdAt, String slug, String kind,
-			String eventStatus, String eventName, String organizer) {
+			String eventStatus, String eventName, String organizer, String uploadedCover) {
 	}
 
 }

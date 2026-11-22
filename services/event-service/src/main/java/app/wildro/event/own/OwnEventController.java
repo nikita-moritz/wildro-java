@@ -66,6 +66,19 @@ class OwnEventController {
 		return this.service.publish(token, slug);
 	}
 
+	/** The organiser's own picture, as WebP bytes the frontend's server has already scaled and stripped. */
+	@PutMapping(path = "/{slug}/cover", consumes = "image/webp")
+	OwnEventView uploadCover(@AuthenticationPrincipal Jwt token, Authentication authentication,
+			@PathVariable String slug, @RequestBody byte[] webp) {
+		return this.service.uploadCover(token, authentication, slug, webp);
+	}
+
+	@PostMapping("/{slug}/cover/remove")
+	OwnEventView removeCover(@AuthenticationPrincipal Jwt token, Authentication authentication,
+			@PathVariable String slug) {
+		return this.service.removeCover(token, authentication, slug);
+	}
+
 	@PostMapping("/{slug}/cancel")
 	OwnEventView cancel(@AuthenticationPrincipal Jwt token, Authentication authentication, @PathVariable String slug) {
 		return this.service.cancel(token, authentication, slug);
