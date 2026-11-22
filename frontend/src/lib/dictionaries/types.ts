@@ -51,6 +51,7 @@ export interface Dictionary {
   };
   feed: {
     title: string;
+    create: string;
     description: string;
     empty: string;
     filteredEmpty: string;

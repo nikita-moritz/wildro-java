@@ -8,6 +8,7 @@ import { getDictionary } from "@/lib/dictionaries";
 import { elvixClientId } from "@/lib/env";
 import { isLocale } from "@/lib/locales";
 import { routes } from "@/lib/routes";
+import { returnPath } from "@/lib/signed-in-page";
 
 export async function generateMetadata({ params }: PageProps<"/[locale]/sign-in">): Promise<Metadata> {
   const { locale } = await params;
@@ -24,12 +25,14 @@ export const instant = false;
  * language, as registered in the elvix application: the form mounted here picks
  * the returning sign-in up and finishes it.
  */
-export default async function SignInPage({ params }: PageProps<"/[locale]/sign-in">) {
+export default async function SignInPage({ params, searchParams }: PageProps<"/[locale]/sign-in">) {
   const { locale } = await params;
   if (!isLocale(locale)) {
     notFound();
   }
   const t = getDictionary(locale).auth;
+  // Back to where the person was headed (the event editor, say), or the account.
+  const next = returnPath(locale, (await searchParams).next);
   // The clientId is configuration of the running server, not of the build: CI
   // builds without it, and a prerender would bake "not available" in for good.
   await connection();
@@ -43,7 +46,7 @@ export default async function SignInPage({ params }: PageProps<"/[locale]/sign-i
       {clientId ? (
         <ElvixShell clientId={clientId} locale={locale}>
           <SignInPanel
-            next={routes.account(locale)}
+            next={next}
             privacyUrl={routes.privacy(locale)}
             termsUrl={routes.legalNotice(locale)}
             failedText={t.failed}

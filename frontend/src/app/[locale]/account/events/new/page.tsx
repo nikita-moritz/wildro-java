@@ -28,7 +28,7 @@ export default async function NewEventPage({ params }: PageProps<"/[locale]/acco
     notFound();
   }
   const t = getDictionary(locale);
-  const session = await requireSignedIn(locale);
+  const session = await requireSignedIn(locale, routes.newEvent(locale));
   // Said up front rather than after the form is filled in.
   const blocker = !session
     ? t.auth.unavailable

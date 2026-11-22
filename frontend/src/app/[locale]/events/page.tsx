@@ -1,4 +1,6 @@
+import { Plus } from "lucide-react";
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { eventCardText } from "@/components/event-list-item";
@@ -9,6 +11,7 @@ import { FiltersPanel } from "@/components/filters-panel";
 import { LegalIsland } from "@/components/legal-island";
 import { SearchBox } from "@/components/search-box";
 import { SiteFooter } from "@/components/site-footer";
+import { Button } from "@/components/ui/button";
 import { getDictionary } from "@/lib/dictionaries";
 import { getFeed } from "@/lib/events-api";
 import { filterToParams, isEmptyFilter, parseFilter } from "@/lib/feed-filter";
@@ -72,7 +75,17 @@ export default async function FeedPage({ params, searchParams }: PageProps<"/[lo
         {/* Tiles use the whole width of the screen (owner's call, 2026-11-03); the list keeps its column. */}
         <div className="mx-auto flex max-w-2xl flex-col gap-3 px-4 pt-4 pb-6 tiles-chosen:max-w-none">
           {/* Above the bar's band (z-40) and below the header (z-50): in place, the band never covers it. */}
-          <h1 className="relative z-45 text-lg font-semibold">{t.feed.title}</h1>
+          <div className="relative z-45 flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+            <h1 className="text-lg font-semibold">{t.feed.title}</h1>
+            {/* Straight to the editor; a guest signs in first and comes back to it.
+                Not prefetched: the page behind it reads the session. */}
+            <Button asChild className="h-11 gap-1.5 rounded-full px-4 lg:h-10">
+              <Link href={routes.newEvent(locale)} prefetch={false}>
+                <Plus className="h-4 w-4" aria-hidden />
+                {t.feed.create}
+              </Link>
+            </Button>
+          </div>
 
           {/*
             Stays under the header while the list scrolls (top-16 is the header's

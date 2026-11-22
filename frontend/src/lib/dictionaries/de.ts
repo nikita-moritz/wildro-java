@@ -42,6 +42,7 @@ export const de: Dictionary = {
   },
   feed: {
     title: "Kommende Wanderungen und Events",
+    create: "Event erstellen",
     metaTitle: "Wandertermine in NRW, Eifel, Belgien, Niederlande",
     description:
       "Alle kommenden Wanderungen und Outdoor-Events in NRW, der Eifel, Belgien und den Niederlanden, nach Datum sortiert. Suchen, filtern und mitwandern.",

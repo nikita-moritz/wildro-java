@@ -42,6 +42,7 @@ export const en: Dictionary = {
   },
   feed: {
     title: "Upcoming hikes and events",
+    create: "Create event",
     description:
       "All upcoming hikes and outdoor events in NRW, the Eifel, Belgium and the Netherlands, sorted by date. Search, filter and join an open group.",
     empty: "Nothing is coming up right now. Check back soon.",

@@ -21,7 +21,8 @@ export const routes = {
   legalNotice: (locale: Locale) => `/${locale}/legal-notice`,
   privacy: (locale: Locale) => `/${locale}/privacy`,
   // Not indexed and not in the sitemap: personal pages, closed in robots.ts.
-  signIn: (locale: Locale) => `/${locale}/sign-in`,
+  // next: where to return after signing in, a path of this site (lib/signed-in-page.ts checks it).
+  signIn: (locale: Locale, next?: string) => `/${locale}/sign-in${next ? `?next=${encodeURIComponent(next)}` : ""}`,
   account: (locale: Locale) => `/${locale}/account`,
   myEvents: (locale: Locale) => `/${locale}/account/events`,
   newEvent: (locale: Locale) => `/${locale}/account/events/new`,
