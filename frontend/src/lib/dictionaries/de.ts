@@ -215,6 +215,7 @@ export const de: Dictionary = {
     difficultyNone: "Keine Angabe",
     fieldStarts: "Beginn",
     fieldEnds: "Ende (optional)",
+    fieldTime: "Uhrzeit",
     fieldLocation: "Startpunkt",
     fieldLocationHint: "Klicke auf die Karte oder trage die Koordinaten ein.",
     latitude: "Breitengrad",

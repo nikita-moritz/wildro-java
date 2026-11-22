@@ -92,7 +92,7 @@ export default async function EditEventPage({ params, searchParams }: PageProps<
         <EventEditor
           locale={locale}
           initial={event}
-          t={{ own: t.own, activity: t.activity, difficulty: t.difficulty }}
+          t={{ own: t.own, activity: t.activity, difficulty: t.difficulty, filters: t.filters }}
           mapboxToken={mapboxToken() ?? null}
           editPath={routes.editEvent(locale, "{slug}")}
         />

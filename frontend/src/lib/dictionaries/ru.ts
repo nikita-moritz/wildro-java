@@ -215,6 +215,7 @@ export const ru: Dictionary = {
     difficultyNone: "Не указана",
     fieldStarts: "Начало",
     fieldEnds: "Конец (необязательно)",
+    fieldTime: "Время",
     fieldLocation: "Точка старта",
     fieldLocationHint: "Нажми на карту или впиши координаты.",
     latitude: "Широта",

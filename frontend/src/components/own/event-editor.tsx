@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import { LocationPicker } from "@/components/own/location-picker";
 import { Button } from "@/components/ui/button";
+import { DateTimeField } from "@/components/date-time-field";
 import { berlinToIso, isoToBerlin } from "@/lib/berlin-time";
 import type { Dictionary } from "@/lib/dictionaries";
 import { LOCALES, type Locale } from "@/lib/locales";
@@ -29,7 +30,7 @@ export interface EditorInitial {
   communityLinks: string[];
 }
 
-type Text = Pick<Dictionary, "own" | "activity" | "difficulty">;
+type Text = Pick<Dictionary, "own" | "activity" | "difficulty" | "filters">;
 
 const FIELD = "h-11 w-full rounded-lg border bg-background px-3 text-base";
 const LABEL = "flex flex-col gap-1.5 text-sm font-medium";
@@ -191,20 +192,27 @@ export function EventEditor({
             ))}
           </select>
         </label>
-        <label className={LABEL}>
-          {own.fieldStarts}
-          <input
-            name="startsAt"
-            type="datetime-local"
-            required
-            defaultValue={isoToBerlin(initial?.startsAt ?? null)}
-            className={FIELD}
-          />
-        </label>
-        <label className={LABEL}>
-          {own.fieldEnds}
-          <input name="endsAt" type="datetime-local" defaultValue={isoToBerlin(initial?.endsAt ?? null)} className={FIELD} />
-        </label>
+        <DateTimeField
+          name="startsAt"
+          label={own.fieldStarts}
+          timeLabel={own.fieldTime}
+          required
+          defaultValue={isoToBerlin(initial?.startsAt ?? null)}
+          locale={locale}
+          placeholder={t.filters.datePlaceholder}
+          clearLabel={t.filters.dateClear}
+          className={FIELD}
+        />
+        <DateTimeField
+          name="endsAt"
+          label={own.fieldEnds}
+          timeLabel={own.fieldTime}
+          defaultValue={isoToBerlin(initial?.endsAt ?? null)}
+          locale={locale}
+          placeholder={t.filters.datePlaceholder}
+          clearLabel={t.filters.dateClear}
+          className={FIELD}
+        />
       </div>
 
       <fieldset className="flex flex-col gap-3 rounded-xl border p-4">

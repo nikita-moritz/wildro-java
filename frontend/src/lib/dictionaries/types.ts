@@ -215,6 +215,7 @@ export interface Dictionary {
     difficultyNone: string;
     fieldStarts: string;
     fieldEnds: string;
+    fieldTime: string;
     fieldLocation: string;
     fieldLocationHint: string;
     latitude: string;

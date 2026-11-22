@@ -56,7 +56,7 @@ export default async function NewEventPage({ params }: PageProps<"/[locale]/acco
         <EventEditor
           locale={locale}
           initial={null}
-          t={{ own: t.own, activity: t.activity, difficulty: t.difficulty }}
+          t={{ own: t.own, activity: t.activity, difficulty: t.difficulty, filters: t.filters }}
           mapboxToken={mapboxToken() ?? null}
           editPath={routes.editEvent(locale, "{slug}")}
           communities={writable.map(({ slug, name }) => ({ slug, name }))}

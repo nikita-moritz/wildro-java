@@ -21,18 +21,18 @@ import { cn } from "@/lib/utils";
  * button and a calendar that write the same YYYY-MM-DD value under the same
  * name, so nothing downstream can tell the two apart.
  */
-const CALENDAR_LOCALE = { de, en: enGB, ru };
+export const CALENDAR_LOCALE = { de, en: enGB, ru };
 
 const LABEL = "flex flex-col gap-1 text-xs text-muted-foreground";
 
 const subscribe = () => () => {};
 
-function parseIso(value: string): Date | undefined {
+export function parseIso(value: string): Date | undefined {
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
   return match ? new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3])) : undefined;
 }
 
-function toIso(date: Date): string {
+export function toIso(date: Date): string {
   const pad = (part: number) => String(part).padStart(2, "0");
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
