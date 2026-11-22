@@ -262,6 +262,7 @@ export interface Dictionary {
     coverUpload: string;
     coverRemove: string;
     coverDone: string;
+    coverOptional: string;
   };
   moderation: {
     title: string;

@@ -277,6 +277,7 @@ export const de: Dictionary = {
     coverUpload: "Hochladen",
     coverRemove: "Bild entfernen",
     coverDone: "Bild gespeichert.",
+    coverOptional: "Optional. Ohne eigenes Bild zeigt das Event ein Symbolbild zur Aktivität. Nur Bilder, an denen du die Rechte hast, und keine erkennbaren Personen ohne deren Einwilligung; Standortdaten im Bild werden entfernt.",
   },
   moderation: {
     title: "Moderation",

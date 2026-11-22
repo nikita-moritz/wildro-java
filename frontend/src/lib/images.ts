@@ -2,8 +2,7 @@ import "server-only";
 
 import sharp from "sharp";
 
-/** What a phone photo may weigh before it is scaled down; the stored picture is far smaller. */
-export const MAX_UPLOAD = 8 * 1024 * 1024;
+export { MAX_UPLOAD } from "@/lib/upload-limit";
 
 /** What phones and cameras send; HEIF covers the iPhone's HEIC. */
 const RASTER = new Set(["jpeg", "png", "webp", "heif", "avif", "gif", "tiff"]);

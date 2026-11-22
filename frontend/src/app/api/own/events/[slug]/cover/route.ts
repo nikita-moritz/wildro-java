@@ -3,14 +3,15 @@ import { MAX_UPLOAD, refererLocale, toWebp } from "@/lib/images";
 import { isLocale } from "@/lib/locales";
 import { errorCode, publicChanged } from "@/lib/own-events";
 import { routes } from "@/lib/routes";
-import { localeOf, seeOther, text } from "@/lib/route-helpers";
+import { localeOf, seeOther as redirectTo, text } from "@/lib/route-helpers";
 import { currentSession, fromThisSite } from "@/lib/session";
 
 /**
  * POST /api/own/events/{slug}/cover, the picture form on an own event's edit
  * page: intent "upload" with a file, or "remove". The upload becomes a 1600 by
  * 900 WebP without metadata here (lib/images.ts), the covers' shape; the event
- * service checks who may and stores it. A 303 back to the page.
+ * service checks who may and stores it. A 303 back to the page, or with
+ * reply "json" (the editor, right after creating the event) {ok} or {code}.
  */
 export async function POST(request: Request, { params }: RouteContext<"/api/own/events/[slug]/cover">) {
   if (!fromThisSite(request)) {
@@ -20,14 +21,22 @@ export async function POST(request: Request, { params }: RouteContext<"/api/own/
   // Refused before the body is read; the form's language is in the page it came from.
   if (Number(request.headers.get("content-length") ?? 0) > MAX_UPLOAD + 64 * 1024) {
     const from = refererLocale(request);
-    return seeOther(`${routes.editEvent(isLocale(from) ? from : "de", slug)}?error=TOO_LARGE`);
+    return redirectTo(`${routes.editEvent(isLocale(from) ? from : "de", slug)}?error=TOO_LARGE`);
   }
   const form = await request.formData().catch(() => null);
   const locale = localeOf(form);
   const page = routes.editEvent(locale, slug);
+  const json = text(form, "reply") === "json";
+  const seeOther = (path: string) => {
+    if (!json) {
+      return redirectTo(path);
+    }
+    const code = new URL(path, "http://x").searchParams.get("error");
+    return code ? Response.json({ code }, { status: 400 }) : Response.json({ ok: true });
+  };
   const session = await currentSession();
   if (session.state === "signed-out") {
-    return seeOther(routes.signIn(locale, page));
+    return json ? Response.json({ code: "UNAVAILABLE" }, { status: 401 }) : redirectTo(routes.signIn(locale, page));
   }
   if (session.state === "unavailable") {
     return seeOther(`${page}?error=UNAVAILABLE`);

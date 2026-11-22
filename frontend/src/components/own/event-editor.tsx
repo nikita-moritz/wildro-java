@@ -8,6 +8,7 @@ import { DateTimeField } from "@/components/date-time-field";
 import { berlinToIso, isoToBerlin } from "@/lib/berlin-time";
 import type { Dictionary } from "@/lib/dictionaries";
 import { LOCALES, type Locale } from "@/lib/locales";
+import { MAX_UPLOAD } from "@/lib/upload-limit";
 import { ACTIVITY_TYPES, DIFFICULTIES, type ActivityType, type Difficulty } from "@/lib/vocabulary";
 
 /** What the editor starts from: an existing event, or nothing. */
@@ -64,6 +65,8 @@ export function EventEditor({
   const [longitude, setLongitude] = useState(initial ? String(initial.longitude) : "");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // A local preview of the chosen picture; nothing leaves the browser before saving.
+  const [preview, setPreview] = useState<string | null>(null);
 
   function useMyLocation() {
     navigator.geolocation?.getCurrentPosition((position) => {
@@ -107,10 +110,28 @@ export function EventEditor({
     }).catch(() => null);
     const json = (await response?.json().catch(() => null)) as { slug?: string; code?: string; field?: string } | null;
     if (response?.ok && json?.slug) {
+      // A picture chosen while creating goes up right after: the event exists now.
+      // Should it fail, the event stays and the edit page says why.
+      let coverError = "";
+      const cover = data.get("cover");
+      if (!initial && cover instanceof File && cover.size > MAX_UPLOAD) {
+        coverError = "&error=TOO_LARGE";
+      } else if (!initial && cover instanceof File && cover.size > 0) {
+        const upload = new FormData();
+        upload.set("locale", locale);
+        upload.set("intent", "upload");
+        upload.set("reply", "json");
+        upload.set("cover", cover);
+        const answer = await fetch(`/api/own/events/${encodeURIComponent(json.slug)}/cover`, { method: "POST", body: upload }).catch(() => null);
+        if (!answer?.ok) {
+          const refusal = (await answer?.json().catch(() => null)) as { code?: string } | null;
+          coverError = `&error=${encodeURIComponent(refusal?.code ?? "UNAVAILABLE")}`;
+        }
+      }
       // A full navigation on purpose: the edit page reads the session and the fresh
       // event on the server, and a soft one could reuse a render made before the save.
       // eslint-disable-next-line @next/next/no-location-assign-relative-destination
-      window.location.assign(`${editPath.replace("{slug}", json.slug)}?done=saved`);
+      window.location.assign(`${editPath.replace("{slug}", json.slug)}?done=saved${coverError}`);
       return;
     }
     setBusy(false);
@@ -169,6 +190,36 @@ export function EventEditor({
           className="w-full rounded-lg border bg-background px-3 py-2 text-base"
         />
       </label>
+
+      {/* Only while creating: an existing event has its own picture section above the form. */}
+      {!initial && (
+        <div className={LABEL}>
+          <span>{own.coverTitle}</span>
+          {preview && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={preview} alt="" className="aspect-[16/9] w-full rounded-xl border object-cover sm:w-80" />
+          )}
+          <label className="flex min-h-11 w-full cursor-pointer items-center rounded-lg border bg-background px-3 text-sm font-normal">
+            <span className="sr-only">{own.coverChoose}</span>
+            <input
+              type="file"
+              name="cover"
+              accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
+              onChange={(event) => {
+                const file = event.target.files?.[0];
+                setPreview((old) => {
+                  if (old) {
+                    URL.revokeObjectURL(old);
+                  }
+                  return file ? URL.createObjectURL(file) : null;
+                });
+              }}
+              className="w-full text-sm file:mr-3 file:rounded-full file:border-0 file:bg-muted file:px-3 file:py-1.5 file:text-sm file:font-medium"
+            />
+          </label>
+          <span className="text-xs font-normal text-muted-foreground">{own.coverOptional}</span>
+        </div>
+      )}
 
       <div className="grid gap-5 sm:grid-cols-2">
         <label className={LABEL}>

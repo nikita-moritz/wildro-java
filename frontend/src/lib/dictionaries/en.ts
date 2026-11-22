@@ -277,6 +277,7 @@ export const en: Dictionary = {
     coverUpload: "Upload",
     coverRemove: "Remove picture",
     coverDone: "Picture saved.",
+    coverOptional: "Optional. Without its own picture the event shows a stand-in for its activity. Only pictures you hold the rights to, and no recognisable people without their consent; location data in the picture is removed.",
   },
   moderation: {
     title: "Moderation",
