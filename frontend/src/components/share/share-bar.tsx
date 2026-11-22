@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarPlus, Check, ChevronDown, Copy, Download, Link2, Share2, Smartphone } from "lucide-react";
+import { CalendarPlus, Check, ChevronDown, Copy, Download, FileText, Link2, Share2, Smartphone } from "lucide-react";
 import { useState, useSyncExternalStore } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -32,6 +32,7 @@ export function ShareBar({
   googleUrl,
   icsUrl,
   images,
+  posterUrl,
   t,
 }: {
   title: string;
@@ -44,6 +45,8 @@ export function ShareBar({
   icsUrl: string;
   /** The Instagram pictures of the event, drawn on request: post and story. */
   images: { post: string; story: string };
+  /** The A4 poster page, to print or save as PDF. */
+  posterUrl: string;
   t: Dictionary["share"];
 }) {
   const [channel, setChannel] = useState<Channel>("whatsapp");
@@ -118,6 +121,12 @@ export function ShareBar({
             <Button type="button" variant="outline" className="h-11 gap-2 rounded-full" onClick={() => void copy(url, "link")}>
               {copied === "link" ? <Check className="h-4 w-4" aria-hidden /> : <Link2 className="h-4 w-4" aria-hidden />}
               {copied === "link" ? t.copied : t.copyLink}
+            </Button>
+            <Button asChild variant="outline" className="h-11 gap-2 rounded-full">
+              <a href={posterUrl}>
+                <FileText className="h-4 w-4" aria-hidden />
+                {t.poster}
+              </a>
             </Button>
           </div>
 

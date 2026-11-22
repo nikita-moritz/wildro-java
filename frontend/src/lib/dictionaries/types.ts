@@ -314,6 +314,9 @@ export interface Dictionary {
     shareImage: string;
     download: string;
     instagramHint: string;
+    poster: string;
+    print: string;
+    posterHint: string;
     copyText: string;
     textCopied: string;
     facebookHint: string;

@@ -172,6 +172,7 @@ export default async function EventPageRoute({ params }: PageProps<"/[locale]/ev
                 facebook: shareText("facebook", shareFacts, t.share.more),
                 instagram: shareText("instagram", shareFacts, t.share.more),
               }}
+              posterUrl={`${routes.event(locale, event.slug)}/poster`}
               images={{
                 post: `${routes.event(locale, event.slug)}/image/post`,
                 story: `${routes.event(locale, event.slug)}/image/story`,

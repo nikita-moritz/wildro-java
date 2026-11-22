@@ -113,7 +113,7 @@ export function SiteHeaderBar({ locale, t, pathname = "" }: { locale: Locale; t:
   return (
     // pointer-events-none on the bar and back on each island: the gaps between
     // the pills are not the header's, a click there reaches the map below.
-    <header className="pointer-events-none sticky top-0 z-50">
+    <header className="pointer-events-none sticky top-0 z-50 print:hidden">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 px-3">
         <div className="flex items-center gap-2">
           <Link href={routes.home(locale)} className={cn(PILL, "pointer-events-auto group gap-2 px-4 text-base font-bold hover:bg-muted")}>

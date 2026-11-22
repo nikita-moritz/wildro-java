@@ -69,7 +69,7 @@ export function InstallPrompt({ t, icon }: { t: InstallText; icon: string }) {
   };
 
   return (
-    <div role="dialog" aria-label={t.title} className="fixed inset-x-3 bottom-3 z-[1000] rounded-2xl border bg-card p-5 shadow-xl">
+    <div role="dialog" aria-label={t.title} className="fixed inset-x-3 bottom-3 z-1000 rounded-2xl border bg-card p-5 shadow-xl print:hidden">
       <button
         type="button"
         onClick={() => setMode(null)}
