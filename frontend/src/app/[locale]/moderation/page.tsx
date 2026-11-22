@@ -74,6 +74,24 @@ export default async function ModerationPage({ params, searchParams }: PageProps
               <p className="text-xs text-muted-foreground">
                 {t.event.organizer}: {report.organizer} · {report.kind === "OWN" ? t.event.ownBadge : t.event.sourceBadge}
               </p>
+              {report.uploadedCover && (
+                // The organiser's own picture alone: the event stays, the owner is told the reason.
+                <form method="post" action="/api/moderation/cover-remove" className="flex flex-col gap-2 rounded-lg border p-3">
+                  <input type="hidden" name="locale" value={locale} />
+                  <input type="hidden" name="slug" value={report.slug} />
+                  <div className="flex items-center gap-3">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={report.uploadedCover} alt="" className="aspect-[16/9] w-32 rounded-lg border object-cover" />
+                    <label className="flex flex-1 flex-col gap-1.5 text-sm font-medium">
+                      {t.moderation.logoReason}
+                      <textarea name="reason" required maxLength={2000} rows={2} className="w-full rounded-lg border bg-background px-3 py-2 text-base" />
+                    </label>
+                  </div>
+                  <Button type="submit" variant="outline" className="h-11 self-start">
+                    {t.moderation.logoRemove}
+                  </Button>
+                </form>
+              )}
               <form method="post" action="/api/moderation/suspend" className="flex flex-col gap-2">
                 <input type="hidden" name="locale" value={locale} />
                 <input type="hidden" name="slug" value={report.slug} />

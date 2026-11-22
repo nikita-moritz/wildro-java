@@ -219,11 +219,11 @@ export default async function EventPageRoute({ params }: PageProps<"/[locale]/ev
           {event.coverImageUrl ? (
             <figure className="flex flex-col gap-1.5">
               <div className="overflow-hidden rounded-xl border">
-                {/* A freely licensed photo in our own storage; already sized, so no optimiser. */}
+                {/* A freely licensed photo or the organiser's own, in our own storage; already sized, so no optimiser. */}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={event.coverImageUrl} alt="" width={1200} height={675} className="h-auto w-full" />
               </div>
-              {/* The licence allows the photo only with its author and licence beside it. */}
+              {/* The licence allows an imported photo only with its author and licence beside it; the organiser's own carries none. */}
               {event.coverCredit && (
                 <figcaption className="text-xs text-muted-foreground">
                   {t.event.photo}: {event.coverCredit.author},{" "}

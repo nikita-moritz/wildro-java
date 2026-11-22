@@ -6,6 +6,7 @@ import { BackLink } from "@/components/back-link";
 import { EventEditor } from "@/components/own/event-editor";
 import { Notice } from "@/components/own/notice";
 import { Button } from "@/components/ui/button";
+import { defaultCover } from "@/lib/covers";
 import { getDictionary } from "@/lib/dictionaries";
 import { mapboxToken } from "@/lib/env";
 import { isLocale } from "@/lib/locales";
@@ -43,7 +44,16 @@ export default async function EditEventPage({ params, searchParams }: PageProps<
     notFound();
   }
   const done =
-    query.done === "saved" ? t.own.saved : query.done === "publish" ? t.own.published : query.done === "cancel" ? t.own.cancelledDone : null;
+    query.done === "saved"
+      ? t.own.saved
+      : query.done === "publish"
+        ? t.own.published
+        : query.done === "cancel"
+          ? t.own.cancelledDone
+          : query.done === "cover"
+            ? t.own.coverDone
+            : null;
+  const stand = defaultCover(event.activityType);
   const failed = typeof query.error === "string" ? t.own.errors[errorCode(query.error)] : null;
   const editable = event.status === "DRAFT" || event.status === "PUBLISHED";
 
@@ -87,6 +97,54 @@ export default async function EditEventPage({ params, searchParams }: PageProps<
           </form>
         )}
       </div>
+
+      {editable && (
+        <section className="flex flex-col gap-3">
+          <h2 className="font-semibold">{t.own.coverTitle}</h2>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+            {/* Your own picture, or the activity's stand-in that shows meanwhile. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={event.coverImageUrl ?? stand?.small ?? ""}
+              alt=""
+              className="aspect-[16/9] w-full rounded-xl border bg-muted object-cover sm:w-64"
+            />
+            <p className="text-sm text-muted-foreground">{event.coverImageUrl ? t.own.coverHint : t.own.coverStandIn}</p>
+          </div>
+          {/* A plain multipart form: the server cuts the picture, nothing runs in the browser. */}
+          <form
+            method="post"
+            action={`/api/own/events/${encodeURIComponent(event.slug)}/cover`}
+            encType="multipart/form-data"
+            className="flex flex-wrap items-center gap-2"
+          >
+            <input type="hidden" name="locale" value={locale} />
+            <input type="hidden" name="intent" value="upload" />
+            <label className="flex min-h-11 w-full cursor-pointer items-center rounded-lg border bg-background px-3 text-sm sm:w-auto sm:flex-1">
+              <span className="sr-only">{t.own.coverChoose}</span>
+              <input
+                type="file"
+                name="cover"
+                required
+                accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
+                className="w-full text-sm file:mr-3 file:rounded-full file:border-0 file:bg-muted file:px-3 file:py-1.5 file:text-sm file:font-medium"
+              />
+            </label>
+            <Button type="submit" className="h-11">
+              {t.own.coverUpload}
+            </Button>
+          </form>
+          {event.coverImageUrl && (
+            <form method="post" action={`/api/own/events/${encodeURIComponent(event.slug)}/cover`}>
+              <input type="hidden" name="locale" value={locale} />
+              <input type="hidden" name="intent" value="remove" />
+              <Button type="submit" variant="outline" size="sm" className="text-destructive">
+                {t.own.coverRemove}
+              </Button>
+            </form>
+          )}
+        </section>
+      )}
 
       {editable && (
         <EventEditor

@@ -4,7 +4,7 @@ import { localeOf, seeOther, text } from "@/lib/route-helpers";
 import { currentSession, fromThisSite } from "@/lib/session";
 
 /**
- * POST /api/moderation/{suspend|reinstate|dismiss}, forms on the moderation
+ * POST /api/moderation/{suspend|reinstate|dismiss|cover-remove}, forms on the moderation
  * page. The role is checked by the event service, not here.
  */
 export async function POST(request: Request, { params }: RouteContext<"/api/moderation/[action]">) {
@@ -30,6 +30,10 @@ export async function POST(request: Request, { params }: RouteContext<"/api/mode
     });
   } else if (action === "reinstate") {
     response = await callEventService("POST", `/v1/moderation/events/${slug}/reinstate`, session.jwt);
+  } else if (action === "cover-remove") {
+    response = await callEventService("POST", `/v1/moderation/events/${slug}/cover/remove`, session.jwt, {
+      reason: text(form, "reason"),
+    });
   } else if (action === "dismiss") {
     response = await callEventService("POST", `/v1/moderation/reports/${encodeURIComponent(text(form, "report"))}/dismiss`, session.jwt);
   }

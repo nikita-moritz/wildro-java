@@ -254,7 +254,14 @@ export interface Dictionary {
     ownerMe: string;
     viewPublic: string;
     back: string;
-    errors: Record<"TERMS_REQUIRED" | "DISPLAY_NAME_REQUIRED" | "LIMIT_PER_DAY" | "LIMIT_UPCOMING" | "IN_THE_PAST" | "WRONG_STATE" | "NOT_YOURS" | "NOT_FOUND" | "INVALID" | "UNAVAILABLE" | "GENERIC", string>;
+    errors: Record<"TERMS_REQUIRED" | "DISPLAY_NAME_REQUIRED" | "LIMIT_PER_DAY" | "LIMIT_UPCOMING" | "IN_THE_PAST" | "WRONG_STATE" | "NOT_YOURS" | "NOT_FOUND" | "INVALID" | "NO_FILE" | "TOO_LARGE" | "NOT_AN_IMAGE" | "UNAVAILABLE" | "GENERIC", string>;
+    coverTitle: string;
+    coverHint: string;
+    coverStandIn: string;
+    coverChoose: string;
+    coverUpload: string;
+    coverRemove: string;
+    coverDone: string;
   };
   moderation: {
     title: string;

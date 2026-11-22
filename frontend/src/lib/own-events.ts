@@ -40,6 +40,8 @@ export const ownEventSchema = z.object({
   updatedAt: instant,
   communitySlug: z.string().nullable(),
   organizer: z.string(),
+  // The organiser's own picture; null while the activity's stand-in shows.
+  coverImageUrl: z.string().nullish().transform((value) => value ?? null),
 });
 
 export type OwnEvent = z.infer<typeof ownEventSchema>;
@@ -54,6 +56,8 @@ export const openReportSchema = z.object({
   eventStatus: z.string(),
   eventName: z.string(),
   organizer: z.string(),
+  // The organiser's own picture, which moderation may take down alone.
+  uploadedCover: z.string().nullish().transform((value) => value ?? null),
 });
 
 export type OpenReport = z.infer<typeof openReportSchema>;
@@ -69,6 +73,9 @@ export const ERROR_CODES = [
   "NOT_YOURS",
   "NOT_FOUND",
   "INVALID",
+  "NO_FILE",
+  "TOO_LARGE",
+  "NOT_AN_IMAGE",
   "UNAVAILABLE",
   "GENERIC",
 ] as const;

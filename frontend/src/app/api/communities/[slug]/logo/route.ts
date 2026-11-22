@@ -1,25 +1,17 @@
-import sharp from "sharp";
-
 import { communityChanged } from "@/lib/communities";
 import { communityCode } from "@/lib/community-answer";
 import { communityServiceUrl } from "@/lib/env";
+import { MAX_UPLOAD, refererLocale, toWebp } from "@/lib/images";
 import { isLocale } from "@/lib/locales";
 import { routes } from "@/lib/routes";
 import { localeOf, seeOther, text } from "@/lib/route-helpers";
 import { currentSession, fromThisSite } from "@/lib/session";
 
-/** What a phone photo may weigh before it is scaled down; the stored picture is far smaller. */
-const MAX_UPLOAD = 8 * 1024 * 1024;
-
-/** What phones and cameras send; HEIF covers the iPhone's HEIC. */
-const RASTER = new Set(["jpeg", "png", "webp", "heif", "avif", "gif", "tiff"]);
-
 /**
  * POST /api/communities/{slug}/logo, the picture form on the group's settings
- * page: intent "upload" with a file, or "remove". The upload is decoded here,
- * turned upright, cut to a 512 px square and written as WebP; sharp writes no
- * metadata unless asked, so GPS and camera data never leave this step. The
- * community service checks the role and stores the result.
+ * page: intent "upload" with a file, or "remove". The upload becomes a 512 px
+ * square WebP without metadata here (lib/images.ts); the community service
+ * checks the role and stores the result.
  */
 export async function POST(request: Request, { params }: RouteContext<"/api/communities/[slug]/logo">) {
   if (!fromThisSite(request)) {
@@ -28,7 +20,7 @@ export async function POST(request: Request, { params }: RouteContext<"/api/comm
   const { slug } = await params;
   // Refused before the body is read; the form's language is in the page it came from.
   if (Number(request.headers.get("content-length") ?? 0) > MAX_UPLOAD + 64 * 1024) {
-    const from = URL.parse(request.headers.get("referer") ?? "")?.pathname.split("/")[1] ?? "de";
+    const from = refererLocale(request);
     return seeOther(`${routes.manageCommunity(isLocale(from) ? from : "de", slug)}?error=TOO_LARGE`);
   }
   const form = await request.formData().catch(() => null);
@@ -63,7 +55,7 @@ export async function POST(request: Request, { params }: RouteContext<"/api/comm
     if (file.size > MAX_UPLOAD) {
       return seeOther(`${back}?error=TOO_LARGE`);
     }
-    const webp = await toLogo(await file.arrayBuffer());
+    const webp = await toWebp(await file.arrayBuffer(), 512, 512);
     if (!webp) {
       return seeOther(`${back}?error=NOT_AN_IMAGE`);
     }
@@ -83,24 +75,3 @@ export async function POST(request: Request, { params }: RouteContext<"/api/comm
   return seeOther(`${back}?done=1`);
 }
 
-/**
- * JPEG, PNG, WebP, HEIC as phones send them, anything sharp reads as one still
- * picture of sane size. null for whatever it cannot read.
- */
-async function toLogo(input: ArrayBuffer): Promise<Buffer | null> {
-  const options = { failOn: "error", limitInputPixels: 50_000_000, animated: false } as const;
-  try {
-    // Raster formats only: an SVG is a document that can point at other files.
-    const { format } = await sharp(Buffer.from(input), options).metadata();
-    if (!format || !RASTER.has(format)) {
-      return null;
-    }
-    return await sharp(Buffer.from(input), options)
-      .rotate()
-      .resize(512, 512, { fit: "cover", position: "attention" })
-      .webp({ quality: 82 })
-      .toBuffer();
-  } catch {
-    return null;
-  }
-}

@@ -226,11 +226,12 @@ export default async function PrivacyPage({ params }: PageProps<"/[locale]/priva
               DSGVO).
             </p>
             <p>
-              Inhaber und Admins einer Gruppe können ein Bild für sie hochladen, etwa ein Logo. Beim Hochladen
-              schneiden wir es auf 512 mal 512 Pixel zu, speichern es als WebP und entfernen dabei alle Metadaten,
-              auch Standort und Kamera. Das Bild liegt auf unserem Server bei der Hetzner Online GmbH in Deutschland
-              und ist öffentlich mit der Gruppe zu sehen, bis es ersetzt oder entfernt wird; dann löschen wir die
-              Datei. Erkennbare Personen gehören nur mit ihrer Einwilligung hinein (siehe Nutzungsregeln).
+              Inhaber und Admins einer Gruppe können ein Bild für sie hochladen, etwa ein Logo, und wer ein eigenes
+              Event anlegt, ein Bild für das Event. Beim Hochladen schneiden wir es zu (für eine Gruppe 512 mal 512
+              Pixel, für ein Event 1600 mal 900), speichern es als WebP und entfernen dabei alle Metadaten, auch
+              Standort und Kamera. Das Bild liegt auf unserem Server bei der Hetzner Online GmbH in Deutschland und
+              ist öffentlich mit der Gruppe oder dem Event zu sehen, bis es ersetzt oder entfernt wird; dann löschen
+              wir die Datei. Erkennbare Personen gehören nur mit ihrer Einwilligung hinein (siehe Nutzungsregeln).
               Rechtsgrundlage ist die Erfüllung des Nutzungsverhältnisses (Art. 6 Abs. 1 lit. b DSGVO).
             </p>
             <p>
