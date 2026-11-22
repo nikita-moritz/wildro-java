@@ -17,6 +17,7 @@ export const de: Dictionary = {
     back: "Zurück",
     account: "Konto",
     communities: "Gruppen",
+    myEvents: "Meine Events",
     theme: { toggle: "Design wechseln", light: "Hell", dark: "Dunkel", system: "System" },
   },
   home: {

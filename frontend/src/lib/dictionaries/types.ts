@@ -32,6 +32,7 @@ export interface Dictionary {
     back: string;
     account: string;
     communities: string;
+    myEvents: string;
     theme: { toggle: string; light: string; dark: string; system: string };
   };
   home: {

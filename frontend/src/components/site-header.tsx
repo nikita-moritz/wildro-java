@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, List, Map as MapIcon, Menu, Monitor, Moon, Sun, UserRound, Users, X } from "lucide-react";
+import { CalendarCheck, Check, List, Map as MapIcon, Menu, Monitor, Moon, Sun, UserRound, Users, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -61,27 +61,26 @@ export function SiteHeaderBar({ locale, t, pathname = "" }: { locale: Locale; t:
     return () => window.removeEventListener("keydown", onKey);
   }, [open]);
 
-  const onMap = pathname.endsWith("/map");
+  // "/de/account/events" → section "account", sub "events": each item lights for
+  // its own part of the site only, never for an address that merely contains its word.
+  const [, , section = "", sub = ""] = pathname.split("/");
+  const onMap = section === "map";
+  const onMyEvents = section === "account" && sub === "events";
 
   const links = [
     { href: routes.map(locale), label: t.nav.map, icon: MapIcon, active: onMap },
-    {
-      href: routes.feed(locale),
-      label: t.nav.events,
-      icon: List,
-      active: pathname.includes("/events") || pathname.includes("/event/"),
-    },
+    { href: routes.feed(locale), label: t.nav.events, icon: List, active: section === "events" || section === "event" },
     {
       href: routes.communities(locale),
       label: t.nav.communities,
       icon: Users,
-      active: pathname.includes("/communities") || pathname.includes("/community/"),
+      active: section === "communities" || section === "community",
     },
+    // Personal: never prefetched, the page behind it reads the session; a guest signs in first.
+    { href: routes.myEvents(locale), label: t.nav.myEvents, icon: CalendarCheck, active: onMyEvents, personal: true },
   ];
 
-  const accountActive = ["/account", "/sign-in", "/moderation"].some(
-    (section) => pathname.endsWith(section) || pathname.includes(`${section}/`),
-  );
+  const accountActive = (section === "account" && !onMyEvents) || section === "sign-in" || section === "moderation";
   const accountLink = (
     <Link
       href={routes.account(locale)}
@@ -128,10 +127,11 @@ export function SiteHeaderBar({ locale, t, pathname = "" }: { locale: Locale; t:
           </Link>
 
           <nav className="hidden items-center gap-2 lg:flex">
-            {links.map(({ href, label, icon: Icon, active }) => (
+            {links.map(({ href, label, icon: Icon, active, personal }) => (
               <Link
                 key={href}
                 href={href}
+                prefetch={personal ? false : undefined}
                 aria-current={active ? "page" : undefined}
                 className={cn(
                   PILL,
@@ -167,10 +167,11 @@ export function SiteHeaderBar({ locale, t, pathname = "" }: { locale: Locale; t:
       {open && (
         // Over the page, not in its flow: opening the menu must not push the map or the list down.
         <div className="pointer-events-auto absolute inset-x-3 top-full flex flex-col gap-2 rounded-2xl border bg-card/95 p-3 shadow-xl backdrop-blur lg:hidden">
-          {links.map(({ href, label, icon: Icon, active }) => (
+          {links.map(({ href, label, icon: Icon, active, personal }) => (
             <Link
               key={href}
               href={href}
+              prefetch={personal ? false : undefined}
               onClick={close}
               aria-current={active ? "page" : undefined}
               className={cn(
