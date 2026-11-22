@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarPlus, Check, ChevronDown, Copy, Link2, Share2, Smartphone } from "lucide-react";
+import { CalendarPlus, Check, ChevronDown, Copy, Download, Link2, Share2, Smartphone } from "lucide-react";
 import { useState, useSyncExternalStore } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,7 @@ import type { Dictionary } from "@/lib/dictionaries";
 import { type Channel, facebookUrl, telegramUrl, whatsappUrl } from "@/lib/share";
 import { cn } from "@/lib/utils";
 
-const CHANNELS: Channel[] = ["whatsapp", "telegram", "facebook"];
+const CHANNELS: Channel[] = ["whatsapp", "telegram", "facebook", "instagram"];
 
 const subscribe = () => () => {};
 
@@ -31,6 +31,7 @@ export function ShareBar({
   texts,
   googleUrl,
   icsUrl,
+  images,
   t,
 }: {
   title: string;
@@ -41,6 +42,8 @@ export function ShareBar({
   texts: Record<Channel, string>;
   googleUrl: string;
   icsUrl: string;
+  /** The Instagram pictures of the event, drawn on request: post and story. */
+  images: { post: string; story: string };
   t: Dictionary["share"];
 }) {
   const [channel, setChannel] = useState<Channel>("whatsapp");
@@ -57,6 +60,22 @@ export function ShareBar({
     await navigator.clipboard?.writeText(value).catch(() => {});
     setCopied(what);
     setTimeout(() => setCopied(null), 2500);
+  }
+
+  /** The picture itself into the share sheet (Instagram, WhatsApp); a download where that is not possible. */
+  async function shareImage(src: string, name: string) {
+    const blob = await fetch(src).then((response) => (response.ok ? response.blob() : null)).catch(() => null);
+    if (!blob) {
+      return;
+    }
+    const file = new File([blob], name, { type: blob.type || "image/webp" });
+    if (typeof navigator.canShare === "function" && navigator.canShare({ files: [file] })) {
+      await navigator.share({ files: [file], text: edited.instagram }).catch(() => {});
+      return;
+    }
+    const link = Object.assign(document.createElement("a"), { href: URL.createObjectURL(blob), download: name });
+    link.click();
+    URL.revokeObjectURL(link.href);
   }
 
   function openChannel() {
@@ -103,7 +122,7 @@ export function ShareBar({
           </div>
 
           <div className="flex flex-col gap-3 border-t pt-4">
-            <div role="tablist" aria-label={t.textFor} className="flex gap-1 rounded-full bg-muted p-1">
+            <div role="tablist" aria-label={t.textFor} className="grid grid-cols-4 gap-1 rounded-full bg-muted p-1">
               {CHANNELS.map((each) => (
                 <button
                   key={each}
@@ -112,7 +131,7 @@ export function ShareBar({
                   aria-selected={each === channel}
                   onClick={() => setChannel(each)}
                   className={cn(
-                    "min-h-10 flex-1 rounded-full px-3 text-sm font-medium transition-colors",
+                    "min-h-10 min-w-0 truncate rounded-full px-1 text-[13px] font-medium transition-colors sm:px-3 sm:text-sm",
                     each === channel ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground",
                   )}
                 >
@@ -120,6 +139,35 @@ export function ShareBar({
                 </button>
               ))}
             </div>
+            {channel === "instagram" && (
+              // Drawn only once this tab is open: nobody waits for pictures they did not ask for.
+              <div className="flex flex-col gap-3">
+                <p className="text-xs text-muted-foreground">{t.instagramHint}</p>
+                <div className="grid grid-cols-2 gap-3">
+                  {(["post", "story"] as const).map((format) => (
+                    <figure key={format} className="flex flex-col gap-2">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={images[format]}
+                        alt=""
+                        loading="lazy"
+                        className={cn("w-full rounded-lg border bg-muted object-cover", format === "post" ? "aspect-[4/5]" : "aspect-[9/16]")}
+                      />
+                      <figcaption className="text-xs font-medium">{format === "post" ? t.imagePost : t.imageStory}</figcaption>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="h-11 gap-2 rounded-full px-3"
+                        onClick={() => void shareImage(images[format], `${format}.webp`)}
+                      >
+                        {canShare ? <Share2 className="h-4 w-4" aria-hidden /> : <Download className="h-4 w-4" aria-hidden />}
+                        {canShare ? t.shareImage : t.download}
+                      </Button>
+                    </figure>
+                  ))}
+                </div>
+              </div>
+            )}
             <label className="flex flex-col gap-1.5 text-sm">
               <span className="text-muted-foreground">{t.editHint}</span>
               <textarea
@@ -131,9 +179,11 @@ export function ShareBar({
             </label>
             {channel === "facebook" && <p className="text-xs text-muted-foreground">{t.facebookHint}</p>}
             <div className="flex flex-wrap gap-2">
-              <Button type="button" className="h-11 rounded-full" onClick={openChannel}>
-                {t.open[channel]}
-              </Button>
+              {channel !== "instagram" && (
+                <Button type="button" className="h-11 rounded-full" onClick={openChannel}>
+                  {t.open[channel]}
+                </Button>
+              )}
               <Button type="button" variant="outline" className="h-11 gap-2 rounded-full" onClick={() => void copy(text, "text")}>
                 {copied === "text" ? <Check className="h-4 w-4" aria-hidden /> : <Copy className="h-4 w-4" aria-hidden />}
                 {copied === "text" ? t.textCopied : t.copyText}

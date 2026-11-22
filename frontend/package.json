@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@elvix.is/sdk": "0.26.2",
+    "@fontsource/inter": "5.2.8",
     "class-variance-authority": "^0.7.1",
     "cn": "^0.4.0",
     "date-fns": "^4.4.0",

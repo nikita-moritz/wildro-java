@@ -46,7 +46,7 @@ export function googleCalendarUrl(event: SharedEvent): string {
   return `https://calendar.google.com/calendar/render?${query}`;
 }
 
-export type Channel = "whatsapp" | "telegram" | "facebook";
+export type Channel = "whatsapp" | "telegram" | "facebook" | "instagram";
 
 export interface ShareFacts {
   name: string;
@@ -61,7 +61,7 @@ export interface ShareFacts {
 
 /**
  * The text to post in a chat or a group, in the page's language. WhatsApp
- * shows *this* in bold, Telegram's and Facebook's share forms take plain text.
+ * shows *this* in bold; Telegram, Facebook and an Instagram caption take plain text.
  * Two symbols for date and place, nothing more: a message, not a flyer.
  */
 export function shareText(channel: Channel, facts: ShareFacts, moreLabel: string): string {

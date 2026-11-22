@@ -306,9 +306,14 @@ export interface Dictionary {
     viaPhone: string;
     copyLink: string;
     textFor: string;
-    channels: Record<"whatsapp" | "telegram" | "facebook", string>;
+    channels: Record<"whatsapp" | "telegram" | "facebook" | "instagram", string>;
     editHint: string;
     open: Record<"whatsapp" | "telegram" | "facebook", string>;
+    imagePost: string;
+    imageStory: string;
+    shareImage: string;
+    download: string;
+    instagramHint: string;
     copyText: string;
     textCopied: string;
     facebookHint: string;

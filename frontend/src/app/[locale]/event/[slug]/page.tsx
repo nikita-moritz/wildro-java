@@ -170,6 +170,11 @@ export default async function EventPageRoute({ params }: PageProps<"/[locale]/ev
                 whatsapp: shareText("whatsapp", shareFacts, t.share.more),
                 telegram: shareText("telegram", shareFacts, t.share.more),
                 facebook: shareText("facebook", shareFacts, t.share.more),
+                instagram: shareText("instagram", shareFacts, t.share.more),
+              }}
+              images={{
+                post: `${routes.event(locale, event.slug)}/image/post`,
+                story: `${routes.event(locale, event.slug)}/image/story`,
               }}
               googleUrl={googleCalendarUrl({ ...event, url: pageUrl })}
               icsUrl={`${routes.event(locale, event.slug)}/calendar.ics`}

@@ -37,6 +37,21 @@ const nextConfig: NextConfig = {
 
   poweredByHeader: false,
 
+  /**
+   * The Instagram pictures read Inter from its package at run time; the tracer
+   * cannot see a path built from parts, so the files are named here.
+   */
+  outputFileTracingIncludes: {
+    "/[locale]/event/[slug]/image/[format]": [
+      "./node_modules/@fontsource/inter/files/inter-latin-400-normal.woff",
+      "./node_modules/@fontsource/inter/files/inter-latin-700-normal.woff",
+      "./node_modules/@fontsource/inter/files/inter-latin-ext-400-normal.woff",
+      "./node_modules/@fontsource/inter/files/inter-latin-ext-700-normal.woff",
+      "./node_modules/@fontsource/inter/files/inter-cyrillic-400-normal.woff",
+      "./node_modules/@fontsource/inter/files/inter-cyrillic-700-normal.woff",
+    ],
+  },
+
   async redirects() {
     // German is the x-default. A fixed redirect, not a guess from Accept-Language
     // or IP: SPEC.md §0.4 forbids automatic redirects, because a crawler arriving
