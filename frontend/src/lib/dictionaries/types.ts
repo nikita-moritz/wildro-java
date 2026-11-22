@@ -301,6 +301,18 @@ export interface Dictionary {
     calendar: string;
     google: string;
     ics: string;
+    title: string;
+    close: string;
+    viaPhone: string;
+    copyLink: string;
+    textFor: string;
+    channels: Record<"whatsapp" | "telegram" | "facebook", string>;
+    editHint: string;
+    open: Record<"whatsapp" | "telegram" | "facebook", string>;
+    copyText: string;
+    textCopied: string;
+    facebookHint: string;
+    more: string;
   };
   community: {
     listTitle: string;

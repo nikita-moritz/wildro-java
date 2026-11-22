@@ -1,54 +1,151 @@
 "use client";
 
-import { CalendarPlus, Check, ChevronDown, Share2 } from "lucide-react";
-import { useState } from "react";
+import { CalendarPlus, Check, ChevronDown, Copy, Link2, Share2, Smartphone } from "lucide-react";
+import { useState, useSyncExternalStore } from "react";
 
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import type { Dictionary } from "@/lib/dictionaries";
+import { type Channel, facebookUrl, telegramUrl, whatsappUrl } from "@/lib/share";
+import { cn } from "@/lib/utils";
+
+const CHANNELS: Channel[] = ["whatsapp", "telegram", "facebook"];
+
+const subscribe = () => () => {};
 
 /**
- * Share and add to calendar, under an upcoming event's title. On a phone
- * "Teilen" opens the system's share sheet (WhatsApp, Telegram, Instagram and the
- * rest are there); where there is none, it copies the link. The calendar menu
- * offers Google's form and the .ics file the event service writes, which
- * Apple's Calendar and Outlook open.
+ * Share and add to calendar, under an upcoming event's title.
+ *
+ * "Teilen" opens a panel: the phone's own share sheet where there is one, the
+ * link to copy, and a ready text per channel to post in a chat or a group. The
+ * text can be changed before it goes; WhatsApp and Telegram open with it filled
+ * in, Facebook takes only links, so its text is copied and pasted. Nothing is
+ * loaded from those sites before a press. The calendar menu offers Google's form
+ * and the .ics the event service writes.
  */
 export function ShareBar({
   title,
   line,
   url,
+  texts,
   googleUrl,
   icsUrl,
   t,
 }: {
   title: string;
-  /** Date and place in one line, the text that goes with the link. */
+  /** Date and place in one line, what goes with the link in the share sheet. */
   line: string;
   url: string;
+  /** The ready texts, written on the server in the page's language. */
+  texts: Record<Channel, string>;
   googleUrl: string;
   icsUrl: string;
   t: Dictionary["share"];
 }) {
-  const [copied, setCopied] = useState(false);
+  const [channel, setChannel] = useState<Channel>("whatsapp");
+  const [edited, setEdited] = useState<Record<Channel, string>>(texts);
+  const [copied, setCopied] = useState<"link" | "text" | null>(null);
+  const canShare = useSyncExternalStore(
+    subscribe,
+    () => typeof navigator.share === "function",
+    () => false,
+  );
+  const text = edited[channel];
 
-  async function share() {
-    if (typeof navigator.share === "function") {
-      // Closing the sheet rejects; that is the visitor's choice, not an error.
-      await navigator.share({ title, text: `${title}\n${line}`, url }).catch(() => {});
-      return;
+  async function copy(value: string, what: "link" | "text") {
+    await navigator.clipboard?.writeText(value).catch(() => {});
+    setCopied(what);
+    setTimeout(() => setCopied(null), 2500);
+  }
+
+  function openChannel() {
+    if (channel === "whatsapp") {
+      window.open(whatsappUrl(text), "_blank", "noopener,noreferrer");
+    } else if (channel === "telegram") {
+      window.open(telegramUrl(url, text), "_blank", "noopener,noreferrer");
+    } else {
+      // Facebook keeps no text from outside: it goes to the clipboard first.
+      void copy(text, "text");
+      window.open(facebookUrl(url), "_blank", "noopener,noreferrer");
     }
-    await navigator.clipboard?.writeText(url).catch(() => {});
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2500);
   }
 
   return (
     <div className="flex flex-wrap gap-2">
-      <Button type="button" onClick={share} className="h-11 gap-2 rounded-full px-4">
-        {copied ? <Check className="h-4 w-4" aria-hidden /> : <Share2 className="h-4 w-4" aria-hidden />}
-        {copied ? t.copied : t.share}
-      </Button>
+      <Dialog>
+        <DialogTrigger asChild>
+          <Button type="button" className="h-11 gap-2 rounded-full px-4">
+            <Share2 className="h-4 w-4" aria-hidden />
+            {t.share}
+          </Button>
+        </DialogTrigger>
+        <DialogContent closeLabel={t.close}>
+          <DialogTitle>{t.title}</DialogTitle>
+          <DialogDescription className="sr-only">{title}</DialogDescription>
+
+          <div className="flex flex-wrap gap-2">
+            {canShare && (
+              <Button
+                type="button"
+                variant="outline"
+                className="h-11 gap-2 rounded-full"
+                onClick={() => void navigator.share({ title, text: `${title}\n${line}`, url }).catch(() => {})}
+              >
+                <Smartphone className="h-4 w-4" aria-hidden />
+                {t.viaPhone}
+              </Button>
+            )}
+            <Button type="button" variant="outline" className="h-11 gap-2 rounded-full" onClick={() => void copy(url, "link")}>
+              {copied === "link" ? <Check className="h-4 w-4" aria-hidden /> : <Link2 className="h-4 w-4" aria-hidden />}
+              {copied === "link" ? t.copied : t.copyLink}
+            </Button>
+          </div>
+
+          <div className="flex flex-col gap-3 border-t pt-4">
+            <div role="tablist" aria-label={t.textFor} className="flex gap-1 rounded-full bg-muted p-1">
+              {CHANNELS.map((each) => (
+                <button
+                  key={each}
+                  type="button"
+                  role="tab"
+                  aria-selected={each === channel}
+                  onClick={() => setChannel(each)}
+                  className={cn(
+                    "min-h-10 flex-1 rounded-full px-3 text-sm font-medium transition-colors",
+                    each === channel ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  {t.channels[each]}
+                </button>
+              ))}
+            </div>
+            <label className="flex flex-col gap-1.5 text-sm">
+              <span className="text-muted-foreground">{t.editHint}</span>
+              <textarea
+                value={text}
+                onChange={(event) => setEdited({ ...edited, [channel]: event.target.value })}
+                rows={9}
+                className="w-full rounded-lg border bg-background px-3 py-2 text-base"
+              />
+            </label>
+            {channel === "facebook" && <p className="text-xs text-muted-foreground">{t.facebookHint}</p>}
+            <div className="flex flex-wrap gap-2">
+              <Button type="button" className="h-11 rounded-full" onClick={openChannel}>
+                {t.open[channel]}
+              </Button>
+              <Button type="button" variant="outline" className="h-11 gap-2 rounded-full" onClick={() => void copy(text, "text")}>
+                {copied === "text" ? <Check className="h-4 w-4" aria-hidden /> : <Copy className="h-4 w-4" aria-hidden />}
+                {copied === "text" ? t.textCopied : t.copyText}
+              </Button>
+            </div>
+          </div>
+          <span role="status" aria-live="polite" className="sr-only">
+            {copied === "link" ? t.copied : copied === "text" ? t.textCopied : ""}
+          </span>
+        </DialogContent>
+      </Dialog>
+
       <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
           <Button type="button" variant="outline" className="h-11 gap-2 rounded-full px-4 data-[state=open]:bg-muted">
@@ -71,9 +168,6 @@ export function ShareBar({
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
-      <span role="status" aria-live="polite" className="sr-only">
-        {copied ? t.copied : ""}
-      </span>
     </div>
   );
 }

@@ -45,3 +45,55 @@ export function googleCalendarUrl(event: SharedEvent): string {
   });
   return `https://calendar.google.com/calendar/render?${query}`;
 }
+
+export type Channel = "whatsapp" | "telegram" | "facebook";
+
+export interface ShareFacts {
+  name: string;
+  /** Date and time as the page writes them. */
+  when: string;
+  placeName: string;
+  /** Activity, distance and difficulty in words, already joined. */
+  facts: string;
+  description: string;
+  url: string;
+}
+
+/**
+ * The text to post in a chat or a group, in the page's language. WhatsApp
+ * shows *this* in bold, Telegram's and Facebook's share forms take plain text.
+ * Two symbols for date and place, nothing more: a message, not a flyer.
+ */
+export function shareText(channel: Channel, facts: ShareFacts, moreLabel: string): string {
+  const title = channel === "whatsapp" ? `*${facts.name}*` : facts.name;
+  return [
+    title,
+    `📅 ${facts.when}`,
+    `📍 ${facts.placeName}`,
+    facts.facts,
+    "",
+    shortened(facts.description, 240),
+    "",
+    `${moreLabel}: ${facts.url}`,
+  ]
+    .filter((line, index, lines) => line !== "" || (lines[index - 1] ?? "") !== "")
+    .join("\n");
+}
+
+/** WhatsApp with the text filled in; the person picks the chat or group. */
+export function whatsappUrl(text: string): string {
+  return `https://wa.me/?text=${encodeURIComponent(text)}`;
+}
+
+/** Telegram's share form: the link and the text, the person picks the chat. */
+export function telegramUrl(url: string, text: string): string {
+  // Telegram shows the link above the text itself, so a last line carrying it is dropped.
+  const lines = text.trimEnd().split("\n");
+  const withoutLink = lines.at(-1)?.includes(url) ? lines.slice(0, -1).join("\n").trimEnd() : text.trimEnd();
+  return `https://t.me/share/url?${new URLSearchParams({ url, text: withoutLink })}`;
+}
+
+/** Facebook takes only the link; the text goes in by pasting. */
+export function facebookUrl(url: string): string {
+  return `https://www.facebook.com/sharer/sharer.php?${new URLSearchParams({ u: url })}`;
+}

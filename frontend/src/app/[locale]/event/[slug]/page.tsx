@@ -32,7 +32,7 @@ import { isLocale, type Locale } from "@/lib/locales";
 import { requestTime } from "@/lib/request-time";
 import { routes } from "@/lib/routes";
 import { absoluteUrl, alternatesFor, serialiseJsonLd } from "@/lib/seo";
-import { googleCalendarUrl } from "@/lib/share";
+import { googleCalendarUrl, shareText } from "@/lib/share";
 import { cn } from "@/lib/utils";
 
 /**
@@ -107,6 +107,22 @@ export default async function EventPageRoute({ params }: PageProps<"/[locale]/ev
   const passed = (await requestTime()) > Date.parse(event.passesAt);
   const cancelled = event.status === "CANCELLED";
   const pageUrl = absoluteUrl(routes.event(locale, event.slug));
+  // What a post in a chat says about the event, in the page's language.
+  const when = `${formatDate(event.startsAt, locale)}, ${formatTime(event.startsAt, locale)}`;
+  const shareFacts = {
+    name: event.name,
+    when,
+    placeName: event.placeName,
+    facts: [
+      t.activity[event.activityType],
+      event.distanceKm === null ? null : `${formatNumber(event.distanceKm, locale)} km`,
+      event.difficulty === null ? null : t.difficulty[event.difficulty],
+    ]
+      .filter(Boolean)
+      .join(" · "),
+    description: event.description,
+    url: pageUrl,
+  };
   const own = event.kind === "OWN";
   // An own event is written in one language and shown as written (SPEC.md §18.2, question 3).
   const foreign = own && event.originalLocale !== null && event.originalLocale !== locale;
@@ -148,8 +164,13 @@ export default async function EventPageRoute({ params }: PageProps<"/[locale]/ev
           {!cancelled && !passed && (
             <ShareBar
               title={event.name}
-              line={`${formatDate(event.startsAt, locale)}, ${formatTime(event.startsAt, locale)} · ${event.placeName}`}
+              line={`${when} · ${event.placeName}`}
               url={pageUrl}
+              texts={{
+                whatsapp: shareText("whatsapp", shareFacts, t.share.more),
+                telegram: shareText("telegram", shareFacts, t.share.more),
+                facebook: shareText("facebook", shareFacts, t.share.more),
+              }}
               googleUrl={googleCalendarUrl({ ...event, url: pageUrl })}
               icsUrl={`${routes.event(locale, event.slug)}/calendar.ics`}
               t={t.share}
