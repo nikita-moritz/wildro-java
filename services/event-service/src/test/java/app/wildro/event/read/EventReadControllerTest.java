@@ -22,6 +22,8 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -66,6 +68,20 @@ class EventReadControllerTest {
 
 	private static Instant inDays(int days) {
 		return NOW.plus(Duration.ofDays(days));
+	}
+
+	@Test
+	void aCalendarFileIsThereExactlyWhenThePageIs() throws Exception {
+		save("calendar", EventStatus.PUBLISHED, inDays(4));
+		save("calendar-draft", EventStatus.DRAFT, inDays(4));
+
+		this.mvc.perform(get("/v1/events/calendar/calendar.ics").param("locale", "en"))
+			.andExpect(status().isOk())
+			.andExpect(header().string("Content-Type", org.hamcrest.Matchers.startsWith("text/calendar")))
+			.andExpect(content().string(org.hamcrest.Matchers.containsString("SUMMARY:Hike calendar\r\n")))
+			.andExpect(content().string(org.hamcrest.Matchers.containsString("/en/event/calendar")));
+		this.mvc.perform(get("/v1/events/calendar-draft/calendar.ics").param("locale", "en"))
+			.andExpect(status().isNotFound());
 	}
 
 	@Test

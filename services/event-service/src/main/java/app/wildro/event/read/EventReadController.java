@@ -4,6 +4,7 @@ import app.wildro.event.domain.ActivityType;
 import app.wildro.event.domain.Difficulty;
 import app.wildro.event.domain.Event;
 import app.wildro.event.domain.SearchText;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.EnumSet;
@@ -42,8 +44,14 @@ class EventReadController {
 
 	private final EventReader reader;
 
-	EventReadController(EventReader reader) {
+	private final Clock clock;
+
+	private final String siteUrl;
+
+	EventReadController(EventReader reader, Clock clock, @Value("${wildro.site-url}") String siteUrl) {
 		this.reader = reader;
+		this.clock = clock;
+		this.siteUrl = siteUrl.replaceAll("/+$", "");
 	}
 
 	/**
@@ -111,6 +119,18 @@ class EventReadController {
 		requireLocale(locale);
 		return this.reader.page(slug, locale)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "no event " + slug));
+	}
+
+	/**
+	 * The event as a calendar file (RFC 5545), for "add to calendar". Same
+	 * visibility as the page: published or cancelled, a draft is not there.
+	 */
+	@GetMapping(path = "/{slug}/calendar.ics", produces = "text/calendar;charset=UTF-8")
+	String calendar(@PathVariable String slug, @RequestParam String locale) {
+		requireLocale(locale);
+		EventPage event = this.reader.page(slug, locale)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "no event " + slug));
+		return CalendarFile.of(event, this.siteUrl + "/" + locale + "/event/" + slug, this.clock.instant());
 	}
 
 	private static FeedFilter filter(List<String> types, List<String> difficulties, String from, String to,
