@@ -120,6 +120,32 @@ export default async function ModerateCommunitiesPage({ params, searchParams }: 
                   </p>
                 ) : null}
 
+                {community.reports.length > 0 && (
+                  // The open reports, oldest first. Removing the group below settles them all.
+                  <ul className="flex flex-col gap-2">
+                    {community.reports.map((report) => (
+                      <li key={report.id} className="flex flex-col gap-2 rounded-lg border bg-muted/40 p-3 text-sm">
+                        <p>
+                          <span className="text-muted-foreground">{m.reason}: </span>
+                          {t.report.reasons[report.reason]}
+                          <span className="text-xs text-muted-foreground">
+                            {" "}
+                            · {m.reportedAt} {formatDay(report.createdAt, locale)}
+                          </span>
+                        </p>
+                        <p className="whitespace-pre-line">{report.details}</p>
+                        <form method="post" action="/api/moderation/communities/dismiss">
+                          {hidden(community.slug)}
+                          <input type="hidden" name="report" value={String(report.id)} />
+                          <Button type="submit" variant="outline" className="h-11">
+                            {m.dismiss}
+                          </Button>
+                        </form>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+
                 {suspended ? (
                   <>
                     <p className="text-sm whitespace-pre-line">

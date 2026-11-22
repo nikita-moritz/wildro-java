@@ -274,6 +274,8 @@ export interface Dictionary {
   report: {
     open: string;
     title: string;
+    openCommunity: string;
+    titleCommunity: string;
     reason: string;
     details: string;
     send: string;

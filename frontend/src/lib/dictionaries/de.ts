@@ -286,6 +286,8 @@ export const de: Dictionary = {
   report: {
     open: "Event melden",
     title: "Was stimmt mit diesem Event nicht?",
+    openCommunity: "Gruppe melden",
+    titleCommunity: "Was stimmt mit dieser Gruppe nicht?",
     reason: "Grund",
     details: "Beschreibe kurz, was nicht stimmt",
     send: "Meldung senden",

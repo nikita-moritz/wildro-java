@@ -22,6 +22,7 @@ import { ReportForm } from "@/components/report-form";
 import { EventListItem, eventCardText } from "@/components/event-list-item";
 import { SiteFooter } from "@/components/site-footer";
 import { Button } from "@/components/ui/button";
+import { communityShown } from "@/lib/communities";
 import { getDictionary, type Dictionary } from "@/lib/dictionaries";
 import { getEvent, getFeed, type EventPage } from "@/lib/events-api";
 import { defaultCover } from "@/lib/covers";
@@ -95,6 +96,10 @@ export default async function EventPageRoute({ params }: PageProps<"/[locale]/ev
     notFound();
   }
   const t = getDictionary(locale);
+  // A group taken down keeps its name on its events but loses the link, which
+  // would lead to a missing page. Read from the group's cached page, so a
+  // suspension or reinstatement changes it at once.
+  const groupLinked = event.communitySlug ? await communityShown(event.communitySlug) : false;
   // Compared per request, never stored: the service sends the moment the event
   // passes, not a flag that would go stale inside a cached response.
   const passed = (await requestTime()) > Date.parse(event.passesAt);
@@ -247,7 +252,7 @@ export default async function EventPageRoute({ params }: PageProps<"/[locale]/ev
                 <span className="text-muted-foreground">{t.event.organizer}:&nbsp;</span>
                 {event.organizer === null ? (
                   <span className="text-muted-foreground">{t.event.organizerErased}</span>
-                ) : event.communitySlug ? (
+                ) : event.communitySlug && groupLinked ? (
                   <Link href={routes.community(locale, event.communitySlug)} className="font-medium text-primary underline-offset-2 hover:underline">
                     {event.organizer}
                   </Link>

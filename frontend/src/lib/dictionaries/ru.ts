@@ -286,6 +286,8 @@ export const ru: Dictionary = {
   report: {
     open: "Пожаловаться",
     title: "Что не так с этим событием?",
+    openCommunity: "Пожаловаться на группу",
+    titleCommunity: "Что не так с этой группой?",
     reason: "Причина",
     details: "Коротко опиши, что не так",
     send: "Отправить жалобу",

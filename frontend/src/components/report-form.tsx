@@ -9,12 +9,20 @@ import type { Dictionary } from "@/lib/dictionaries";
 const REASONS = ["SPAM", "MISLEADING", "DANGEROUS", "ILLEGAL", "PERSONAL_DATA", "OTHER"] as const;
 
 /**
- * "Report event" (SPEC.md §18.2, DSA Art. 16): open to everyone, no account.
- * Folded away until asked for, so it costs the page nothing but a line. It
- * posts from the browser, which keeps the cached event page free of anything
- * per visitor.
+ * "Report event" or "Report group" (SPEC.md §18.2, DSA Art. 16): open to
+ * everyone, no account. Folded away until asked for, so it costs the page
+ * nothing but a line. It posts from the browser, which keeps the cached page
+ * free of anything per visitor.
  */
-export function ReportForm({ slug, t }: { slug: string; t: Dictionary["report"] }) {
+export function ReportForm({
+  slug,
+  target = "event",
+  t,
+}: {
+  slug: string;
+  target?: "event" | "community";
+  t: Dictionary["report"];
+}) {
   const [state, setState] = useState<"idle" | "busy" | "sent" | "tooMany" | "failed">("idle");
 
   async function send(form: HTMLFormElement) {
@@ -23,7 +31,7 @@ export function ReportForm({ slug, t }: { slug: string; t: Dictionary["report"] 
     const response = await fetch("/api/reports", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ slug, reason: data.get("reason"), details: String(data.get("details") ?? "").trim() }),
+      body: JSON.stringify({ target, slug, reason: data.get("reason"), details: String(data.get("details") ?? "").trim() }),
     }).catch(() => null);
     setState(response?.ok ? "sent" : response?.status === 429 ? "tooMany" : "failed");
   }
@@ -39,7 +47,7 @@ export function ReportForm({ slug, t }: { slug: string; t: Dictionary["report"] 
     <details className="group text-sm">
       <summary className="-ml-2 flex min-h-11 w-fit cursor-pointer items-center gap-1.5 rounded-full px-2 text-muted-foreground hover:text-foreground">
         <Flag className="h-3.5 w-3.5" />
-        {t.open}
+        {target === "community" ? t.openCommunity : t.open}
       </summary>
       <form
         className="mt-3 flex flex-col gap-3 rounded-xl border bg-card p-4"
@@ -48,7 +56,7 @@ export function ReportForm({ slug, t }: { slug: string; t: Dictionary["report"] 
           void send(event.currentTarget);
         }}
       >
-        <p className="font-medium">{t.title}</p>
+        <p className="font-medium">{target === "community" ? t.titleCommunity : t.title}</p>
         <label className="flex flex-col gap-1.5">
           {t.reason}
           <select name="reason" required className="h-11 rounded-lg border bg-background px-3 text-base">

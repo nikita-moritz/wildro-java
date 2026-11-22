@@ -5,7 +5,7 @@ import { localeOf, seeOther, text } from "@/lib/route-helpers";
 import { currentSession, fromThisSite } from "@/lib/session";
 
 /**
- * POST /api/moderation/communities/{suspend|reinstate|transfer}, forms on the
+ * POST /api/moderation/communities/{suspend|reinstate|transfer|dismiss}, forms on the
  * community moderation page. The roles are the community service's to check:
  * taking down and putting back for moderators, handing over for superusers.
  */
@@ -36,6 +36,8 @@ export async function POST(request: Request, { params }: RouteContext<"/api/mode
     suspend: () => callCommunityService("POST", `${path}/suspend`, session.jwt, { reason: text(form, "reason") }),
     reinstate: () => callCommunityService("POST", `${path}/reinstate`, session.jwt),
     transfer: () => callCommunityService("POST", `${path}/transfer`, session.jwt, { userId: text(form, "user") }),
+    dismiss: () =>
+      callCommunityService("POST", `/v1/moderation/reports/${encodeURIComponent(text(form, "report"))}/dismiss`, session.jwt),
   };
   const call = calls[action];
   if (!call || !slug) {
@@ -54,8 +56,9 @@ export async function POST(request: Request, { params }: RouteContext<"/api/mode
           : communityCode(json?.code);
     return seeOther(back("error", code));
   }
-  // Taking down or putting back changes the public page and the list; a new owner changes neither.
-  if (action !== "transfer") {
+  // Taking down or putting back changes the public page and the list; a new
+  // owner or a dismissed report changes neither.
+  if (action === "suspend" || action === "reinstate") {
     communityChanged(slug);
   }
   return seeOther(back("done", "1"));

@@ -38,7 +38,7 @@ nothing else; the frontend's server is the only caller of the services.
 | **Sign in** | Google, passkey or email code through elvix; wildro stores no password, code or session |
 | **Own events** | written in one language, shown in all three with a note; drafts, publishing, cancelling; at most 5 published a day and 30 upcoming per account |
 | **Groups** | one owner, admins, members; free joining; names visible to members only; ownership handed to an admin; closing cancels the group's future events |
-| **Reports** | anyone, guests included, five an hour per address; moderators take events down with a reason, the owner gets the statement of reasons by email (DSA Art. 16 and 17) |
+| **Reports** | on events and on groups, by anyone, guests included, five an hour per address; moderators take events and groups down with a reason, the owner gets the statement of reasons by email (DSA Art. 16 and 17); a group taken down keeps its name on its events, without the link |
 | **Admin** | a command line on the server imports curated events from public sources, checked in three layers |
 
 ## What is where

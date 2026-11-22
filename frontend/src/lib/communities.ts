@@ -100,6 +100,17 @@ export async function getCommunity(slug: string): Promise<CommunityPage | null> 
   return communityPageSchema.parse(await response.json());
 }
 
+/**
+ * Whether a group's page may be linked: false once it is taken down. Built on
+ * the cached page, so it follows the group's tag. A failure to ask keeps the
+ * link: a page that might be missing beats a name that silently lost its link.
+ */
+export async function communityShown(slug: string): Promise<boolean> {
+  return getCommunity(slug)
+    .then((page) => page !== null)
+    .catch(() => true);
+}
+
 /** The community's upcoming events, cached with the feed: a write that changes the feed changes these. */
 export async function getCommunityEvents(communityId: number, locale: Locale) {
   "use cache";
@@ -117,8 +128,9 @@ export async function getCommunityEvents(communityId: number, locale: Locale) {
 export async function callCommunityService(
   method: "GET" | "POST" | "PUT",
   path: string,
-  jwt: string,
+  jwt: string | null,
   body?: unknown,
+  headers: Record<string, string> = {},
 ): Promise<Response | null> {
   const base = communityServiceUrl();
   if (!base) {
@@ -127,8 +139,9 @@ export async function callCommunityService(
   return fetch(new URL(path, base), {
     method,
     headers: {
-      Authorization: `Bearer ${jwt}`,
+      ...(jwt ? { Authorization: `Bearer ${jwt}` } : {}),
       ...(body === undefined ? {} : { "Content-Type": "application/json" }),
+      ...headers,
     },
     body: body === undefined ? undefined : JSON.stringify(body),
     cache: "no-store",
@@ -164,6 +177,14 @@ export const moderatedSchema = z.object({
   createdAt: z.string(),
   // Filled for a superuser only: the people ownership can pass to.
   leaders: z.array(memberSchema),
+  reports: z.array(
+    z.object({
+      id: z.number().int(),
+      reason: z.enum(["SPAM", "MISLEADING", "DANGEROUS", "ILLEGAL", "PERSONAL_DATA", "OTHER"]),
+      details: z.string(),
+      createdAt: z.string(),
+    }),
+  ),
 });
 
 export type Moderated = z.infer<typeof moderatedSchema>;

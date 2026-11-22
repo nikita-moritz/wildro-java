@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { BackLink } from "@/components/back-link";
 import { MembershipIsland } from "@/components/community/membership-island";
 import { EventListItem, eventCardText } from "@/components/event-list-item";
+import { ReportForm } from "@/components/report-form";
 import { SiteFooter } from "@/components/site-footer";
 import { getCommunity, getCommunityEvents } from "@/lib/communities";
 import { getDictionary } from "@/lib/dictionaries";
@@ -117,6 +118,9 @@ export default async function CommunityPage({ params }: PageProps<"/[locale]/com
             </ul>
           )}
         </section>
+
+        {/* Only what can still be taken down is reported: a closed group is read-only. */}
+        {active && <ReportForm slug={community.slug} target="community" t={t.report} />}
       </main>
       <SiteFooter locale={locale} t={t} />
     </>
