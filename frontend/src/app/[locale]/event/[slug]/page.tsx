@@ -19,6 +19,7 @@ import { BackLink } from "@/components/back-link";
 import { PriceBadge } from "@/components/price-badge";
 import { EventLinks } from "@/components/event-links";
 import { ReportForm } from "@/components/report-form";
+import { ShareBar } from "@/components/share/share-bar";
 import { EventListItem, eventCardText } from "@/components/event-list-item";
 import { SiteFooter } from "@/components/site-footer";
 import { Button } from "@/components/ui/button";
@@ -31,6 +32,7 @@ import { isLocale, type Locale } from "@/lib/locales";
 import { requestTime } from "@/lib/request-time";
 import { routes } from "@/lib/routes";
 import { absoluteUrl, alternatesFor, serialiseJsonLd } from "@/lib/seo";
+import { googleCalendarUrl } from "@/lib/share";
 import { cn } from "@/lib/utils";
 
 /**
@@ -104,6 +106,7 @@ export default async function EventPageRoute({ params }: PageProps<"/[locale]/ev
   // passes, not a flag that would go stale inside a cached response.
   const passed = (await requestTime()) > Date.parse(event.passesAt);
   const cancelled = event.status === "CANCELLED";
+  const pageUrl = absoluteUrl(routes.event(locale, event.slug));
   const own = event.kind === "OWN";
   // An own event is written in one language and shown as written (SPEC.md §18.2, question 3).
   const foreign = own && event.originalLocale !== null && event.originalLocale !== locale;
@@ -139,6 +142,18 @@ export default async function EventPageRoute({ params }: PageProps<"/[locale]/ev
             <p role="status" className="rounded-xl border bg-muted px-4 py-3 text-sm font-medium">
               {t.event.past}
             </p>
+          )}
+
+          {/* Only for what is still ahead: nobody shares or plans a past or cancelled outing. */}
+          {!cancelled && !passed && (
+            <ShareBar
+              title={event.name}
+              line={`${formatDate(event.startsAt, locale)}, ${formatTime(event.startsAt, locale)} · ${event.placeName}`}
+              url={pageUrl}
+              googleUrl={googleCalendarUrl({ ...event, url: pageUrl })}
+              icsUrl={`${routes.event(locale, event.slug)}/calendar.ics`}
+              t={t.share}
+            />
           )}
 
           <div className="flex flex-wrap gap-2">

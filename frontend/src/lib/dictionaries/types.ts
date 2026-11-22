@@ -288,6 +288,13 @@ export interface Dictionary {
     failed: string;
     reasons: Record<"SPAM" | "MISLEADING" | "DANGEROUS" | "ILLEGAL" | "PERSONAL_DATA" | "OTHER", string>;
   };
+  share: {
+    share: string;
+    copied: string;
+    calendar: string;
+    google: string;
+    ics: string;
+  };
   community: {
     listTitle: string;
     listLead: string;

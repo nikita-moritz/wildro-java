@@ -307,6 +307,13 @@ export const ru: Dictionary = {
       OTHER: "Другое",
     },
   },
+  share: {
+    share: "Поделиться",
+    copied: "Ссылка скопирована",
+    calendar: "В календарь",
+    google: "Google Календарь",
+    ics: "Календарь Apple, Outlook (.ics)",
+  },
   community: {
     listTitle: "Группы",
     listLead: "Группы, которые вместе ходят на природу и вместе проводят события.",

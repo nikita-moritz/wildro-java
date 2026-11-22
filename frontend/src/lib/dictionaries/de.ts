@@ -307,6 +307,13 @@ export const de: Dictionary = {
       OTHER: "Anderes",
     },
   },
+  share: {
+    share: "Teilen",
+    copied: "Link kopiert",
+    calendar: "Zum Kalender",
+    google: "Google Kalender",
+    ics: "Apple Kalender, Outlook (.ics)",
+  },
   community: {
     listTitle: "Gruppen",
     listLead: "Gruppen, die gemeinsam rausgehen und zusammen Events anbieten.",
