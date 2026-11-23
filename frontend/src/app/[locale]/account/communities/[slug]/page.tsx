@@ -7,12 +7,15 @@ import { ConfirmForm } from "@/components/confirm-form";
 import { CommunityEditor } from "@/components/community/community-editor";
 import { CommunityLogo } from "@/components/community/community-logo";
 import { Notice } from "@/components/own/notice";
+import { OwnEventSections } from "@/components/own/own-event-sections";
 import { Button } from "@/components/ui/button";
 import { getCommunity, getCommunityEvents, manages, membersOf, standingIn } from "@/lib/communities";
 import { communityCode } from "@/lib/community-answer";
 import { getDictionary } from "@/lib/dictionaries";
 import { formatDay } from "@/lib/format";
 import { isLocale } from "@/lib/locales";
+import { listOfCommunity } from "@/lib/own-events";
+import { requestTime } from "@/lib/request-time";
 import { routes } from "@/lib/routes";
 import { requireSignedIn } from "@/lib/signed-in-page";
 
@@ -57,6 +60,8 @@ export default async function ManageCommunityPage({ params, searchParams }: Page
   }
   const role = standing.role;
   const active = community.status === "ACTIVE";
+  // The group's whole working list, colleagues' drafts included: for those who may edit them.
+  const [groupEvents, now] = manages(role) ? await Promise.all([listOfCommunity(session.jwt, slug), requestTime()]) : [null, 0];
   const upcoming = role === "OWNER" && active ? (await getCommunityEvents(community.id, locale)).length : 0;
   const failed = typeof query.error === "string" ? c.errors[communityCode(query.error)] : null;
   const api = `/api/communities/${encodeURIComponent(slug)}`;
@@ -92,6 +97,13 @@ export default async function ManageCommunityPage({ params, searchParams }: Page
           <Link href={routes.community(locale, slug)}>{t.own.viewPublic}</Link>
         </Button>
       </div>
+
+      {groupEvents && (
+        <section className="flex flex-col gap-3">
+          <h2 className="font-semibold">{c.eventsTitle}</h2>
+          <OwnEventSections events={groupEvents} now={now} locale={locale} t={t} empty={c.eventsEmpty} />
+        </section>
+      )}
 
       {manages(role) && active && (
         <section className="flex flex-col gap-3">

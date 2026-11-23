@@ -98,6 +98,25 @@ class CommunityEventsTest {
 	}
 
 	@Test
+	void theAdminsSeeEveryEventOfTheCommunityDraftsOfColleaguesIncludedMembersSeeNothing() throws Exception {
+		String run = slugOf(create("admin", "Morning run", "trailrunner-aachen"));
+		String draft = slugOf(this.mvc.perform(post("/v1/own/events").with(person("other-admin"))
+			.contentType(MediaType.APPLICATION_JSON)
+			.content(body("Draft run", "trailrunner-aachen"))));
+		slugOf(create("admin", "Personal hike", null));
+
+		this.mvc.perform(get("/v1/own/events/community/trailrunner-aachen").with(person("admin")))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.length()").value(2))
+			.andExpect(jsonPath("$[?(@.slug == '" + draft + "')].status").value("DRAFT"))
+			.andExpect(jsonPath("$[?(@.slug == '" + run + "')].status").value("PUBLISHED"));
+		this.mvc.perform(get("/v1/own/events/community/trailrunner-aachen").with(person("member")))
+			.andExpect(status().isForbidden());
+		this.mvc.perform(get("/v1/own/events/community/nowhere").with(person("admin")))
+			.andExpect(status().isNotFound());
+	}
+
+	@Test
 	void aMemberIsNotAnAdmin() throws Exception {
 		create("member", "Morning run", "trailrunner-aachen").andExpect(status().isForbidden())
 			.andExpect(jsonPath("$.code").value("NOT_YOURS"));

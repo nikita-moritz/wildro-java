@@ -254,6 +254,8 @@ export interface Dictionary {
     cancelYes: string;
     shareNow: string;
     sectionPast: string;
+    sectionDrafts: string;
+    sectionUpcoming: string;
     setupTitle: string;
     setupLead: string;
     saved: string;
@@ -351,7 +353,8 @@ export interface Dictionary {
     more: string;
     groupTitle: string;
     groupMore: string;
-    next: string;
+    /** Above a group's next outings, in its text and its picture. */
+    upcomingHeading: string;
     subscribe: string;
     subscribeHint: string;
     subscribeApple: string;
@@ -387,6 +390,8 @@ export interface Dictionary {
     closeQuestion: string;
     closeYes: string;
     newEventHere: string;
+    eventsTitle: string;
+    eventsEmpty: string;
     transfer: string;
     transferHint: string;
     close: string;

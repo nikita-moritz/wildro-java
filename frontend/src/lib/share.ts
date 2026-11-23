@@ -86,19 +86,24 @@ export interface SharedCommunity {
   /** "12 Mitglieder", already in words. */
   members: string;
   description: string;
-  /** "Nächstes Event: Morgenlauf, Sa., 5. Dez." when there is one. */
-  next: string | null;
+  /** "Die nächsten Events", the heading of `upcoming`. */
+  upcomingLabel: string;
+  /** The next few outings, each "Sa., 5. Dez.: Morgenlauf"; empty when nothing is planned. */
+  upcoming: string[];
   url: string;
 }
 
-/** A group's invitation to post in a chat: the same shape as an event's, with its next outing. */
-export function communityShareText(channel: Exclude<Channel, "instagram">, group: SharedCommunity, moreLabel: string): string {
+/**
+ * A group's digest to post in a chat: who it is, its next outings, the way in.
+ * The same shape as an event's text, so the two read alike in one chat.
+ */
+export function communityShareText(channel: Channel, group: SharedCommunity, moreLabel: string): string {
   return [
     channel === "whatsapp" ? `*${group.name}*` : group.name,
     `📍 ${group.area} · ${group.members}`,
-    group.next ? `📅 ${group.next}` : "",
     "",
-    shortened(group.description, 240),
+    ...(group.upcoming.length > 0 ? [`📅 ${group.upcomingLabel}:`, ...group.upcoming.map((line) => `• ${line}`), ""] : []),
+    shortened(group.description, group.upcoming.length > 0 ? 160 : 240),
     "",
     `${moreLabel}: ${group.url}`,
   ]

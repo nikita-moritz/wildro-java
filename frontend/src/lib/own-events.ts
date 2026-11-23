@@ -114,6 +114,13 @@ export async function listMine(jwt: string): Promise<OwnEvent[] | null> {
   return parsed.success ? parsed.data : null;
 }
 
+/** Every event of a group, drafts included; only its owner and admins get an answer. */
+export async function listOfCommunity(jwt: string, communitySlug: string): Promise<OwnEvent[] | null> {
+  const response = await callEventService("GET", `/v1/own/events/community/${encodeURIComponent(communitySlug)}`, jwt);
+  const parsed = z.array(ownEventSchema).safeParse(response?.ok ? await response.json().catch(() => null) : null);
+  return parsed.success ? parsed.data : null;
+}
+
 export async function getMine(jwt: string, slug: string): Promise<OwnEvent | null> {
   const response = await callEventService("GET", `/v1/own/events/${encodeURIComponent(slug)}`, jwt);
   const parsed = ownEventSchema.safeParse(response?.ok ? await response.json().catch(() => null) : null);

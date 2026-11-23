@@ -43,6 +43,11 @@ class OwnEventController {
 		return this.service.mine(token);
 	}
 
+	@GetMapping("/community/{communitySlug}")
+	List<OwnEventView> ofCommunity(@AuthenticationPrincipal Jwt token, @PathVariable String communitySlug) {
+		return this.service.ofCommunity(token, communitySlug);
+	}
+
 	@GetMapping("/{slug}")
 	OwnEventView one(@AuthenticationPrincipal Jwt token, Authentication authentication, @PathVariable String slug) {
 		return this.service.one(token, authentication, slug);

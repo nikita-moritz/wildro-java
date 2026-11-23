@@ -48,6 +48,16 @@ export function formatShortDate(iso: string, locale: Locale): string {
   }).format(new Date(iso));
 }
 
+/** "Sa., 28. Nov.", for a line in a group's digest: the weekday matters, the year does not. */
+export function formatWeekdayDate(iso: string, locale: Locale): string {
+  return new Intl.DateTimeFormat(INTL_LOCALE[locale], {
+    timeZone: TIME_ZONE,
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+  }).format(new Date(iso));
+}
+
 /** "3 Oct 2026", for a list row. */
 export function formatMediumDate(iso: string, locale: Locale): string {
   return new Intl.DateTimeFormat(INTL_LOCALE[locale], {

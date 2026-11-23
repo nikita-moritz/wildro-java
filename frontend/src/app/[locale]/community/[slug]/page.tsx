@@ -10,7 +10,7 @@ import { ShareBar } from "@/components/share/share-bar";
 import { SiteFooter } from "@/components/site-footer";
 import { getCommunity, getCommunityEvents } from "@/lib/communities";
 import { getDictionary } from "@/lib/dictionaries";
-import { formatCount, formatDate } from "@/lib/format";
+import { formatCount, formatWeekdayDate } from "@/lib/format";
 import { isLocale } from "@/lib/locales";
 import { routes } from "@/lib/routes";
 import { absoluteUrl, alternatesFor } from "@/lib/seo";
@@ -64,9 +64,18 @@ export default async function CommunityPage({ params }: PageProps<"/[locale]/com
     area: community.area,
     members,
     description: community.description,
-    next: events[0] ? `${t.share.next}: ${events[0].name}, ${formatDate(events[0].startsAt, locale)}` : null,
+    upcomingLabel: t.share.upcomingHeading,
+    upcoming: events.slice(0, 5).map((event) => `${formatWeekdayDate(event.startsAt, locale)}: ${event.name}`),
     url: pageUrl,
   };
+  // The digest as a picture, only with something ahead to show (the route answers 404 otherwise).
+  const images =
+    events.length > 0
+      ? {
+          post: `${routes.community(locale, community.slug)}/image/post`,
+          story: `${routes.community(locale, community.slug)}/image/story`,
+        }
+      : undefined;
 
   return (
     <>
@@ -101,7 +110,9 @@ export default async function CommunityPage({ params }: PageProps<"/[locale]/com
               whatsapp: communityShareText("whatsapp", shared, t.share.groupMore),
               telegram: communityShareText("telegram", shared, t.share.groupMore),
               facebook: communityShareText("facebook", shared, t.share.groupMore),
+              instagram: images ? communityShareText("instagram", shared, t.share.groupMore) : undefined,
             }}
+            images={images}
             calendar={{
               label: t.share.subscribe,
               hint: t.share.subscribeHint,

@@ -220,6 +220,16 @@ public class OwnEventService {
 		return this.own.mine(token.getSubject()).stream().map(OwnEventView::of).toList();
 	}
 
+	/**
+	 * All events of a community, for its owner and admins only: what each of them
+	 * wrote, drafts included, since any of them may edit any (§18.4).
+	 */
+	@Transactional(readOnly = true)
+	public List<OwnEventView> ofCommunity(Jwt token, String communitySlug) {
+		CommunityGateway.Standing community = managedCommunity(token, communitySlug);
+		return this.own.ofCommunity(community.id()).stream().map(OwnEventView::of).toList();
+	}
+
 	@Transactional(readOnly = true)
 	public OwnEventView one(Jwt token, Authentication authentication, String slug) {
 		Event event = find(slug);

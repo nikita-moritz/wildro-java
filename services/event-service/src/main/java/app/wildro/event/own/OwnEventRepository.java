@@ -41,4 +41,14 @@ interface OwnEventRepository extends Repository<Event, Long> {
 			""")
 	List<Event> mine(@Param("user") String user);
 
+	/** Everything a community owns, drafts and the cancelled included: its admins' working list. */
+	@EntityGraph(attributePaths = "translations")
+	@Query("""
+			select e from Event e
+			where e.ownerCommunityId = :community
+			order by e.startsAt desc
+			limit 200
+			""")
+	List<Event> ofCommunity(@Param("community") long community);
+
 }
