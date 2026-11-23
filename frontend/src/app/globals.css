@@ -56,6 +56,7 @@
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
   --color-muted: var(--muted);
+  --color-island: var(--island);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-secondary: var(--secondary);
   --color-primary-foreground: var(--primary-foreground);
@@ -94,6 +95,8 @@
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
+  /* The header's two islands: a grey that stands out from white pages and from the map alike. */
+  --island: oklch(0.88 0.005 250);
   --ring: oklch(0.548 0.136 153.7);
   --radius: 0.625rem;
 }
@@ -116,6 +119,7 @@
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
+  --island: oklch(0.32 0.005 250);
   --ring: oklch(0.827 0.205 153.7);
 }
 

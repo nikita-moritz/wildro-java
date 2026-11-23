@@ -41,6 +41,14 @@ const PILL =
   // account, menu. On hover, and while a menu it opens is open.
   "hover:border-primary/50 hover:ring-4 hover:ring-primary/20 data-[state=open]:border-primary/50 data-[state=open]:ring-4 data-[state=open]:ring-primary/20";
 
+/**
+ * The two groups the pills sit in, left (logo, sections) and right (language,
+ * theme, account): filled and shadowed so they stand out from any page and from
+ * the map (owner's call, 2026-11-23).
+ */
+const ISLAND =
+  "pointer-events-auto flex items-center gap-1.5 rounded-full border border-foreground/10 bg-island/95 p-1 shadow-lg backdrop-blur";
+
 export function SiteHeader({ locale, t }: { locale: Locale; t: HeaderText }) {
   return <SiteHeaderBar locale={locale} t={t} pathname={usePathname()} />;
 }
@@ -119,7 +127,7 @@ export function SiteHeaderBar({ locale, t, pathname = "" }: { locale: Locale; t:
     <header className={cn("pointer-events-none sticky top-0 z-50 print:hidden", !onMap && "bg-background")}>
       {/* The bar spans the window on every page (owner's call, 2026-11-23): logo and sections at the left edge, language, theme and account at the right. */}
       <div className="flex h-16 items-center justify-between gap-2 px-3">
-        <div className="flex items-center gap-2">
+        <div className={ISLAND}>
           <Link href={routes.home(locale)} className={cn(PILL, "pointer-events-auto group gap-2 px-4 text-base font-bold hover:bg-muted")}>
             <LogoMark />
             <span className="hidden transition-transform duration-200 group-hover:scale-105 sm:inline-block">
@@ -127,7 +135,7 @@ export function SiteHeaderBar({ locale, t, pathname = "" }: { locale: Locale; t:
             </span>
           </Link>
 
-          <nav className="hidden items-center gap-2 lg:flex">
+          <nav className="hidden items-center gap-1.5 lg:flex">
             {links.map(({ href, label, icon: Icon, active, personal }) => (
               <Link
                 key={href}
@@ -148,21 +156,23 @@ export function SiteHeaderBar({ locale, t, pathname = "" }: { locale: Locale; t:
           </nav>
         </div>
 
-        <div className="pointer-events-auto hidden items-center gap-2 lg:flex">
-          {languageMenu("end")}
-          <ThemeMenu t={t} align="end" />
-          {accountLink}
-        </div>
+        <div className={ISLAND}>
+          <div className="hidden items-center gap-1.5 lg:flex">
+            {languageMenu("end")}
+            <ThemeMenu t={t} align="end" />
+            {accountLink}
+          </div>
 
-        <button
-          type="button"
-          aria-label={t.nav.menu}
-          aria-expanded={open}
-          onClick={() => setOpenOn(open ? null : pathname)}
-          className={cn(PILL, "pointer-events-auto w-11 justify-center text-foreground hover:bg-muted lg:hidden")}
-        >
-          {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </button>
+          <button
+            type="button"
+            aria-label={t.nav.menu}
+            aria-expanded={open}
+            onClick={() => setOpenOn(open ? null : pathname)}
+            className={cn(PILL, "w-11 justify-center text-foreground hover:bg-muted lg:hidden")}
+          >
+            {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+        </div>
       </div>
 
       {open && (
