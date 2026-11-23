@@ -278,6 +278,10 @@ export const en: Dictionary = {
     coverRemove: "Remove picture",
     coverDone: "Picture saved.",
     coverOptional: "Optional. Without its own picture the event shows a stand-in for its activity. Only pictures you hold the rights to, and no recognisable people without their consent; location data in the picture is removed.",
+    duplicate: "Duplicate",
+    duplicateTitle: "Duplicate event",
+    duplicateLead: "Everything is copied except the date. Pick the new date, check the rest and save. The original event stays as it is.",
+    coverKeep: "Keep the picture",
   },
   moderation: {
     title: "Moderation",

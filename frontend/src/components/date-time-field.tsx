@@ -27,6 +27,7 @@ export function DateTimeField({
   label,
   timeLabel,
   defaultValue,
+  defaultTime,
   required = false,
   locale,
   placeholder,
@@ -38,6 +39,8 @@ export function DateTimeField({
   timeLabel: string;
   /** "YYYY-MM-DDTHH:MM" or empty. */
   defaultValue: string;
+  /** "HH:MM" to start from when there is no day yet: a copied event keeps its time, not its date. */
+  defaultTime?: string;
   required?: boolean;
   locale: Locale;
   placeholder: string;
@@ -45,7 +48,7 @@ export function DateTimeField({
   className: string;
 }) {
   const [day, setDay] = useState(defaultValue.slice(0, 10));
-  const [time, setTime] = useState(defaultValue.slice(11, 16) || "10:00");
+  const [time, setTime] = useState(defaultValue.slice(11, 16) || defaultTime || "10:00");
   const [open, setOpen] = useState(false);
   // Read when the calendar opens, never while rendering: a render must not depend on the clock.
   const [today, setToday] = useState<Date | null>(null);

@@ -88,6 +88,12 @@ export default async function EditEventPage({ params, searchParams }: PageProps<
             </Button>
           </form>
         )}
+        {/* Any of one's events can start the next one, a past or cancelled one too; a suspended one cannot. */}
+        {event.status !== "SUSPENDED" && (
+          <Button asChild variant="outline" className="h-11">
+            <Link href={routes.newEvent(locale, event.slug)}>{t.own.duplicate}</Link>
+          </Button>
+        )}
         {editable && (
           <form method="post" action={`/api/own/events/${encodeURIComponent(event.slug)}/cancel`}>
             <input type="hidden" name="locale" value={locale} />

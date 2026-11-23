@@ -1,14 +1,15 @@
 import { eventServiceUrl } from "@/lib/env";
 import { MAX_UPLOAD, refererLocale, toWebp } from "@/lib/images";
 import { isLocale } from "@/lib/locales";
-import { errorCode, publicChanged } from "@/lib/own-events";
+import { errorCode, getMine, publicChanged } from "@/lib/own-events";
 import { routes } from "@/lib/routes";
 import { localeOf, seeOther as redirectTo, text } from "@/lib/route-helpers";
 import { currentSession, fromThisSite } from "@/lib/session";
 
 /**
  * POST /api/own/events/{slug}/cover, the picture form on an own event's edit
- * page: intent "upload" with a file, or "remove". The upload becomes a 1600 by
+ * page: intent "upload" with a file, "copy" with the slug of the event it was
+ * duplicated from, or "remove". The upload becomes a 1600 by
  * 900 WebP without metadata here (lib/images.ts), the covers' shape; the event
  * service checks who may and stores it. A 303 back to the page, or with
  * reply "json" (the editor, right after creating the event) {ok} or {code}.
@@ -44,7 +45,28 @@ export async function POST(request: Request, { params }: RouteContext<"/api/own/
   const base = new URL(`/v1/own/events/${encodeURIComponent(slug)}/cover`, eventServiceUrl());
 
   let response: Response | null;
-  if (text(form, "intent") === "remove") {
+  const intent = text(form, "intent");
+  if (intent === "copy") {
+    // A duplicate takes its original's picture: only from an event this person may
+    // read as their own, so nobody copies a stranger's photo by naming its slug.
+    const source = await getMine(session.jwt, text(form, "from") ?? "");
+    if (!source?.coverImageUrl) {
+      return seeOther(`${page}?error=NO_FILE`);
+    }
+    const picture = await fetch(source.coverImageUrl, { cache: "no-store", signal: AbortSignal.timeout(10000) }).catch(() => null);
+    const bytes = picture?.ok ? await picture.arrayBuffer().catch(() => null) : null;
+    if (!bytes) {
+      return seeOther(`${page}?error=UNAVAILABLE`);
+    }
+    // Already cut and stripped when it was uploaded: sent on as it is, no second loss.
+    response = await fetch(base, {
+      method: "PUT",
+      headers: { Authorization: `Bearer ${session.jwt}`, "Content-Type": "image/webp" },
+      body: new Uint8Array(bytes),
+      cache: "no-store",
+      signal: AbortSignal.timeout(15000),
+    }).catch(() => null);
+  } else if (intent === "remove") {
     response = await fetch(`${base}/remove`, {
       method: "POST",
       headers: { Authorization: `Bearer ${session.jwt}` },

@@ -25,7 +25,8 @@ export const routes = {
   signIn: (locale: Locale, next?: string) => `/${locale}/sign-in${next ? `?next=${encodeURIComponent(next)}` : ""}`,
   account: (locale: Locale) => `/${locale}/account`,
   myEvents: (locale: Locale) => `/${locale}/account/events`,
-  newEvent: (locale: Locale) => `/${locale}/account/events/new`,
+  newEvent: (locale: Locale, from?: string) =>
+    `/${locale}/account/events/new${from ? `?from=${encodeURIComponent(from)}` : ""}`,
   editEvent: (locale: Locale, slug: string) => `/${locale}/account/events/${slug}`,
   moderation: (locale: Locale) => `/${locale}/moderation`,
   moderationCommunities: (locale: Locale) => `/${locale}/moderation/communities`,

@@ -278,6 +278,10 @@ export const de: Dictionary = {
     coverRemove: "Bild entfernen",
     coverDone: "Bild gespeichert.",
     coverOptional: "Optional. Ohne eigenes Bild zeigt das Event ein Symbolbild zur Aktivität. Nur Bilder, an denen du die Rechte hast, und keine erkennbaren Personen ohne deren Einwilligung; Standortdaten im Bild werden entfernt.",
+    duplicate: "Duplizieren",
+    duplicateTitle: "Event duplizieren",
+    duplicateLead: "Alles ist übernommen, nur das Datum nicht. Wähle den neuen Termin, prüf den Rest und speichere. Das ursprüngliche Event bleibt, wie es ist.",
+    coverKeep: "Bild übernehmen",
   },
   moderation: {
     title: "Moderation",

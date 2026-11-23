@@ -9,6 +9,7 @@ import { manages, myCommunities } from "@/lib/communities";
 import { getDictionary } from "@/lib/dictionaries";
 import { mapboxToken } from "@/lib/env";
 import { isLocale } from "@/lib/locales";
+import { getMine } from "@/lib/own-events";
 import { routes } from "@/lib/routes";
 import { requireSignedIn } from "@/lib/signed-in-page";
 
@@ -22,13 +23,17 @@ export async function generateMetadata({ params }: PageProps<"/[locale]/account/
 
 export const instant = false;
 
-export default async function NewEventPage({ params }: PageProps<"/[locale]/account/events/new">) {
+export default async function NewEventPage({ params, searchParams }: PageProps<"/[locale]/account/events/new">) {
   const { locale } = await params;
   if (!isLocale(locale)) {
     notFound();
   }
   const t = getDictionary(locale);
+  const { from } = await searchParams;
+  // The way back after signing in is a bare path (lib/signed-in-page.ts): a duplicate starts from its original's page anyway.
   const session = await requireSignedIn(locale, routes.newEvent(locale));
+  // "Duplicate": the original as the event service shows it to this person, so only their own.
+  const original = session && typeof from === "string" ? await getMine(session.jwt, from) : null;
   // Said up front rather than after the form is filled in.
   const blocker = !session
     ? t.auth.unavailable
@@ -44,7 +49,8 @@ export default async function NewEventPage({ params }: PageProps<"/[locale]/acco
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-4 py-10">
       <BackLink href={routes.myEvents(locale)} label={t.own.back} />
-      <h1 className="text-2xl font-semibold tracking-tight">{t.own.editorNew}</h1>
+      <h1 className="text-2xl font-semibold tracking-tight">{original ? t.own.duplicateTitle : t.own.editorNew}</h1>
+      {original && !blocker && <p className="text-sm text-muted-foreground">{t.own.duplicateLead}</p>}
       {blocker ? (
         <>
           <Notice text={blocker} tone="alert" />
@@ -60,6 +66,11 @@ export default async function NewEventPage({ params }: PageProps<"/[locale]/acco
           mapboxToken={mapboxToken() ?? null}
           editPath={routes.editEvent(locale, "{slug}")}
           communities={writable.map(({ slug, name }) => ({ slug, name }))}
+          copyOf={
+            original
+              ? { from: original, communitySlug: original.communitySlug, coverImageUrl: original.coverImageUrl }
+              : null
+          }
         />
       )}
     </main>

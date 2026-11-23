@@ -31,6 +31,13 @@ export interface EditorInitial {
   communityLinks: string[];
 }
 
+/** An event to start a new one from: every field but the dates, its owner and its picture. */
+export interface EditorCopy {
+  from: EditorInitial;
+  communitySlug: string | null;
+  coverImageUrl: string | null;
+}
+
 type Text = Pick<Dictionary, "own" | "activity" | "difficulty" | "filters">;
 
 const FIELD = "h-11 w-full rounded-lg border bg-background px-3 text-base";
@@ -49,9 +56,12 @@ export function EventEditor({
   mapboxToken,
   editPath,
   communities = [],
+  copyOf = null,
 }: {
   locale: Locale;
   initial: EditorInitial | null;
+  /** On a new event only: the event it duplicates. */
+  copyOf?: EditorCopy | null;
   t: Text;
   mapboxToken: string | null;
   /** Where to go after saving: the edit page, with {slug} filled in. */
@@ -60,13 +70,21 @@ export function EventEditor({
   communities?: { slug: string; name: string }[];
 }) {
   const own = t.own;
-  const [textLocale, setTextLocale] = useState<Locale>(initial?.locale ?? locale);
-  const [latitude, setLatitude] = useState(initial ? String(initial.latitude) : "");
-  const [longitude, setLongitude] = useState(initial ? String(initial.longitude) : "");
+  // What the fields start from: the event being edited, or the one being duplicated.
+  const base = initial ?? copyOf?.from ?? null;
+  const [textLocale, setTextLocale] = useState<Locale>(base?.locale ?? locale);
+  const [latitude, setLatitude] = useState(base ? String(base.latitude) : "");
+  const [longitude, setLongitude] = useState(base ? String(base.longitude) : "");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // A local preview of the chosen picture; nothing leaves the browser before saving.
   const [preview, setPreview] = useState<string | null>(null);
+  // A duplicate takes the original's own picture along unless told not to or given another.
+  const copiedCover = initial ? null : (copyOf?.coverImageUrl ?? null);
+  const [keepCover, setKeepCover] = useState(true);
+  const ownerDefault = communities.some((each) => each.slug === copyOf?.communitySlug) ? copyOf!.communitySlug! : "";
+  // A copy keeps the time of day; the day itself is the one thing to choose anew.
+  const copiedTime = (iso: string | null) => (copyOf && iso ? isoToBerlin(iso).slice(11, 16) : undefined);
 
   function useMyLocation() {
     navigator.geolocation?.getCurrentPosition((position) => {
@@ -114,14 +132,20 @@ export function EventEditor({
       // Should it fail, the event stays and the edit page says why.
       let coverError = "";
       const cover = data.get("cover");
-      if (!initial && cover instanceof File && cover.size > MAX_UPLOAD) {
+      const chosen = !initial && cover instanceof File && cover.size > 0;
+      if (chosen && cover.size > MAX_UPLOAD) {
         coverError = "&error=TOO_LARGE";
-      } else if (!initial && cover instanceof File && cover.size > 0) {
+      } else if (chosen || (copiedCover && keepCover)) {
         const upload = new FormData();
         upload.set("locale", locale);
-        upload.set("intent", "upload");
         upload.set("reply", "json");
-        upload.set("cover", cover);
+        if (chosen) {
+          upload.set("intent", "upload");
+          upload.set("cover", cover);
+        } else {
+          upload.set("intent", "copy");
+          upload.set("from", copyOf!.from.slug);
+        }
         const answer = await fetch(`/api/own/events/${encodeURIComponent(json.slug)}/cover`, { method: "POST", body: upload }).catch(() => null);
         if (!answer?.ok) {
           const refusal = (await answer?.json().catch(() => null)) as { code?: string } | null;
@@ -151,7 +175,7 @@ export function EventEditor({
       {!initial && communities.length > 0 && (
         <label className={LABEL}>
           {own.ownerLabel}
-          <select name="communitySlug" defaultValue="" className={FIELD}>
+          <select name="communitySlug" defaultValue={ownerDefault} className={FIELD}>
             <option value="">{own.ownerMe}</option>
             {communities.map((community) => (
               <option key={community.slug} value={community.slug}>
@@ -176,7 +200,7 @@ export function EventEditor({
 
       <label className={LABEL}>
         {own.fieldName}
-        <input name="name" required maxLength={120} defaultValue={initial?.name} className={FIELD} />
+        <input name="name" required maxLength={120} defaultValue={base?.name} className={FIELD} />
       </label>
 
       <label className={LABEL}>
@@ -186,7 +210,7 @@ export function EventEditor({
           required
           maxLength={5000}
           rows={7}
-          defaultValue={initial?.description}
+          defaultValue={base?.description}
           className="w-full rounded-lg border bg-background px-3 py-2 text-base"
         />
       </label>
@@ -195,9 +219,15 @@ export function EventEditor({
       {!initial && (
         <div className={LABEL}>
           <span>{own.coverTitle}</span>
-          {preview && (
+          {(preview ?? (keepCover ? copiedCover : null)) && (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={preview} alt="" className="aspect-[16/9] w-full rounded-xl border object-cover sm:w-80" />
+            <img src={preview ?? copiedCover!} alt="" className="aspect-[16/9] w-full rounded-xl border object-cover sm:w-80" />
+          )}
+          {copiedCover && !preview && (
+            <label className="flex min-h-11 items-center gap-2 font-normal">
+              <input type="checkbox" checked={keepCover} onChange={(e) => setKeepCover(e.target.checked)} className="size-4" />
+              {own.coverKeep}
+            </label>
           )}
           <label className="flex min-h-11 w-full cursor-pointer items-center rounded-lg border bg-background px-3 text-sm font-normal">
             <span className="sr-only">{own.coverChoose}</span>
@@ -224,7 +254,7 @@ export function EventEditor({
       <div className="grid gap-5 sm:grid-cols-2">
         <label className={LABEL}>
           {own.fieldActivity}
-          <select name="activityType" required defaultValue={initial?.activityType ?? "HIKING"} className={FIELD}>
+          <select name="activityType" required defaultValue={base?.activityType ?? "HIKING"} className={FIELD}>
             {ACTIVITY_TYPES.map((type) => (
               <option key={type} value={type}>
                 {t.activity[type]}
@@ -234,7 +264,7 @@ export function EventEditor({
         </label>
         <label className={LABEL}>
           {own.fieldDifficulty}
-          <select name="difficulty" defaultValue={initial?.difficulty ?? ""} className={FIELD}>
+          <select name="difficulty" defaultValue={base?.difficulty ?? ""} className={FIELD}>
             <option value="">{own.difficultyNone}</option>
             {DIFFICULTIES.map((difficulty) => (
               <option key={difficulty} value={difficulty}>
@@ -249,6 +279,7 @@ export function EventEditor({
           timeLabel={own.fieldTime}
           required
           defaultValue={isoToBerlin(initial?.startsAt ?? null)}
+          defaultTime={copiedTime(copyOf?.from.startsAt ?? null)}
           locale={locale}
           placeholder={t.filters.datePlaceholder}
           clearLabel={t.filters.dateClear}
@@ -259,6 +290,7 @@ export function EventEditor({
           label={own.fieldEnds}
           timeLabel={own.fieldTime}
           defaultValue={isoToBerlin(initial?.endsAt ?? null)}
+          defaultTime={copiedTime(copyOf?.from.endsAt ?? null)}
           locale={locale}
           placeholder={t.filters.datePlaceholder}
           clearLabel={t.filters.dateClear}
@@ -270,7 +302,7 @@ export function EventEditor({
         <legend className="px-1 text-sm font-medium">{own.fieldLocation}</legend>
         <label className={LABEL}>
           {own.fieldPlace}
-          <input name="placeName" required maxLength={120} defaultValue={initial?.placeName} className={FIELD} />
+          <input name="placeName" required maxLength={120} defaultValue={base?.placeName} className={FIELD} />
         </label>
         <p className="text-xs text-muted-foreground">{own.fieldLocationHint}</p>
         <div className="grid gap-3 sm:grid-cols-2">
@@ -325,22 +357,22 @@ export function EventEditor({
       <div className="grid gap-5 sm:grid-cols-3">
         <label className={LABEL}>
           {own.fieldDistance}
-          <input name="distanceKm" type="number" step="0.1" min={0.1} defaultValue={initial?.distanceKm ?? ""} className={FIELD} />
+          <input name="distanceKm" type="number" step="0.1" min={0.1} defaultValue={base?.distanceKm ?? ""} className={FIELD} />
         </label>
         <label className={LABEL}>
           {own.fieldElevation}
-          <input name="elevationGainM" type="number" step="1" min={0} defaultValue={initial?.elevationGainM ?? ""} className={FIELD} />
+          <input name="elevationGainM" type="number" step="1" min={0} defaultValue={base?.elevationGainM ?? ""} className={FIELD} />
         </label>
         <label className={LABEL}>
           {own.fieldCapacity}
-          <input name="maxParticipants" type="number" step="1" min={1} defaultValue={initial?.maxParticipants ?? ""} className={FIELD} />
+          <input name="maxParticipants" type="number" step="1" min={1} defaultValue={base?.maxParticipants ?? ""} className={FIELD} />
         </label>
       </div>
 
       <div className="grid gap-5 sm:grid-cols-2">
         <label className={LABEL}>
           {own.fieldEventLinks}
-          <textarea name="eventLinks" rows={3} defaultValue={initial?.eventLinks.join("\n")} className="w-full rounded-lg border bg-background px-3 py-2 text-base" />
+          <textarea name="eventLinks" rows={3} defaultValue={base?.eventLinks.join("\n")} className="w-full rounded-lg border bg-background px-3 py-2 text-base" />
           <span className="text-xs font-normal text-muted-foreground">{own.linksHint}</span>
         </label>
         <label className={LABEL}>
@@ -348,7 +380,7 @@ export function EventEditor({
           <textarea
             name="communityLinks"
             rows={3}
-            defaultValue={initial?.communityLinks.join("\n")}
+            defaultValue={base?.communityLinks.join("\n")}
             className="w-full rounded-lg border bg-background px-3 py-2 text-base"
           />
         </label>

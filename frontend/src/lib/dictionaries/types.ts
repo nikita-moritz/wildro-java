@@ -263,6 +263,10 @@ export interface Dictionary {
     coverRemove: string;
     coverDone: string;
     coverOptional: string;
+    duplicate: string;
+    duplicateTitle: string;
+    duplicateLead: string;
+    coverKeep: string;
   };
   moderation: {
     title: string;
