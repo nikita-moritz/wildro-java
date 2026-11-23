@@ -161,12 +161,40 @@ export interface Dictionary {
     terms: string;
     rights: string;
     builtBy: string;
+    brand: string;
   };
   legal: {
     legalNoticeTitle: string;
     privacyTitle: string;
     /** Shown above the legal text in a language it is not written in; null in German. */
     germanOnly: string | null;
+  };
+  /** The brand page: logo, name, colours, type, use. */
+  brand: {
+    title: string;
+    lead: string;
+    logoTitle: string;
+    logoLead: string;
+    onLight: string;
+    onDark: string;
+    onGreen: string;
+    downloadSvg: string;
+    downloadIcon: string;
+    nameTitle: string;
+    nameText: string;
+    colorsTitle: string;
+    colorsLead: string;
+    colors: Record<"--primary" | "--foreground" | "--muted-foreground" | "--border" | "--background", string>;
+    copy: string;
+    copied: string;
+    typeTitle: string;
+    typeLead: string;
+    typeSample: string;
+    rulesTitle: string;
+    doTitle: string;
+    dontTitle: string;
+    do: readonly string[];
+    dont: readonly string[];
   };
   notFound: {
     title: string;

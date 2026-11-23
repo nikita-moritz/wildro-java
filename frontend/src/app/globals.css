@@ -100,16 +100,19 @@
 /*
   wildro green, carried over from the working version (#0d874a light, #1eeb85
   dark). Contrast checked: white on the light green is 4.58:1, the dark
-  foreground on the bright green 9.42:1, both above WCAG AA.
+  foreground on the bright green 9.42:1, both above WCAG AA. .theme-light keeps
+  a part of a page light while the site is dark (the brand page's light sample).
 */
-:root {
+:root,
+.theme-light {
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.548 0.136 153.7);
+  /* The brand green as its hex, exactly, so the brand page reads back the logo's own value. */
+  --primary: #0d874a;
   --primary-foreground: oklch(1 0 0);
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
@@ -120,7 +123,7 @@
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
-  --ring: oklch(0.548 0.136 153.7);
+  --ring: var(--primary);
   --radius: 0.625rem;
 }
 
@@ -131,7 +134,7 @@
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.827 0.205 153.7);
+  --primary: #1eeb85;
   --primary-foreground: oklch(0.266 0.063 152.9);
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
@@ -142,7 +145,7 @@
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.827 0.205 153.7);
+  --ring: var(--primary);
 }
 
 /* The map engine paints popups white whatever the theme; its text would then

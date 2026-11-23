@@ -10,6 +10,7 @@ import { LanguageMenu } from "@/components/language-menu";
 import { LogoMark } from "@/components/logo-mark";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import type { Dictionary } from "@/lib/dictionaries";
+import { footerLinks } from "@/lib/footer-links";
 import type { Locale } from "@/lib/locales";
 import { routes } from "@/lib/routes";
 import { useMounted } from "@/lib/use-mounted";
@@ -221,11 +222,7 @@ export function SiteHeaderBar({ locale, t, pathname = "" }: { locale: Locale; t:
           </div>
           {/* The imprint one tap away on every page (§ 5 DDG): on a phone the footer of a growing list is out of reach. */}
           <nav aria-label={t.footer.legalNotice} className="flex flex-wrap gap-x-5 border-t pt-1 text-sm text-muted-foreground">
-            {[
-              { href: routes.legalNotice(locale), label: t.footer.legalNotice },
-              { href: routes.privacy(locale), label: t.footer.privacy },
-              { href: routes.terms(locale), label: t.footer.terms },
-            ].map(({ href, label }) => (
+            {footerLinks(locale, t).map(({ href, label }) => (
               <Link key={href} href={href} onClick={close} className="flex min-h-11 items-center hover:text-foreground">
                 {label}
               </Link>

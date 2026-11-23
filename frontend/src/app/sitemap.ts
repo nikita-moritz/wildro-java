@@ -15,6 +15,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     routes.home,
     (locale) => routes.feed(locale),
     (locale) => routes.communities(locale),
+    routes.brand,
   ];
   return pages.flatMap((path) =>
     LOCALES.map((locale) => ({

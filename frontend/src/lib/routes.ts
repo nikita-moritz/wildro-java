@@ -41,6 +41,7 @@ export const routes = {
   manageCommunity: (locale: Locale, slug: string) => `/${locale}/account/communities/${slug}`,
   // Public and indexable, like the other legal pages.
   terms: (locale: Locale) => `/${locale}/terms`,
+  brand: (locale: Locale) => `/${locale}/brand`,
 } as const;
 
 function withQuery(path: string, page: number, query?: URLSearchParams): string {

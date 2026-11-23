@@ -3,8 +3,8 @@ import Link from "next/link";
 import { LogoMark } from "@/components/logo-mark";
 import { currentYear } from "@/lib/current-year";
 import type { Dictionary } from "@/lib/dictionaries";
+import { footerLinks } from "@/lib/footer-links";
 import type { Locale } from "@/lib/locales";
-import { routes } from "@/lib/routes";
 
 /**
  * The working version's footer, full or compact. The imprint has to be
@@ -28,15 +28,11 @@ export async function SiteFooter({
 
   const nav = (
     <nav className="flex flex-wrap gap-x-6 gap-y-2 text-muted-foreground">
-      <Link href={routes.legalNotice(locale)} className="transition-colors hover:text-foreground">
-        {t.footer.legalNotice}
-      </Link>
-      <Link href={routes.privacy(locale)} className="transition-colors hover:text-foreground">
-        {t.footer.privacy}
-      </Link>
-      <Link href={routes.terms(locale)} className="transition-colors hover:text-foreground">
-        {t.footer.terms}
-      </Link>
+      {footerLinks(locale, t).map(({ href, label }) => (
+        <Link key={href} href={href} className="transition-colors hover:text-foreground">
+          {label}
+        </Link>
+      ))}
     </nav>
   );
 

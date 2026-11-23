@@ -1,8 +1,8 @@
 import Link from "next/link";
 
 import type { Dictionary } from "@/lib/dictionaries";
+import { footerLinks } from "@/lib/footer-links";
 import type { Locale } from "@/lib/locales";
-import { routes } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 
 /**
@@ -23,15 +23,11 @@ export function LegalIsland({
 }) {
   return (
     <nav aria-label={t.footer.legalNotice} className={cn("flex gap-4 text-xs text-muted-foreground", className)}>
-      <Link href={routes.legalNotice(locale)} className="hover:text-foreground">
-        {t.footer.legalNotice}
-      </Link>
-      <Link href={routes.privacy(locale)} className="hover:text-foreground">
-        {t.footer.privacy}
-      </Link>
-      <Link href={routes.terms(locale)} className="hover:text-foreground">
-        {t.footer.terms}
-      </Link>
+      {footerLinks(locale, t).map(({ href, label }) => (
+        <Link key={href} href={href} className="hover:text-foreground">
+          {label}
+        </Link>
+      ))}
     </nav>
   );
 }
