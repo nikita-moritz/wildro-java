@@ -14,43 +14,53 @@ const CHANNELS: Channel[] = ["whatsapp", "telegram", "facebook", "instagram"];
 
 const subscribe = () => () => {};
 
+/** One line of the calendar menu: a page to open, a file to save, or an address to copy. */
+export interface CalendarItem {
+  label: string;
+  href: string;
+  kind: "external" | "download" | "open" | "copy";
+}
+
 /**
- * Share and add to calendar, under an upcoming event's title.
+ * Share and add to calendar, under an upcoming event's title and on a group's page.
  *
  * "Teilen" opens a panel: the phone's own share sheet where there is one, the
  * link to copy, and a ready text per channel to post in a chat or a group. The
  * text can be changed before it goes; WhatsApp and Telegram open with it filled
  * in, Facebook takes only links, so its text is copied and pasted. Nothing is
  * loaded from those sites before a press. The calendar menu offers Google's form
- * and the .ics the event service writes.
+ * and the .ics the event service writes; a group's offers its calendar to subscribe to.
  */
 export function ShareBar({
   title,
+  heading,
   line,
   url,
   texts,
-  googleUrl,
-  icsUrl,
+  calendar,
   images,
   posterUrl,
   t,
 }: {
   title: string;
+  /** The panel's heading: "Event teilen", "Gruppe teilen". */
+  heading: string;
   /** Date and place in one line, what goes with the link in the share sheet. */
   line: string;
   url: string;
-  /** The ready texts, written on the server in the page's language. */
-  texts: Record<Channel, string>;
-  googleUrl: string;
-  icsUrl: string;
+  /** The ready texts, written on the server in the page's language. Instagram only with pictures. */
+  texts: Record<Exclude<Channel, "instagram">, string> & { instagram?: string };
+  calendar: { label: string; hint?: string; items: CalendarItem[] };
   /** The Instagram pictures of the event, drawn on request: post and story. */
-  images: { post: string; story: string };
+  images?: { post: string; story: string };
   /** The A4 poster page, to print or save as PDF. */
-  posterUrl: string;
+  posterUrl?: string;
   t: Dictionary["share"];
 }) {
+  // Instagram takes no link and no text from outside: without pictures it has nothing to offer.
+  const channels = CHANNELS.filter((each) => each !== "instagram" || (images && texts.instagram !== undefined));
   const [channel, setChannel] = useState<Channel>("whatsapp");
-  const [edited, setEdited] = useState<Record<Channel, string>>(texts);
+  const [edited, setEdited] = useState<Record<Channel, string>>({ ...texts, instagram: texts.instagram ?? "" });
   const [copied, setCopied] = useState<"link" | "text" | null>(null);
   const canShare = useSyncExternalStore(
     subscribe,
@@ -103,7 +113,7 @@ export function ShareBar({
           </Button>
         </DialogTrigger>
         <DialogContent closeLabel={t.close}>
-          <DialogTitle>{t.title}</DialogTitle>
+          <DialogTitle>{heading}</DialogTitle>
           <DialogDescription className="sr-only">{title}</DialogDescription>
 
           <div className="flex flex-wrap gap-2">
@@ -122,17 +132,19 @@ export function ShareBar({
               {copied === "link" ? <Check className="h-4 w-4" aria-hidden /> : <Link2 className="h-4 w-4" aria-hidden />}
               {copied === "link" ? t.copied : t.copyLink}
             </Button>
-            <Button asChild variant="outline" className="h-11 gap-2 rounded-full">
-              <a href={posterUrl}>
-                <FileText className="h-4 w-4" aria-hidden />
-                {t.poster}
-              </a>
-            </Button>
+            {posterUrl && (
+              <Button asChild variant="outline" className="h-11 gap-2 rounded-full">
+                <a href={posterUrl}>
+                  <FileText className="h-4 w-4" aria-hidden />
+                  {t.poster}
+                </a>
+              </Button>
+            )}
           </div>
 
           <div className="flex flex-col gap-3 border-t pt-4">
-            <div role="tablist" aria-label={t.textFor} className="grid grid-cols-4 gap-1 rounded-full bg-muted p-1">
-              {CHANNELS.map((each) => (
+            <div role="tablist" aria-label={t.textFor} className={cn("grid gap-1 rounded-full bg-muted p-1", channels.length === 4 ? "grid-cols-4" : "grid-cols-3")}>
+              {channels.map((each) => (
                 <button
                   key={each}
                   type="button"
@@ -148,7 +160,7 @@ export function ShareBar({
                 </button>
               ))}
             </div>
-            {channel === "instagram" && (
+            {channel === "instagram" && images && (
               // Drawn only once this tab is open: nobody waits for pictures they did not ask for.
               <div className="flex flex-col gap-3">
                 <p className="text-xs text-muted-foreground">{t.instagramHint}</p>
@@ -209,22 +221,30 @@ export function ShareBar({
         <DropdownMenuTrigger asChild>
           <Button type="button" variant="outline" className="h-11 gap-2 rounded-full px-4 data-[state=open]:bg-muted">
             <CalendarPlus className="h-4 w-4" aria-hidden />
-            {t.calendar}
+            {calendar.label}
             <ChevronDown className="h-3.5 w-3.5 opacity-60" aria-hidden />
           </Button>
         </DropdownMenuTrigger>
         {/* Not in the header: here the list may shift to stay on a narrow screen. */}
         <DropdownMenuContent align="start" avoidCollisions collisionPadding={12} className="max-w-[calc(100vw-24px)]">
-          <DropdownMenuItem asChild>
-            <a href={googleUrl} target="_blank" rel="noopener noreferrer">
-              {t.google}
-            </a>
-          </DropdownMenuItem>
-          <DropdownMenuItem asChild>
-            <a href={icsUrl} download>
-              {t.ics}
-            </a>
-          </DropdownMenuItem>
+          {calendar.hint && <p className="max-w-72 px-2 py-1.5 text-xs text-muted-foreground">{calendar.hint}</p>}
+          {calendar.items.map((item) =>
+            item.kind === "copy" ? (
+              <DropdownMenuItem key={item.label} onSelect={() => void copy(item.href, "link")}>
+                {item.label}
+              </DropdownMenuItem>
+            ) : (
+              <DropdownMenuItem key={item.label} asChild>
+                <a
+                  href={item.href}
+                  {...(item.kind === "external" ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                  {...(item.kind === "download" ? { download: true } : {})}
+                >
+                  {item.label}
+                </a>
+              </DropdownMenuItem>
+            ),
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
     </div>

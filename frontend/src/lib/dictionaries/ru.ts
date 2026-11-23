@@ -356,6 +356,13 @@ export const ru: Dictionary = {
     textCopied: "Текст скопирован",
     facebookHint: "Facebook не принимает текст извне. Он уже в буфере обмена: просто вставь его в пост или в группу.",
     more: "Все подробности",
+    groupTitle: "Поделиться группой",
+    groupMore: "Группа",
+    next: "Ближайшее событие",
+    subscribe: "Подписаться на календарь",
+    subscribeHint: "Все события группы в твоём календаре. Новые появляются сами, отмены тоже.",
+    subscribeApple: "iPhone, Apple Календарь, Outlook",
+    copyFeed: "Скопировать ссылку на календарь",
   },
   community: {
     listTitle: "Группы",

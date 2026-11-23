@@ -113,6 +113,21 @@ class EventReadController {
 		return this.reader.ofCommunity(communityId, locale);
 	}
 
+	/**
+	 * A community's events as one calendar to subscribe to (RFC 5545). The name
+	 * is the group's, given by the caller: this service knows the group by its
+	 * id only. Whether the group may be shown at all is the caller's check, as
+	 * for the list above.
+	 */
+	@GetMapping(path = "/community/{communityId}/calendar.ics", produces = "text/calendar;charset=UTF-8")
+	String communityCalendar(@PathVariable long communityId, @RequestParam String locale,
+			@RequestParam(required = false) String name) {
+		requireLocale(locale);
+		String shown = name == null ? null : name.strip().substring(0, Math.min(name.strip().length(), 120));
+		return CalendarFile.feed(shown, this.reader.calendarOfCommunity(communityId, locale),
+				(event) -> this.siteUrl + "/" + locale + "/event/" + event.slug(), this.clock.instant());
+	}
+
 	/** One event, published or cancelled. A draft answers 404, as if it were not there. */
 	@GetMapping("/{slug}")
 	EventPage page(@PathVariable String slug, @RequestParam String locale) {

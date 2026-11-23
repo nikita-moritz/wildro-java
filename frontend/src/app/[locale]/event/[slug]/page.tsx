@@ -177,8 +177,14 @@ export default async function EventPageRoute({ params }: PageProps<"/[locale]/ev
                 post: `${routes.event(locale, event.slug)}/image/post`,
                 story: `${routes.event(locale, event.slug)}/image/story`,
               }}
-              googleUrl={googleCalendarUrl({ ...event, url: pageUrl })}
-              icsUrl={`${routes.event(locale, event.slug)}/calendar.ics`}
+              heading={t.share.title}
+              calendar={{
+                label: t.share.calendar,
+                items: [
+                  { label: t.share.google, href: googleCalendarUrl({ ...event, url: pageUrl }), kind: "external" },
+                  { label: t.share.ics, href: `${routes.event(locale, event.slug)}/calendar.ics`, kind: "download" },
+                ],
+              }}
               t={t.share}
             />
           )}

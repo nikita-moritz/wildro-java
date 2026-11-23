@@ -334,6 +334,13 @@ export interface Dictionary {
     textCopied: string;
     facebookHint: string;
     more: string;
+    groupTitle: string;
+    groupMore: string;
+    next: string;
+    subscribe: string;
+    subscribeHint: string;
+    subscribeApple: string;
+    copyFeed: string;
   };
   community: {
     listTitle: string;

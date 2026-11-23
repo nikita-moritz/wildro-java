@@ -6,12 +6,15 @@ import { CommunityLogo } from "@/components/community/community-logo";
 import { MembershipIsland } from "@/components/community/membership-island";
 import { EventListItem, eventCardText } from "@/components/event-list-item";
 import { ReportForm } from "@/components/report-form";
+import { ShareBar } from "@/components/share/share-bar";
 import { SiteFooter } from "@/components/site-footer";
 import { getCommunity, getCommunityEvents } from "@/lib/communities";
 import { getDictionary } from "@/lib/dictionaries";
+import { formatDate } from "@/lib/format";
 import { isLocale } from "@/lib/locales";
 import { routes } from "@/lib/routes";
-import { alternatesFor } from "@/lib/seo";
+import { absoluteUrl, alternatesFor } from "@/lib/seo";
+import { communityShareText, subscriptionUrls } from "@/lib/share";
 
 export async function generateMetadata({ params }: PageProps<"/[locale]/community/[slug]">): Promise<Metadata> {
   const { locale, slug } = await params;
@@ -52,6 +55,18 @@ export default async function CommunityPage({ params }: PageProps<"/[locale]/com
   const events = await getCommunityEvents(community.id, locale);
   const active = community.status === "ACTIVE";
   const foreign = community.locale !== locale;
+  const members = t.community.members.replace("{n}", String(community.memberCount));
+  const pageUrl = absoluteUrl(routes.community(locale, community.slug));
+  const feedUrl = absoluteUrl(`${routes.community(locale, community.slug)}/calendar.ics`);
+  const feed = subscriptionUrls(feedUrl);
+  const shared = {
+    name: community.name,
+    area: community.area,
+    members,
+    description: community.description,
+    next: events[0] ? `${t.share.next}: ${events[0].name}, ${formatDate(events[0].startsAt, locale)}` : null,
+    url: pageUrl,
+  };
 
   return (
     <>
@@ -64,7 +79,7 @@ export default async function CommunityPage({ params }: PageProps<"/[locale]/com
               {community.name}
             </h1>
             <p className="text-sm text-muted-foreground">
-              {community.area} · {t.community.members.replace("{n}", String(community.memberCount))}
+              {community.area} · {members}
             </p>
           </div>
         </div>
@@ -73,6 +88,31 @@ export default async function CommunityPage({ params }: PageProps<"/[locale]/com
           <p role="status" className="rounded-xl border bg-muted px-4 py-3 text-sm font-medium">
             {t.community.closed}
           </p>
+        )}
+
+        {/* A closed group has nothing ahead to invite to or subscribe to. */}
+        {active && (
+          <ShareBar
+            title={community.name}
+            heading={t.share.groupTitle}
+            line={`${community.area} · ${members}`}
+            url={pageUrl}
+            texts={{
+              whatsapp: communityShareText("whatsapp", shared, t.share.groupMore),
+              telegram: communityShareText("telegram", shared, t.share.groupMore),
+              facebook: communityShareText("facebook", shared, t.share.groupMore),
+            }}
+            calendar={{
+              label: t.share.subscribe,
+              hint: t.share.subscribeHint,
+              items: [
+                { label: t.share.google, href: feed.google, kind: "external" },
+                { label: t.share.subscribeApple, href: feed.webcal, kind: "open" },
+                { label: t.share.copyFeed, href: feedUrl, kind: "copy" },
+              ],
+            }}
+            t={t.share}
+          />
         )}
 
         <MembershipIsland

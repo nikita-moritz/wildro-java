@@ -4,7 +4,9 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Locale;
+import java.util.function.Function;
 
 import app.wildro.event.domain.EventStatus;
 
@@ -32,19 +34,49 @@ public final class CalendarFile {
 	/** How much of the description goes along: enough to recognise the event, the page has the rest. */
 	private static final int DESCRIPTION_CHARS = 600;
 
+	/** How often a subscribed calendar is asked to look again. */
+	private static final String REFRESH = "PT6H";
+
 	private CalendarFile() {
 	}
 
 	public static String of(EventPage event, String pageUrl, Instant now) {
+		return feed(null, List.of(event), (each) -> pageUrl, now);
+	}
+
+	/**
+	 * Several events as one calendar, for a subscription (a group's events): the
+	 * calendar app fetches it again by itself and adds, moves or cancels entries
+	 * by their UID. Named when a name is given, and asked to look again every few
+	 * hours; apps take that as a wish, not a rule.
+	 */
+	public static String feed(String name, List<EventPage> events, Function<EventPage, String> pageUrl, Instant now) {
 		StringBuilder out = new StringBuilder();
 		line(out, "BEGIN:VCALENDAR");
 		line(out, "VERSION:2.0");
 		line(out, "PRODID:-//wildro//events//EN");
 		line(out, "CALSCALE:GREGORIAN");
 		line(out, "METHOD:PUBLISH");
+		if (name != null && !name.isBlank()) {
+			line(out, "X-WR-CALNAME:" + text(name.strip()));
+			line(out, "NAME:" + text(name.strip()));
+			line(out, "REFRESH-INTERVAL;VALUE=DURATION:" + REFRESH);
+			line(out, "X-PUBLISHED-TTL:" + REFRESH);
+		}
+		for (EventPage event : events) {
+			vevent(out, event, pageUrl.apply(event), now);
+		}
+		line(out, "END:VCALENDAR");
+		return out.toString();
+	}
+
+	private static void vevent(StringBuilder out, EventPage event, String pageUrl, Instant now) {
 		line(out, "BEGIN:VEVENT");
 		line(out, "UID:" + event.slug() + "@wildro.app");
 		line(out, "DTSTAMP:" + UTC.format(now));
+		if (event.updatedAt() != null) {
+			line(out, "LAST-MODIFIED:" + UTC.format(event.updatedAt()));
+		}
 		line(out, "DTSTART:" + UTC.format(event.startsAt()));
 		if (event.endsAt() != null) {
 			line(out, "DTEND:" + UTC.format(event.endsAt()));
@@ -56,8 +88,6 @@ public final class CalendarFile {
 		line(out, "URL:" + pageUrl);
 		line(out, "STATUS:" + (event.status() == EventStatus.CANCELLED ? "CANCELLED" : "CONFIRMED"));
 		line(out, "END:VEVENT");
-		line(out, "END:VCALENDAR");
-		return out.toString();
 	}
 
 	/** TEXT values: backslash, semicolon and comma escaped, line breaks as \n (RFC 5545, 3.3.11). */

@@ -15,6 +15,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -43,6 +46,11 @@ public class EventReader {
 
 	/** A community page lists this many upcoming events; more is a feed, which has its own page. */
 	static final int MAX_COMMUNITY_EVENTS = 50;
+
+	/** A group's calendar: enough for a very busy year, small enough for any calendar app. */
+	static final int MAX_CALENDAR_EVENTS = 200;
+
+	static final Duration CALENDAR_KEEPS_PAST = Duration.ofDays(60);
 
 	private final EventRepository events;
 
@@ -96,6 +104,29 @@ public class EventReader {
 				query -> query.as(IdView.class).sortBy(FEED_ORDER).limit(MAX_COMMUNITY_EVENTS).all())
 			.stream().map(IdView::getId).toList();
 		return ids.isEmpty() ? List.of() : this.read.findCards(ids, locale);
+	}
+
+	/**
+	 * A community's events for a calendar subscription: what is ahead, plus what
+	 * passed in the last weeks so a subscribed calendar does not lose an outing
+	 * the day after. Cancelled ones stay in, so the calendar shows them cancelled
+	 * instead of silently dropping them; drafts and suspended events never appear.
+	 */
+	@Transactional(readOnly = true)
+	public List<EventPage> calendarOfCommunity(long communityId, String locale) {
+		Instant since = this.clock.instant().minus(CALENDAR_KEEPS_PAST);
+		Specification<Event> spec = (root, query, cb) -> cb.and(
+				cb.equal(root.get("ownerCommunityId"), communityId),
+				root.get("status").in(EventStatus.PUBLISHED, EventStatus.CANCELLED),
+				cb.greaterThan(root.get("passesAt"), since));
+		List<Long> ids = this.events.findBy(spec,
+				query -> query.as(IdView.class).sortBy(FEED_ORDER).limit(MAX_CALENDAR_EVENTS).all())
+			.stream().map(IdView::getId).toList();
+		return ids.isEmpty() ? List.of()
+				: this.read.findWithTranslationsByIdIn(ids).stream()
+					.map(event -> toPage(event, locale))
+					.sorted(Comparator.comparing(EventPage::startsAt).thenComparing(EventPage::id))
+					.toList();
 	}
 
 	@Transactional(readOnly = true)

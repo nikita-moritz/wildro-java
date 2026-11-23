@@ -56,6 +56,10 @@ interface EventReadRepository extends Repository<Event, Long> {
 	@EntityGraph(attributePaths = "translations")
 	Optional<Event> findWithTranslationsBySlug(String slug);
 
+	/** Whole events with their translations, for a calendar. No paging over the join: the ids are already cut. */
+	@EntityGraph(attributePaths = "translations")
+	List<Event> findWithTranslationsByIdIn(Collection<Long> ids);
+
 	record PointRow(String slug, String name, String placeName, ActivityType activityType, Instant startsAt,
 			Instant endsAt, String coverImageUrl, String coverCredit, BigDecimal priceAmount, String priceCurrency,
 			Point point) {

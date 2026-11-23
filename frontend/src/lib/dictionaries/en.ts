@@ -356,6 +356,13 @@ export const en: Dictionary = {
     textCopied: "Text copied",
     facebookHint: "Facebook takes no text from outside. It is on your clipboard: paste it into the post or the group.",
     more: "All details",
+    groupTitle: "Share group",
+    groupMore: "The group",
+    next: "Next event",
+    subscribe: "Subscribe to calendar",
+    subscribeHint: "All of the group's events in your calendar. New ones appear by themselves, and so do cancellations.",
+    subscribeApple: "iPhone, Apple Calendar, Outlook",
+    copyFeed: "Copy calendar link",
   },
   community: {
     listTitle: "Groups",

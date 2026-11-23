@@ -77,6 +77,27 @@ class CommunityEventsTest {
 	}
 
 	@Test
+	void theCommunitysCalendarCarriesItsEventsCancelledOnesIncludedButNoDraftOrStrangersEvent() throws Exception {
+		String run = slugOf(create("admin", "Morning run", "trailrunner-aachen"));
+		String cancelled = slugOf(create("admin", "Evening run", "trailrunner-aachen"));
+		this.mvc.perform(post("/v1/own/events/" + cancelled + "/cancel").with(person("admin"))).andExpect(status().isOk());
+		String draft = slugOf(this.mvc.perform(post("/v1/own/events").with(person("admin"))
+			.contentType(MediaType.APPLICATION_JSON)
+			.content(body("Draft run", "trailrunner-aachen"))));
+		String personal = slugOf(create("admin", "Personal hike", null));
+
+		String ics = this.mvc.perform(get("/v1/events/community/7/calendar.ics").param("locale", "de")
+			.param("name", "Trailrunner Aachen"))
+			.andExpect(status().isOk())
+			.andReturn().getResponse().getContentAsString();
+		assertThat(ics).contains("X-WR-CALNAME:Trailrunner Aachen\r\n", "UID:" + run + "@wildro.app\r\n",
+				"UID:" + cancelled + "@wildro.app\r\n", "STATUS:CANCELLED\r\n", "REFRESH-INTERVAL;VALUE=DURATION:PT6H\r\n")
+			.doesNotContain(draft)
+			.doesNotContain(personal);
+		assertThat(ics.split("BEGIN:VEVENT", -1)).hasSize(3);
+	}
+
+	@Test
 	void aMemberIsNotAnAdmin() throws Exception {
 		create("member", "Morning run", "trailrunner-aachen").andExpect(status().isForbidden())
 			.andExpect(jsonPath("$.code").value("NOT_YOURS"));

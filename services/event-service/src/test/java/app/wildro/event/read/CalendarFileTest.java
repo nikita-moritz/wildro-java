@@ -50,6 +50,23 @@ class CalendarFileTest {
 	}
 
 	@Test
+	void aFeedIsOneNamedCalendarWithOneEntryPerEvent() {
+		String ics = CalendarFile.feed("Wandertreff Aachen, Eifel", List.of(
+				event(EventStatus.PUBLISHED, "2026-12-05T08:30:00Z", null),
+				event(EventStatus.CANCELLED, "2026-12-12T08:30:00Z", null)), (each) -> URL, NOW);
+		assertThat(ics).contains("X-WR-CALNAME:Wandertreff Aachen\\, Eifel\r\n", "X-PUBLISHED-TTL:PT6H\r\n",
+				"LAST-MODIFIED:20261122T170000Z\r\n");
+		assertThat(ics.split("BEGIN:VEVENT", -1)).hasSize(3);
+		assertThat(ics.split("BEGIN:VCALENDAR", -1)).hasSize(2);
+	}
+
+	@Test
+	void aSingleEventFileHasNoCalendarName() {
+		assertThat(CalendarFile.of(event(EventStatus.PUBLISHED, "2026-12-05T08:30:00Z", null), URL, NOW))
+			.doesNotContain("X-WR-CALNAME").doesNotContain("REFRESH-INTERVAL");
+	}
+
+	@Test
 	void textIsEscapedAsTheRfcAsks() {
 		assertThat(CalendarFile.text("Treff: Parkplatz, Ecke A; dann\nlos \\ weiter"))
 			.isEqualTo("Treff: Parkplatz\\, Ecke A\\; dann\\nlos \\\\ weiter");

@@ -356,6 +356,13 @@ export const de: Dictionary = {
     textCopied: "Text kopiert",
     facebookHint: "Facebook übernimmt keinen Text von außen. Er liegt in der Zwischenablage: im Beitrag oder in der Gruppe einfach einfügen.",
     more: "Alle Infos",
+    groupTitle: "Gruppe teilen",
+    groupMore: "Zur Gruppe",
+    next: "Nächstes Event",
+    subscribe: "Kalender abonnieren",
+    subscribeHint: "Alle Events der Gruppe in deinem Kalender. Neue erscheinen von selbst, Absagen auch.",
+    subscribeApple: "iPhone, Apple Kalender, Outlook",
+    copyFeed: "Kalender-Link kopieren",
   },
   community: {
     listTitle: "Gruppen",

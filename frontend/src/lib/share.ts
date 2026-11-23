@@ -80,6 +80,42 @@ export function shareText(channel: Channel, facts: ShareFacts, moreLabel: string
     .join("\n");
 }
 
+export interface SharedCommunity {
+  name: string;
+  area: string;
+  /** "12 Mitglieder", already in words. */
+  members: string;
+  description: string;
+  /** "Nächstes Event: Morgenlauf, Sa., 5. Dez." when there is one. */
+  next: string | null;
+  url: string;
+}
+
+/** A group's invitation to post in a chat: the same shape as an event's, with its next outing. */
+export function communityShareText(channel: Exclude<Channel, "instagram">, group: SharedCommunity, moreLabel: string): string {
+  return [
+    channel === "whatsapp" ? `*${group.name}*` : group.name,
+    `📍 ${group.area} · ${group.members}`,
+    group.next ? `📅 ${group.next}` : "",
+    "",
+    shortened(group.description, 240),
+    "",
+    `${moreLabel}: ${group.url}`,
+  ]
+    .filter((line, index, lines) => line !== "" || (index > 0 && (lines[index - 1] ?? "") !== ""))
+    .join("\n");
+}
+
+/**
+ * A calendar to subscribe to, from its https address. webcal:// makes the
+ * phone, Apple's Calendar and Outlook offer to subscribe instead of importing
+ * once; Google takes the same address as its cid.
+ */
+export function subscriptionUrls(feedUrl: string): { webcal: string; google: string } {
+  const webcal = feedUrl.replace(/^https?:\/\//, "webcal://");
+  return { webcal, google: `https://calendar.google.com/calendar/render?${new URLSearchParams({ cid: webcal })}` };
+}
+
 /** WhatsApp with the text filled in; the person picks the chat or group. */
 export function whatsappUrl(text: string): string {
   return `https://wa.me/?text=${encodeURIComponent(text)}`;
