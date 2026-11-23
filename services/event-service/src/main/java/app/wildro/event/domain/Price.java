@@ -20,6 +20,11 @@ public class Price {
 
 	private static final BigDecimal MAX = new BigDecimal("999999.99");
 
+	/** What an own event costs when its organiser names no price. A new value each time: JPA owns embeddables per row. */
+	public static Price free() {
+		return new Price(BigDecimal.ZERO, "EUR");
+	}
+
 	@Column(name = "price_amount")
 	private BigDecimal amount;
 

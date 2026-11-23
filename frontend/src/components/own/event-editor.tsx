@@ -27,6 +27,8 @@ export interface EditorInitial {
   distanceKm: number | null;
   elevationGainM: number | null;
   maxParticipants: number | null;
+  /** In euros, zero when free. */
+  priceAmount: number;
   eventLinks: string[];
   communityLinks: string[];
 }
@@ -115,6 +117,8 @@ export function EventEditor({
       distanceKm: number("distanceKm"),
       elevationGainM: number("elevationGainM"),
       maxParticipants: number("maxParticipants"),
+      // Empty means free: the event service makes it zero.
+      priceAmount: number("priceAmount"),
       eventLinks: lines("eventLinks"),
       communityLinks: lines("communityLinks"),
       communitySlug: value("communitySlug") || null,
@@ -353,6 +357,23 @@ export function EventEditor({
           />
         )}
       </fieldset>
+
+      <label className={LABEL}>
+        {own.fieldPrice}
+        <input
+          name="priceAmount"
+          type="number"
+          step="0.01"
+          min={0}
+          max={999999.99}
+          inputMode="decimal"
+          // Free shows as an empty field with the hint, not as a bare "0".
+          defaultValue={base?.priceAmount ? base.priceAmount : ""}
+          placeholder="0"
+          className={`${FIELD} sm:w-48`}
+        />
+        <span className="text-xs font-normal text-muted-foreground">{own.priceHint}</span>
+      </label>
 
       <div className="grid gap-5 sm:grid-cols-3">
         <label className={LABEL}>

@@ -19,7 +19,9 @@ import app.wildro.event.domain.LinkScope;
 public record OwnEventView(String slug, EventStatus status, String suspensionReason, String locale, String name,
 		String placeName, String description, ActivityType activityType, Difficulty difficulty, Instant startsAt,
 		Instant endsAt, Instant passesAt, double latitude, double longitude, BigDecimal distanceKm,
-		Integer elevationGainM, Integer maxParticipants, List<String> eventLinks, List<String> communityLinks,
+		Integer elevationGainM, Integer maxParticipants,
+		/** In euros, zero when free. */
+		BigDecimal priceAmount, List<String> eventLinks, List<String> communityLinks,
 		Instant publishedAt, Instant updatedAt, String communitySlug, String organizer,
 		/** The organiser's own picture, null while the activity's stand-in shows. */
 		String coverImageUrl) {
@@ -30,7 +32,8 @@ public record OwnEventView(String slug, EventStatus status, String suspensionRea
 				event.getOriginalLocale(), text.getName(), text.getPlaceName(), text.getDescription(),
 				event.getActivityType(), event.getDifficulty(), event.getStartsAt(), event.getEndsAt(),
 				event.getPassesAt(), event.getStartPoint().getY(), event.getStartPoint().getX(), event.getDistanceKm(),
-				event.getElevationGainM(), event.getVisibleCapacity(), urls(event, LinkScope.EVENT),
+				event.getElevationGainM(), event.getVisibleCapacity(),
+				event.getPrice() == null ? BigDecimal.ZERO : event.getPrice().getAmount(), urls(event, LinkScope.EVENT),
 				urls(event, LinkScope.COMMUNITY), event.getPublishedAt(), event.getUpdatedAt(),
 				event.getCommunitySlug(), event.getOrganizer(), event.getCoverFile() == null ? null : event.getCoverImageUrl());
 	}

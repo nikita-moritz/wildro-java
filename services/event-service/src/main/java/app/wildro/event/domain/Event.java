@@ -236,7 +236,9 @@ public class Event {
 		this.coverImageUrl = builder.coverImageUrl;
 		this.coverFile = builder.coverFile;
 		this.coverCredit = builder.coverCredit;
-		this.price = builder.price;
+		// An own event is free unless its organiser names a price (SPEC.md §18.2); an
+		// external one has no price when its source says nothing (V6, V15).
+		this.price = builder.price == null && this.kind == EventKind.OWN ? Price.free() : builder.price;
 		this.translations = new LinkedHashMap<>(builder.translations);
 		this.links = orderedLinks(builder.links);
 		this.ownerUserId = builder.ownerUserId;

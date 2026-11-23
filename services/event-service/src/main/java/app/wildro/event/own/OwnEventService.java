@@ -23,6 +23,7 @@ import app.wildro.event.domain.EventStatus;
 import app.wildro.event.domain.EventTranslation;
 import app.wildro.event.domain.GeoPoints;
 import app.wildro.event.domain.LinkScope;
+import app.wildro.event.domain.Price;
 import app.wildro.event.media.CoverFiles;
 import app.wildro.event.own.OwnEventRefusal.Code;
 
@@ -320,7 +321,9 @@ public class OwnEventService {
 			.organizer(organizer)
 			.distanceKm(request.distanceKm())
 			.elevationGainM(request.elevationGainM())
-			.maxParticipants(request.maxParticipants());
+			.maxParticipants(request.maxParticipants())
+			// No price named: the domain makes an own event free (SPEC.md §18.2).
+			.price(request.priceAmount() == null ? null : new Price(request.priceAmount(), "EUR"));
 		for (String locale : Event.LOCALES) {
 			builder.translation(locale, text);
 		}

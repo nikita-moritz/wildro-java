@@ -233,6 +233,8 @@ export interface Dictionary {
     fieldDistance: string;
     fieldElevation: string;
     fieldCapacity: string;
+    fieldPrice: string;
+    priceHint: string;
     fieldEventLinks: string;
     fieldCommunityLinks: string;
     linksHint: string;

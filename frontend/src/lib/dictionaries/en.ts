@@ -233,6 +233,8 @@ export const en: Dictionary = {
     fieldDistance: "Distance in km (optional)",
     fieldElevation: "Elevation gain in m (optional)",
     fieldCapacity: "Maximum participants (optional)",
+    fieldPrice: "Price in euros",
+    priceHint: "Leave empty if taking part is free.",
     fieldEventLinks: "Links to the event",
     fieldCommunityLinks: "Links to the group",
     linksHint: "One https link per line, at most 5.",

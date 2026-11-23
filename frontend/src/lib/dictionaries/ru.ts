@@ -233,6 +233,8 @@ export const ru: Dictionary = {
     fieldDistance: "Дистанция в км (необязательно)",
     fieldElevation: "Набор высоты в м (необязательно)",
     fieldCapacity: "Максимум участников (необязательно)",
+    fieldPrice: "Цена в евро",
+    priceHint: "Оставь пустым, если участие бесплатное.",
     fieldEventLinks: "Ссылки на событие",
     fieldCommunityLinks: "Ссылки на группу",
     linksHint: "По одной ссылке https в строке, не больше 5.",

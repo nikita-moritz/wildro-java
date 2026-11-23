@@ -34,6 +34,8 @@ export const ownEventSchema = z.object({
   distanceKm: z.number().nullable(),
   elevationGainM: z.number().int().nullable(),
   maxParticipants: z.number().int().nullable(),
+  // In euros, zero when free (SPEC.md §18.2).
+  priceAmount: z.number().nullish().transform((value) => value ?? 0),
   eventLinks: z.array(z.string()),
   communityLinks: z.array(z.string()),
   publishedAt: instant.nullable(),

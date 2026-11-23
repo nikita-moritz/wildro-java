@@ -33,6 +33,8 @@ public record OwnEventRequest(
 		BigDecimal distanceKm,
 		Integer elevationGainM,
 		Integer maxParticipants,
+		/** What taking part costs in euros; absent means free (SPEC.md §18.2). */
+		@DecimalMin("0") @DecimalMax("999999.99") BigDecimal priceAmount,
 		@Size(max = 5) List<@NotBlank @Size(max = 500) String> eventLinks,
 		@Size(max = 5) List<@NotBlank @Size(max = 500) String> communityLinks,
 		/** Write it in this community's name (§18.3); null for a personal event. Fixed once created. */

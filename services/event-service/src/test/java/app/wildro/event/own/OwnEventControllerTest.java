@@ -79,6 +79,23 @@ class OwnEventControllerTest {
 	}
 
 	@Test
+	void anEventIsFreeUntilTheOrganiserNamesAPrice() throws Exception {
+		String slug = slugOf(create("u1", "Abendrunde im Venn", IN_A_WEEK, true));
+		this.mvc.perform(get("/v1/events/" + slug).param("locale", "de")).andExpect(jsonPath("$.price.amount").value(0));
+		this.mvc.perform(get("/v1/events").param("locale", "de").param("price", "free"))
+			.andExpect(jsonPath("$.items[?(@.slug == '" + slug + "')]").exists());
+
+		this.mvc.perform(put("/v1/own/events/" + slug).with(person("u1"))
+			.contentType(MediaType.APPLICATION_JSON)
+			.content(body("Abendrunde im Venn", IN_A_WEEK).replace("\"eventLinks\"", "\"priceAmount\":12.5,\"eventLinks\"")))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.priceAmount").value(12.5));
+		this.mvc.perform(get("/v1/events/" + slug).param("locale", "de"))
+			.andExpect(jsonPath("$.price.amount").value(12.5))
+			.andExpect(jsonPath("$.price.currency").value("EUR"));
+	}
+
+	@Test
 	void russianNamesBecomeLatinAddresses() throws Exception {
 		create("u1", "Поход к озеру", IN_A_WEEK, false).andExpect(jsonPath("$.slug")
 			.value("pokhod-k-ozeru-" + IN_A_WEEK.atZone(app.wildro.event.domain.Event.ZONE).toLocalDate()));
