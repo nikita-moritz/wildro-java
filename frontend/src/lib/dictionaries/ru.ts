@@ -232,7 +232,6 @@ export const ru: Dictionary = {
     pickOnMap: "Загрузить карту для выбора",
     fieldDistance: "Дистанция в км (необязательно)",
     fieldElevation: "Набор высоты в м (необязательно)",
-    fieldCapacity: "Максимум участников (необязательно)",
     fieldPrice: "Цена в евро",
     priceHint: "Оставь пустым, если участие бесплатное.",
     fieldEventLinks: "Ссылки на событие",

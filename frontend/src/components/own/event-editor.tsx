@@ -26,7 +26,6 @@ export interface EditorInitial {
   longitude: number;
   distanceKm: number | null;
   elevationGainM: number | null;
-  maxParticipants: number | null;
   /** In euros, zero when free. */
   priceAmount: number;
   eventLinks: string[];
@@ -116,7 +115,6 @@ export function EventEditor({
       longitude: number("longitude"),
       distanceKm: number("distanceKm"),
       elevationGainM: number("elevationGainM"),
-      maxParticipants: number("maxParticipants"),
       // Empty means free: the event service makes it zero.
       priceAmount: number("priceAmount"),
       eventLinks: lines("eventLinks"),
@@ -375,7 +373,7 @@ export function EventEditor({
         <span className="text-xs font-normal text-muted-foreground">{own.priceHint}</span>
       </label>
 
-      <div className="grid gap-5 sm:grid-cols-3">
+      <div className="grid gap-5 sm:grid-cols-2">
         <label className={LABEL}>
           {own.fieldDistance}
           <input name="distanceKm" type="number" step="0.1" min={0.1} defaultValue={base?.distanceKm ?? ""} className={FIELD} />
@@ -383,10 +381,6 @@ export function EventEditor({
         <label className={LABEL}>
           {own.fieldElevation}
           <input name="elevationGainM" type="number" step="1" min={0} defaultValue={base?.elevationGainM ?? ""} className={FIELD} />
-        </label>
-        <label className={LABEL}>
-          {own.fieldCapacity}
-          <input name="maxParticipants" type="number" step="1" min={1} defaultValue={base?.maxParticipants ?? ""} className={FIELD} />
         </label>
       </div>
 

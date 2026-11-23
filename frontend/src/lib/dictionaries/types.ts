@@ -232,7 +232,6 @@ export interface Dictionary {
     pickOnMap: string;
     fieldDistance: string;
     fieldElevation: string;
-    fieldCapacity: string;
     fieldPrice: string;
     priceHint: string;
     fieldEventLinks: string;

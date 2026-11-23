@@ -232,7 +232,6 @@ export const en: Dictionary = {
     pickOnMap: "Load the map to pick",
     fieldDistance: "Distance in km (optional)",
     fieldElevation: "Elevation gain in m (optional)",
-    fieldCapacity: "Maximum participants (optional)",
     fieldPrice: "Price in euros",
     priceHint: "Leave empty if taking part is free.",
     fieldEventLinks: "Links to the event",
