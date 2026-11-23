@@ -117,8 +117,8 @@ export function SiteHeaderBar({ locale, t, pathname = "" }: { locale: Locale; t:
     // the map shows through: on every other page the bar has the page's own
     // background, so what scrolls up passes under it instead of between the pills.
     <header className={cn("pointer-events-none sticky top-0 z-50 print:hidden", !onMap && "bg-background")}>
-      {/* The map fills the window, so its bar does too: the logo above the list's edge, the account in the far corner. */}
-      <div className={cn("mx-auto flex h-16 items-center justify-between gap-2 px-3", !onMap && "max-w-6xl")}>
+      {/* The bar spans the window on every page (owner's call, 2026-11-23): logo and sections at the left edge, language, theme and account at the right. */}
+      <div className="flex h-16 items-center justify-between gap-2 px-3">
         <div className="flex items-center gap-2">
           <Link href={routes.home(locale)} className={cn(PILL, "pointer-events-auto group gap-2 px-4 text-base font-bold hover:bg-muted")}>
             <LogoMark />
