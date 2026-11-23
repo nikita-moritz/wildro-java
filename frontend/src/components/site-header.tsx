@@ -43,11 +43,10 @@ const PILL =
 
 /**
  * The two groups the pills sit in, left (logo, sections) and right (language,
- * theme, account): filled and shadowed so they stand out from any page and from
- * the map (owner's call, 2026-11-23).
+ * theme, account): panes of glass (globals.css, `glass`) so they stand out from
+ * any page and from the map (owner's call, 2026-11-23).
  */
-const ISLAND =
-  "pointer-events-auto flex items-center gap-1.5 rounded-full border border-foreground/10 bg-island/95 p-1 shadow-lg backdrop-blur";
+const ISLAND = "pointer-events-auto flex items-center gap-1.5 rounded-full p-1 glass";
 
 export function SiteHeader({ locale, t }: { locale: Locale; t: HeaderText }) {
   return <SiteHeaderBar locale={locale} t={t} pathname={usePathname()} />;
@@ -123,10 +122,10 @@ export function SiteHeaderBar({ locale, t, pathname = "" }: { locale: Locale; t:
 
   return (
     // pointer-events-none on the bar and back on each island: the gaps between
-    // the pills are not the header's, a click there reaches the map below. Only
-    // the map shows through: on every other page the bar has the page's own
-    // background, so what scrolls up passes under it instead of between the pills.
-    <header className={cn("pointer-events-none sticky top-0 z-50 print:hidden", !onMap && "bg-background")}>
+    // the islands are not the header's, a click there reaches the page below.
+    // The bar itself is clear on every page, so what scrolls up passes under the
+    // glass and shows through it (owner's call, 2026-11-23).
+    <header className="pointer-events-none sticky top-0 z-50 print:hidden">
       {/* The bar spans the window on every page (owner's call, 2026-11-23): logo and sections at the left edge, language, theme and account at the right. */}
       <div className="flex h-16 items-center justify-between gap-2 px-3">
         <div className={ISLAND}>
