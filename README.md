@@ -50,7 +50,8 @@ nothing else; the frontend's server is the only caller of the services.
 | `services/community-service` | groups, memberships and roles on the membership, outbox `community.closed` |
 | `services/analytics-service` | cookieless page view counting and the stats behind the owner's dashboard |
 | `frontend` | the site, and the backend-for-frontend routes that hold the session and talk to the services |
-| `SPEC.md` | the behaviour specification (Russian). Sections marked `ПРОВЕРЕНО` are decided; §18 is stage two |
+| `SPEC.md` | the behaviour specification (Russian): only the rules in force, a map of sections and the open questions. Section numbers are stable because code cites them |
+| `docs/spec-draft.md` | the undecided draft of the target system (roles, visibility, sign-up for events, notifications, organisations). Not built, not to be built until moved into `SPEC.md` |
 | `docs/event-import.md`, `docs/event-sources.md` | the import format, and what may be published from which kind of source |
 | `scripts/` | deploy and admin wrappers as they run on the server |
 

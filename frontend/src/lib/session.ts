@@ -115,7 +115,7 @@ export async function callUserService(
 /**
  * A request that changes something must come from a page of this site. The
  * session cookie is SameSite=Lax, which already keeps it off a cross-site POST;
- * this is the second check, the one the old app lacked (SPEC.md §8).
+ * this is the second check, the one the old app lacked (docs/spec-draft.md §8).
  */
 export function fromThisSite(request: Request): boolean {
   return request.headers.get("origin") === new URL(siteUrl()).origin;
