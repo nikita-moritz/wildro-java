@@ -1,5 +1,5 @@
 import { routes } from "@/lib/routes";
-import { localeOf, seeOther, text } from "@/lib/route-helpers";
+import { localeOf, nextPath, seeOther, text } from "@/lib/route-helpers";
 import { callUserService, currentSession, fromThisSite } from "@/lib/session";
 
 /**
@@ -21,5 +21,9 @@ export async function POST(request: Request): Promise<Response> {
     return seeOther(`${routes.account(locale)}?error=failed`);
   }
   const response = await callUserService("POST", "/v1/me/terms", session.jwt, { version: text(form, "version") });
+  const next = nextPath(form, locale);
+  if (response?.ok && next) {
+    return seeOther(next);
+  }
   return seeOther(`${routes.account(locale)}?${response?.ok ? "terms=1" : "error=failed"}`);
 }

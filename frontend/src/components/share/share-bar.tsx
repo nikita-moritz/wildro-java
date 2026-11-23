@@ -62,6 +62,17 @@ export function ShareBar({
   const [channel, setChannel] = useState<Channel>("whatsapp");
   const [edited, setEdited] = useState<Record<Channel, string>>({ ...texts, instagram: texts.instagram ?? "" });
   const [copied, setCopied] = useState<"link" | "text" | null>(null);
+  // Arriving with #share (right after publishing) opens the dialog; after that the visitor decides.
+  const askedByAddress = useSyncExternalStore(subscribe, () => window.location.hash === "#share", () => false);
+  const [chosen, setChosen] = useState<boolean | null>(null);
+  const open = chosen ?? askedByAddress;
+  function setOpen(next: boolean) {
+    setChosen(next);
+    if (!next && window.location.hash === "#share") {
+      // The mark leaves the address, so a reload or a shared link does not open it again.
+      window.history.replaceState(null, "", window.location.pathname + window.location.search);
+    }
+  }
   const canShare = useSyncExternalStore(
     subscribe,
     () => typeof navigator.share === "function",
@@ -105,7 +116,7 @@ export function ShareBar({
 
   return (
     <div className="flex flex-wrap gap-2">
-      <Dialog>
+      <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
           <Button type="button" className="h-11 gap-2 rounded-full px-4">
             <Share2 className="h-4 w-4" aria-hidden />

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { BackLink } from "@/components/back-link";
+import { ConfirmForm } from "@/components/confirm-form";
 import { EventEditor } from "@/components/own/event-editor";
 import { Notice } from "@/components/own/notice";
 import { Button } from "@/components/ui/button";
@@ -69,6 +70,12 @@ export default async function EditEventPage({ params, searchParams }: PageProps<
         {t.own.ownerLabel}: {event.organizer}
       </p>
       <Notice text={done} />
+      {/* Just published: the next step is telling people. The public page opens its share dialog on #share. */}
+      {query.done === "publish" && event.status === "PUBLISHED" && (
+        <Button asChild className="h-11 self-start">
+          <Link href={`${routes.event(locale, event.slug)}#share`}>{t.own.shareNow}</Link>
+        </Button>
+      )}
       <Notice text={failed} tone="alert" />
       {event.status === "SUSPENDED" && event.suspensionReason && (
         <Notice text={`${t.own.suspendedBecause} ${event.suspensionReason}`} tone="alert" />
@@ -91,16 +98,17 @@ export default async function EditEventPage({ params, searchParams }: PageProps<
         {/* Any of one's events can start the next one, a past or cancelled one too; a suspended one cannot. */}
         {event.status !== "SUSPENDED" && (
           <Button asChild variant="outline" className="h-11">
-            <Link href={routes.newEvent(locale, event.slug)}>{t.own.duplicate}</Link>
+            <Link href={routes.newEvent(locale, { from: event.slug })}>{t.own.duplicate}</Link>
           </Button>
         )}
         {editable && (
-          <form method="post" action={`/api/own/events/${encodeURIComponent(event.slug)}/cancel`}>
-            <input type="hidden" name="locale" value={locale} />
-            <Button type="submit" variant="outline" className="h-11 text-destructive">
-              {t.own.cancelEvent}
-            </Button>
-          </form>
+          <ConfirmForm
+            action={`/api/own/events/${encodeURIComponent(event.slug)}/cancel`}
+            fields={{ locale }}
+            label={t.own.cancelEvent}
+            question={t.own.cancelConfirm}
+            yes={t.own.cancelYes}
+          />
         )}
       </div>
 

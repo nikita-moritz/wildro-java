@@ -58,7 +58,10 @@ export function EventEditor({
   editPath,
   communities = [],
   copyOf = null,
+  forCommunity = null,
 }: {
+  /** On a new event only: the group it is meant for, chosen in advance when the person runs it. */
+  forCommunity?: string | null;
   locale: Locale;
   initial: EditorInitial | null;
   /** On a new event only: the event it duplicates. */
@@ -83,7 +86,8 @@ export function EventEditor({
   // A duplicate takes the original's own picture along unless told not to or given another.
   const copiedCover = initial ? null : (copyOf?.coverImageUrl ?? null);
   const [keepCover, setKeepCover] = useState(true);
-  const ownerDefault = communities.some((each) => each.slug === copyOf?.communitySlug) ? copyOf!.communitySlug! : "";
+  const wanted = copyOf?.communitySlug ?? forCommunity;
+  const ownerDefault = communities.some((each) => each.slug === wanted) ? wanted! : "";
   // A copy keeps the time of day; the day itself is the one thing to choose anew.
   const copiedTime = (iso: string | null) => (copyOf && iso ? isoToBerlin(iso).slice(11, 16) : undefined);
 
@@ -156,8 +160,10 @@ export function EventEditor({
       }
       // A full navigation on purpose: the edit page reads the session and the fresh
       // event on the server, and a soft one could reuse a render made before the save.
+      // Created and published at once: the edit page says so and offers to share it.
+      const done = !initial && publish ? "publish" : "saved";
       // eslint-disable-next-line @next/next/no-location-assign-relative-destination
-      window.location.assign(`${editPath.replace("{slug}", json.slug)}?done=saved${coverError}`);
+      window.location.assign(`${editPath.replace("{slug}", json.slug)}?done=${done}${coverError}`);
       return;
     }
     setBusy(false);

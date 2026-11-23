@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { BackLink } from "@/components/back-link";
+import { ConfirmForm } from "@/components/confirm-form";
 import { CommunityEditor } from "@/components/community/community-editor";
 import { CommunityLogo } from "@/components/community/community-logo";
 import { Notice } from "@/components/own/notice";
@@ -58,8 +59,9 @@ export default async function ManageCommunityPage({ params, searchParams }: Page
   const active = community.status === "ACTIVE";
   const upcoming = role === "OWNER" && active ? (await getCommunityEvents(community.id, locale)).length : 0;
   const failed = typeof query.error === "string" ? c.errors[communityCode(query.error)] : null;
+  const api = `/api/communities/${encodeURIComponent(slug)}`;
   const form = (action: string, fields: Record<string, string>, label: string, variant: "default" | "outline" = "outline", danger = false) => (
-    <form method="post" action={`/api/communities/${encodeURIComponent(slug)}/${action}`}>
+    <form method="post" action={`${api}/${action}`}>
       <input type="hidden" name="locale" value={locale} />
       {Object.entries(fields).map(([name, value]) => (
         <input key={name} type="hidden" name={name} value={value} />
@@ -80,9 +82,16 @@ export default async function ManageCommunityPage({ params, searchParams }: Page
       <Notice text={query.done === "1" ? c.done : null} />
       <Notice text={failed} tone="alert" />
       {!active && <Notice text={c.closed} />}
-      <Button asChild variant="outline" className="h-11 self-start">
-        <Link href={routes.community(locale, slug)}>{t.own.viewPublic}</Link>
-      </Button>
+      <div className="flex flex-wrap gap-2">
+        {manages(role) && active && (
+          <Button asChild className="h-11">
+            <Link href={routes.newEvent(locale, { group: slug })}>{c.newEventHere}</Link>
+          </Button>
+        )}
+        <Button asChild variant="outline" className="h-11">
+          <Link href={routes.community(locale, slug)}>{t.own.viewPublic}</Link>
+        </Button>
+      </div>
 
       {manages(role) && active && (
         <section className="flex flex-col gap-3">
@@ -146,8 +155,16 @@ export default async function ManageCommunityPage({ params, searchParams }: Page
                 <span className="flex flex-wrap gap-2">
                   {role === "OWNER" && member.role === "MEMBER" && form("role", { user: member.userId, role: "ADMIN" }, c.makeAdmin)}
                   {role === "OWNER" && member.role === "ADMIN" && form("role", { user: member.userId, role: "MEMBER" }, c.makeMember)}
-                  {(role === "OWNER" || (role === "ADMIN" && member.role === "MEMBER")) &&
-                    form("remove", { user: member.userId }, c.remove, "outline", true)}
+                  {(role === "OWNER" || (role === "ADMIN" && member.role === "MEMBER")) && (
+                    <ConfirmForm
+                      action={`${api}/remove`}
+                      fields={{ locale, user: member.userId }}
+                      label={c.remove}
+                      question={c.removeConfirm.replace("{name}", member.displayName)}
+                      yes={c.removeYes}
+                      size="sm"
+                    />
+                  )}
                 </span>
               )}
             </li>
@@ -164,14 +181,27 @@ export default async function ManageCommunityPage({ params, searchParams }: Page
               {members
                 .filter((member) => member.role === "ADMIN")
                 .map((admin) => (
-                  <span key={admin.userId}>{form("transfer", { user: admin.userId }, `${c.transfer}: ${admin.displayName}`)}</span>
+                  <ConfirmForm
+                    key={admin.userId}
+                    action={`${api}/transfer`}
+                    fields={{ locale, user: admin.userId }}
+                    label={`${c.transfer}: ${admin.displayName}`}
+                    question={c.transferConfirm.replace("{name}", admin.displayName)}
+                    yes={c.transferYes}
+                  />
                 ))}
             </div>
           </div>
           <div className="flex flex-col gap-2">
             <h2 className="font-semibold">{c.close}</h2>
             <p className="text-sm text-muted-foreground">{c.closeConfirm.replace("{n}", String(upcoming))}</p>
-            {form("close", {}, c.close, "outline", true)}
+            <ConfirmForm
+              action={`${api}/close`}
+              fields={{ locale }}
+              label={c.close}
+              question={c.closeQuestion}
+              yes={c.closeYes}
+            />
           </div>
         </section>
       )}

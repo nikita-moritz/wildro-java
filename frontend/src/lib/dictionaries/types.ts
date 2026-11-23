@@ -1,3 +1,4 @@
+import type { CountForms } from "@/lib/format";
 import type { ActivityType, Difficulty } from "@/lib/vocabulary";
 
 /**
@@ -41,6 +42,11 @@ export interface Dictionary {
     title2: string;
     subtitle: string;
     primaryCta: string;
+    secondaryCta: string;
+    organiseTitle: string;
+    organiseSubtitle: string;
+    organise: ReadonlyArray<{ title: string; description: string }>;
+    organiseGroup: string;
     upcomingTitle: string;
     upcomingSubtitle: string;
     upcomingCta: string;
@@ -186,6 +192,8 @@ export interface Dictionary {
     email: string;
     emailNote: string;
     roles: string;
+    /** Roles that change something on the site, by their name in the user service. */
+    roleNames: { moderator: string; superuser: string };
     signOut: string;
     sessionsTitle: string;
     sessionsLead: string;
@@ -242,6 +250,12 @@ export interface Dictionary {
     save: string;
     publish: string;
     cancelEvent: string;
+    cancelConfirm: string;
+    cancelYes: string;
+    shareNow: string;
+    sectionPast: string;
+    setupTitle: string;
+    setupLead: string;
     saved: string;
     published: string;
     cancelledDone: string;
@@ -347,7 +361,7 @@ export interface Dictionary {
     listTitle: string;
     listLead: string;
     listEmpty: string;
-    members: string;
+    members: CountForms;
     area: string;
     closed: string;
     upcoming: string;
@@ -366,6 +380,13 @@ export interface Dictionary {
     makeAdmin: string;
     makeMember: string;
     remove: string;
+    removeConfirm: string;
+    removeYes: string;
+    transferConfirm: string;
+    transferYes: string;
+    closeQuestion: string;
+    closeYes: string;
+    newEventHere: string;
     transfer: string;
     transferHint: string;
     close: string;

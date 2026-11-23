@@ -19,6 +19,15 @@ export function localeOf(form: FormData | null): Locale {
   return typeof value === "string" && isLocale(value) ? value : "de";
 }
 
+/**
+ * Where a form asked to go back to: a path of this site's own account pages in
+ * the form's language, nothing else, so the field cannot send anyone elsewhere.
+ */
+export function nextPath(form: FormData | null, locale: Locale): string | null {
+  const value = text(form, "next");
+  return value.startsWith(`/${locale}/account/`) && !value.includes("//") && !value.includes("\\") ? value : null;
+}
+
 export function text(form: FormData | null, name: string): string {
   const value = form?.get(name);
   return typeof value === "string" ? value : "";

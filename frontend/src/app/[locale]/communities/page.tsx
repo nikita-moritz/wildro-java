@@ -8,6 +8,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { Button } from "@/components/ui/button";
 import { listCommunities } from "@/lib/communities";
 import { getDictionary } from "@/lib/dictionaries";
+import { formatCount } from "@/lib/format";
 import { isLocale } from "@/lib/locales";
 import { routes } from "@/lib/routes";
 import { alternatesFor } from "@/lib/seo";
@@ -67,7 +68,7 @@ export default async function CommunitiesPage({ params, searchParams }: PageProp
                     </span>
                     <span className="text-sm text-muted-foreground">{community.area}</span>
                     <span className="text-xs text-muted-foreground">
-                      {t.community.members.replace("{n}", String(community.memberCount))}
+                      {formatCount(t.community.members, community.memberCount, locale)}
                     </span>
                   </span>
                 </Link>

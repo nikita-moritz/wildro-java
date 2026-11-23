@@ -1,4 +1,4 @@
-import { ArrowRight, Calendar, ExternalLink, Footprints, MapPin, SlidersHorizontal } from "lucide-react";
+import { ArrowRight, Calendar, CalendarPlus, ExternalLink, Footprints, MapPin, Share2, SlidersHorizontal, Users } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -16,15 +16,15 @@ import { routes } from "@/lib/routes";
 import { alternatesFor } from "@/lib/seo";
 
 /**
- * The working version's landing page. Kept: the hero, "coming up next" and
- * "how it works". Dropped, because stage one has none of it: "host your own",
- * the member and community counts, the create-event and communities blocks, and
- * the closing "create account" call.
+ * The landing page: find an event (hero, "coming up next", "how it works"), then
+ * make your own (create an event, start a group, share them). Signing in is
+ * asked on the way, by the pages these buttons lead to.
  */
 
 const PREVIEW_COUNT = 6;
 
 const STEP_ICONS = [MapPin, SlidersHorizontal, ExternalLink, Footprints];
+const ORGANISE_ICONS = [CalendarPlus, Users, Share2];
 
 export async function generateMetadata({ params }: PageProps<"/[locale]">): Promise<Metadata> {
   const { locale } = await params;
@@ -71,6 +71,12 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
                 <Link href={routes.map(locale)}>
                   {l.primaryCta}
                   <ArrowRight className="h-4 w-4" />
+                </Link>
+              </Button>
+              <Button asChild size="lg" variant="outline" className="h-12 gap-2 px-6 text-base">
+                <Link href={routes.newEvent(locale)}>
+                  <CalendarPlus className="h-4 w-4" />
+                  {l.secondaryCta}
                 </Link>
               </Button>
             </div>
@@ -126,6 +132,31 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
                 );
               })}
             </ol>
+          </div>
+        </section>
+
+        <section className="mx-auto w-full max-w-5xl px-4 py-16">
+          <h2 className="text-2xl font-bold tracking-tight">{l.organiseTitle}</h2>
+          <p className="mt-1 text-sm text-muted-foreground">{l.organiseSubtitle}</p>
+          <ul className="mt-8 grid gap-4 sm:grid-cols-3">
+            {l.organise.map((item, index) => {
+              const Icon = ORGANISE_ICONS[index] ?? CalendarPlus;
+              return (
+                <li key={item.title} className="rounded-2xl border bg-card p-5">
+                  <Icon className="h-5 w-5 text-primary" />
+                  <p className="mt-3 font-semibold">{item.title}</p>
+                  <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{item.description}</p>
+                </li>
+              );
+            })}
+          </ul>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Button asChild className="h-11 px-5">
+              <Link href={routes.newEvent(locale)}>{l.secondaryCta}</Link>
+            </Button>
+            <Button asChild variant="outline" className="h-11 px-5">
+              <Link href={routes.newCommunity(locale)}>{l.organiseGroup}</Link>
+            </Button>
           </div>
         </section>
       </main>

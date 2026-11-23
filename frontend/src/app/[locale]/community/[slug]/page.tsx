@@ -10,7 +10,7 @@ import { ShareBar } from "@/components/share/share-bar";
 import { SiteFooter } from "@/components/site-footer";
 import { getCommunity, getCommunityEvents } from "@/lib/communities";
 import { getDictionary } from "@/lib/dictionaries";
-import { formatDate } from "@/lib/format";
+import { formatCount, formatDate } from "@/lib/format";
 import { isLocale } from "@/lib/locales";
 import { routes } from "@/lib/routes";
 import { absoluteUrl, alternatesFor } from "@/lib/seo";
@@ -55,7 +55,7 @@ export default async function CommunityPage({ params }: PageProps<"/[locale]/com
   const events = await getCommunityEvents(community.id, locale);
   const active = community.status === "ACTIVE";
   const foreign = community.locale !== locale;
-  const members = t.community.members.replace("{n}", String(community.memberCount));
+  const members = formatCount(t.community.members, community.memberCount, locale);
   const pageUrl = absoluteUrl(routes.community(locale, community.slug));
   const feedUrl = absoluteUrl(`${routes.community(locale, community.slug)}/calendar.ics`);
   const feed = subscriptionUrls(feedUrl);

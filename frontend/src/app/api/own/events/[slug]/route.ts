@@ -1,5 +1,18 @@
-import { answer, callEventService } from "@/lib/own-events";
+import { answer, callEventService, getMine } from "@/lib/own-events";
 import { currentSession, fromThisSite } from "@/lib/session";
+
+/**
+ * GET /api/own/events/{slug}: whether the visitor may edit this event, for the
+ * "Edit" button on the cached public page. Asked from the browser after the page
+ * has loaded, so the page itself stays one render for everyone.
+ */
+export async function GET(_request: Request, { params }: RouteContext<"/api/own/events/[slug]">): Promise<Response> {
+  const { slug } = await params;
+  const session = await currentSession();
+  const event = session.state === "signed-in" ? await getMine(session.jwt, slug) : null;
+  const editable = event?.status === "DRAFT" || event?.status === "PUBLISHED";
+  return Response.json({ editable }, { headers: { "Cache-Control": "no-store" } });
+}
 
 /** PUT /api/own/events/{slug} {event}: the editor's "save" on an existing event. */
 export async function PUT(request: Request, { params }: RouteContext<"/api/own/events/[slug]">): Promise<Response> {

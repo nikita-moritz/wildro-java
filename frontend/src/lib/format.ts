@@ -109,3 +109,13 @@ export function formatSchedule(startsAt: string, endsAt: string | null, locale: 
 export function formatNumber(value: number, locale: Locale, maximumFractionDigits = 1): string {
   return new Intl.NumberFormat(INTL_LOCALE[locale], { maximumFractionDigits }).format(value);
 }
+
+/** The words for a count in each grammatical number the language has; {n} is the count. */
+export type CountForms = { one: string; few?: string; many?: string; other: string };
+
+/** "1 Mitglied", "5 Mitglieder", "2 участника": the form the language wants for this number. */
+export function formatCount(forms: CountForms, n: number, locale: Locale): string {
+  const rule = new Intl.PluralRules(INTL_LOCALE[locale]).select(n);
+  const form = rule === "one" || rule === "few" || rule === "many" ? (forms[rule] ?? forms.other) : forms.other;
+  return form.replace("{n}", formatNumber(n, locale, 0));
+}

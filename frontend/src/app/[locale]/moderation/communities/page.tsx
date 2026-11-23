@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { moderatedCommunities } from "@/lib/communities";
 import { communityCode } from "@/lib/community-answer";
 import { getDictionary } from "@/lib/dictionaries";
-import { formatDay } from "@/lib/format";
+import { formatCount, formatDay } from "@/lib/format";
 import { isLocale } from "@/lib/locales";
 import { moderates } from "@/lib/own-events";
 import { routes } from "@/lib/routes";
@@ -114,7 +114,7 @@ export default async function ModerateCommunitiesPage({ params, searchParams }: 
                   ) : null}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  {community.area} · {t.community.members.replace("{n}", String(community.memberCount))} ·{" "}
+                  {community.area} · {formatCount(t.community.members, community.memberCount, locale)} ·{" "}
                   {formatDay(community.createdAt, locale)} · {community.slug}
                 </p>
                 {owner ? (

@@ -20,6 +20,7 @@ import { PriceBadge } from "@/components/price-badge";
 import { EventLinks } from "@/components/event-links";
 import { ReportForm } from "@/components/report-form";
 import { ShareBar } from "@/components/share/share-bar";
+import { EditIsland } from "@/components/own/edit-island";
 import { EventListItem, eventCardText } from "@/components/event-list-item";
 import { SiteFooter } from "@/components/site-footer";
 import { Button } from "@/components/ui/button";
@@ -160,6 +161,7 @@ export default async function EventPageRoute({ params }: PageProps<"/[locale]/ev
             </p>
           )}
 
+          <div className="flex flex-wrap items-start gap-2">
           {/* Only for what is still ahead: nobody shares or plans a past or cancelled outing. */}
           {!cancelled && !passed && (
             <ShareBar
@@ -188,6 +190,8 @@ export default async function EventPageRoute({ params }: PageProps<"/[locale]/ev
               t={t.share}
             />
           )}
+          {own && <EditIsland slug={event.slug} href={routes.editEvent(locale, event.slug)} label={t.own.edit} />}
+          </div>
 
           <div className="flex flex-wrap gap-2">
             {own && <Chip className="border-primary/30 bg-primary/10 text-primary">{t.event.ownBadge}</Chip>}

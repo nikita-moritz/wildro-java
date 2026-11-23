@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { BackLink } from "@/components/back-link";
 import { EventEditor } from "@/components/own/event-editor";
+import { GetReady } from "@/components/own/get-ready";
 import { Notice } from "@/components/own/notice";
 import { manages, myCommunities } from "@/lib/communities";
 import { getDictionary } from "@/lib/dictionaries";
@@ -29,19 +29,16 @@ export default async function NewEventPage({ params, searchParams }: PageProps<"
     notFound();
   }
   const t = getDictionary(locale);
-  const { from } = await searchParams;
+  const query = await searchParams;
+  const from = typeof query.from === "string" ? query.from : undefined;
+  const group = typeof query.group === "string" ? query.group : undefined;
   // The way back after signing in is a bare path (lib/signed-in-page.ts): a duplicate starts from its original's page anyway.
   const session = await requireSignedIn(locale, routes.newEvent(locale));
   // "Duplicate": the original as the event service shows it to this person, so only their own.
-  const original = session && typeof from === "string" ? await getMine(session.jwt, from) : null;
-  // Said up front rather than after the form is filled in.
-  const blocker = !session
-    ? t.auth.unavailable
-    : !session.me.terms.upToDate
-      ? t.own.errors.TERMS_REQUIRED
-      : !session.me.displayName
-        ? t.own.errors.DISPLAY_NAME_REQUIRED
-        : null;
+  const original = session && from ? await getMine(session.jwt, from) : null;
+  // Asked up front, on this page, rather than after the form is filled in.
+  const needsName = !!session && !session.me.displayName;
+  const needsTerms = !!session && !session.me.terms.upToDate;
   const writable = session
     ? ((await myCommunities(session.jwt)) ?? []).filter((each) => manages(each.role) && each.status === "ACTIVE")
     : [];
@@ -50,14 +47,17 @@ export default async function NewEventPage({ params, searchParams }: PageProps<"
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-4 py-10">
       <BackLink href={routes.myEvents(locale)} label={t.own.back} />
       <h1 className="text-2xl font-semibold tracking-tight">{original ? t.own.duplicateTitle : t.own.editorNew}</h1>
-      {original && !blocker && <p className="text-sm text-muted-foreground">{t.own.duplicateLead}</p>}
-      {blocker ? (
-        <>
-          <Notice text={blocker} tone="alert" />
-          <Link href={routes.account(locale)} className="text-sm text-primary underline-offset-2 hover:underline">
-            {t.nav.account}
-          </Link>
-        </>
+      {original && session && <p className="text-sm text-muted-foreground">{t.own.duplicateLead}</p>}
+      {!session ? (
+        <Notice text={t.auth.unavailable} tone="alert" />
+      ) : needsName || needsTerms ? (
+        <GetReady
+          locale={locale}
+          t={t}
+          next={routes.newEvent(locale, { from, group })}
+          needsName={needsName}
+          needsTerms={needsTerms}
+        />
       ) : (
         <EventEditor
           locale={locale}
@@ -66,6 +66,7 @@ export default async function NewEventPage({ params, searchParams }: PageProps<"
           mapboxToken={mapboxToken() ?? null}
           editPath={routes.editEvent(locale, "{slug}")}
           communities={writable.map(({ slug, name }) => ({ slug, name }))}
+          forCommunity={group ?? null}
           copyOf={
             original
               ? { from: original, communitySlug: original.communitySlug, coverImageUrl: original.coverImageUrl }

@@ -1,4 +1,4 @@
-import { localeOf, seeOther } from "@/lib/route-helpers";
+import { localeOf, nextPath, seeOther } from "@/lib/route-helpers";
 import { routes } from "@/lib/routes";
 import { callUserService, currentSession, fromThisSite } from "@/lib/session";
 
@@ -28,6 +28,11 @@ export async function POST(request: Request): Promise<Response> {
   });
   if (response?.status === 422) {
     return back("error=name");
+  }
+  // Named from a form that needed the name (a new event, a new group): straight back there.
+  const next = nextPath(form, locale);
+  if (response?.ok && next) {
+    return seeOther(next);
   }
   return back(response?.ok ? "saved=1" : "error=failed");
 }

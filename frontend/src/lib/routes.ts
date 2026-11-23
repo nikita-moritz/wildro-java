@@ -25,8 +25,11 @@ export const routes = {
   signIn: (locale: Locale, next?: string) => `/${locale}/sign-in${next ? `?next=${encodeURIComponent(next)}` : ""}`,
   account: (locale: Locale) => `/${locale}/account`,
   myEvents: (locale: Locale) => `/${locale}/account/events`,
-  newEvent: (locale: Locale, from?: string) =>
-    `/${locale}/account/events/new${from ? `?from=${encodeURIComponent(from)}` : ""}`,
+  /** A blank event, a copy of one's own (`from`), or one for a group one runs (`group`). */
+  newEvent: (locale: Locale, start: { from?: string; group?: string } = {}) => {
+    const query = new URLSearchParams(Object.entries(start).filter(([, value]) => value) as [string, string][]).toString();
+    return `/${locale}/account/events/new${query ? `?${query}` : ""}`;
+  },
   editEvent: (locale: Locale, slug: string) => `/${locale}/account/events/${slug}`,
   moderation: (locale: Locale) => `/${locale}/moderation`,
   moderationCommunities: (locale: Locale) => `/${locale}/moderation/communities`,

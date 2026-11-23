@@ -55,6 +55,7 @@ export default async function AccountPage({ params, searchParams }: PageProps<"/
   }
 
   const { me } = session;
+  const special = me.roles.filter((role): role is keyof typeof t.roleNames => role in t.roleNames).map((role) => t.roleNames[role]);
   const home = routes.home(locale);
   const notice =
     query.saved === "1" || query.terms === "1"
@@ -111,10 +112,13 @@ export default async function AccountPage({ params, searchParams }: PageProps<"/
             <span className="text-xs text-muted-foreground">{t.emailNote}</span>
           </div>
 
-          <div className="flex flex-col gap-1 border-t pt-3">
-            <span className="text-sm font-medium">{t.roles}</span>
-            <span className="text-sm">{me.roles.join(", ")}</span>
-          </div>
+          {/* Only roles that change something on the site; everyone has the plain one. */}
+          {special.length > 0 && (
+            <div className="flex flex-col gap-1 border-t pt-3">
+              <span className="text-sm font-medium">{t.roles}</span>
+              <span className="text-sm">{special.join(", ")}</span>
+            </div>
+          )}
         </section>
 
         <section className="flex flex-col gap-4 rounded-2xl border bg-card p-5">

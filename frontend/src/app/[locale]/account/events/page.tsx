@@ -11,7 +11,8 @@ import { getCommunity, getCommunityEvents, manages, myCommunities, type Standing
 import { getDictionary, type Dictionary } from "@/lib/dictionaries";
 import { formatDate } from "@/lib/format";
 import { isLocale, type Locale } from "@/lib/locales";
-import { listMine } from "@/lib/own-events";
+import { listMine, type OwnEvent } from "@/lib/own-events";
+import { requestTime } from "@/lib/request-time";
 import { routes } from "@/lib/routes";
 import { requireSignedIn } from "@/lib/signed-in-page";
 
@@ -51,6 +52,11 @@ export default async function MyEventsPage({ params }: PageProps<"/[locale]/acco
       groups.map(async (group) => [group.slug, (await getCommunity(group.slug).catch(() => null))?.logoUrl ?? null] as const),
     ),
   );
+  // Coming up soonest first; what is over (or ended), latest first.
+  const now = await requestTime();
+  const isOver = (event: OwnEvent) => Date.parse(event.endsAt ?? event.startsAt) < now;
+  const ahead = (events ?? []).filter((event) => !isOver(event)).sort((a, b) => Date.parse(a.startsAt) - Date.parse(b.startsAt));
+  const past = (events ?? []).filter(isOver).sort((a, b) => Date.parse(b.startsAt) - Date.parse(a.startsAt));
   const leading = groups.filter((group) => manages(group.role));
   const member = groups.filter((group) => !manages(group.role));
 
@@ -60,36 +66,31 @@ export default async function MyEventsPage({ params }: PageProps<"/[locale]/acco
       <div className="flex flex-col gap-2">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h1 className="text-2xl font-semibold tracking-tight">{t.own.myEventsTitle}</h1>
-          <Button asChild className="h-11">
-            <Link href={routes.newEvent(locale)}>{t.own.newEvent}</Link>
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button asChild variant="outline" className="h-11">
+              <Link href={routes.newCommunity(locale)}>{t.community.newCommunity}</Link>
+            </Button>
+            <Button asChild className="h-11">
+              <Link href={routes.newEvent(locale)}>{t.own.newEvent}</Link>
+            </Button>
+          </div>
         </div>
         <p className="text-sm text-muted-foreground">{t.own.myEventsLead}</p>
       </div>
 
       {events === null || standings === null ? <Notice text={t.auth.unavailable} tone="alert" /> : null}
 
-      <Section title={t.own.sectionMine} count={events?.length}>
-        {events && events.length === 0 && <p className="text-sm text-muted-foreground">{t.own.empty}</p>}
-        {events && events.length > 0 && (
-          <ul className="flex flex-col gap-3">
-            {events.map((event) => (
-              <li key={event.slug}>
-                <Link
-                  href={routes.editEvent(locale, event.slug)}
-                  className="flex flex-col gap-1 rounded-xl border bg-card p-4 transition-colors hover:bg-muted"
-                >
-                  <span className="flex flex-wrap items-center justify-between gap-2">
-                    <span className="font-medium">{event.name}</span>
-                    <span className="rounded-full border px-2.5 py-0.5 text-xs">{t.own[`status${event.status}`]}</span>
-                  </span>
-                  <span className="text-sm text-muted-foreground">
-                    {formatDate(event.startsAt, locale)} · {event.placeName}
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
+      <Section title={t.own.sectionMine} count={ahead.length}>
+        {events && ahead.length === 0 && <p className="text-sm text-muted-foreground">{t.own.empty}</p>}
+        {ahead.length > 0 && <OwnList events={ahead} locale={locale} t={t} />}
+        {/* What is over stays at hand for copying, out of the way of what is coming. */}
+        {past.length > 0 && (
+          <details className="group">
+            <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 text-sm font-medium text-muted-foreground [&::-webkit-details-marker]:hidden">
+              {t.own.sectionPast} ({past.length})
+            </summary>
+            <OwnList events={past} locale={locale} t={t} />
+          </details>
         )}
       </Section>
 
@@ -122,6 +123,30 @@ export default async function MyEventsPage({ params }: PageProps<"/[locale]/acco
         </div>
       )}
     </main>
+  );
+}
+
+/** One's own events as rows to open in the editor: name, state, day and place. */
+function OwnList({ events, locale, t }: { events: OwnEvent[]; locale: Locale; t: Dictionary }) {
+  return (
+    <ul className="flex flex-col gap-3">
+      {events.map((event) => (
+        <li key={event.slug}>
+          <Link
+            href={routes.editEvent(locale, event.slug)}
+            className="flex flex-col gap-1 rounded-xl border bg-card p-4 transition-colors hover:bg-muted"
+          >
+            <span className="flex flex-wrap items-center justify-between gap-2">
+              <span className="font-medium">{event.name}</span>
+              <span className="rounded-full border px-2.5 py-0.5 text-xs">{t.own[`status${event.status}`]}</span>
+            </span>
+            <span className="text-sm text-muted-foreground">
+              {formatDate(event.startsAt, locale)} · {event.placeName}
+            </span>
+          </Link>
+        </li>
+      ))}
+    </ul>
   );
 }
 
