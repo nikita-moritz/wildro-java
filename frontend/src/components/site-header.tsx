@@ -74,6 +74,8 @@ export function SiteHeaderBar({ locale, t, pathname = "" }: { locale: Locale; t:
   const [, , section = "", sub = ""] = pathname.split("/");
   const onMap = section === "map";
   const onMyEvents = section === "account" && sub === "events";
+  // "/de" only; an unknown path (the fallback before it is read) lights nothing.
+  const onHome = pathname !== "" && section === "";
 
   const links = [
     { href: routes.map(locale), label: t.nav.map, icon: MapIcon, active: onMap },
@@ -128,8 +130,17 @@ export function SiteHeaderBar({ locale, t, pathname = "" }: { locale: Locale; t:
       {/* The bar spans the window on every page (owner's call, 2026-11-23): logo and sections at the left edge, language, theme and account at the right. */}
       <div className="flex h-16 items-center justify-between gap-2 px-3">
         <div className={ISLAND}>
-          <Link href={routes.home(locale)} className={cn(PILL, "pointer-events-auto group gap-2 px-4 text-base font-bold hover:bg-muted")}>
-            <LogoMark />
+          {/* The home page's item: it lights like every other section when you are on it. */}
+          <Link
+            href={routes.home(locale)}
+            aria-current={onHome ? "page" : undefined}
+            className={cn(
+              PILL,
+              "pointer-events-auto group gap-2 px-4 text-base font-bold",
+              onHome ? "border-primary/30 bg-primary text-primary-foreground hover:bg-primary/90" : "hover:bg-muted",
+            )}
+          >
+            <LogoMark className={onHome ? "bg-primary-foreground" : undefined} />
             <span className="hidden transition-transform duration-200 group-hover:scale-105 sm:inline-block">
               {t.site.name}
             </span>
