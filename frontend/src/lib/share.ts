@@ -110,7 +110,7 @@ export function communityShareText(channel: Channel, group: SharedCommunity, lab
     channel === "whatsapp" ? `*${group.name}*` : group.name,
     `${labels.area}: ${group.area} · ${group.members}`,
     "",
-    ...(group.upcoming.length > 0 ? [`${group.upcomingLabel}:`, ...group.upcoming.map((line) => `• ${line}`), ""] : []),
+    ...(group.upcoming.length > 0 ? [`${group.upcomingLabel}:`, ...group.upcoming, ""] : []),
     shortened(group.description, group.upcoming.length > 0 ? 160 : 240),
     "",
     `${moreLabel}: ${group.url}`,
