@@ -410,6 +410,7 @@ export const de: Dictionary = {
     textCopied: "Text kopiert",
     facebookHint: "Facebook übernimmt keinen Text von außen. Er liegt in der Zwischenablage: im Beitrag oder in der Gruppe einfach einfügen.",
     more: "Alle Infos",
+    labels: { date: "Datum", start: "Start", type: "Art", area: "Ort" },
     groupTitle: "Gruppe teilen",
     groupMore: "Zur Gruppe",
     upcomingHeading: "Die nächsten Events",

@@ -107,10 +107,10 @@ export default async function CommunityPage({ params }: PageProps<"/[locale]/com
             line={`${community.area} · ${members}`}
             url={pageUrl}
             texts={{
-              whatsapp: communityShareText("whatsapp", shared, t.share.groupMore),
-              telegram: communityShareText("telegram", shared, t.share.groupMore),
-              facebook: communityShareText("facebook", shared, t.share.groupMore),
-              instagram: images ? communityShareText("instagram", shared, t.share.groupMore) : undefined,
+              whatsapp: communityShareText("whatsapp", shared, t.share.labels, t.share.groupMore),
+              telegram: communityShareText("telegram", shared, t.share.labels, t.share.groupMore),
+              facebook: communityShareText("facebook", shared, t.share.labels, t.share.groupMore),
+              instagram: images ? communityShareText("instagram", shared, t.share.labels, t.share.groupMore) : undefined,
             }}
             images={images}
             calendar={{

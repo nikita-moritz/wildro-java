@@ -410,6 +410,7 @@ export const en: Dictionary = {
     textCopied: "Text copied",
     facebookHint: "Facebook takes no text from outside. It is on your clipboard: paste it into the post or the group.",
     more: "All details",
+    labels: { date: "Date", start: "Start", type: "Type", area: "Area" },
     groupTitle: "Share group",
     groupMore: "The group",
     upcomingHeading: "Coming up",

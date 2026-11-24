@@ -410,6 +410,7 @@ export const ru: Dictionary = {
     textCopied: "Текст скопирован",
     facebookHint: "Facebook не принимает текст извне. Он уже в буфере обмена: просто вставь его в пост или в группу.",
     more: "Все подробности",
+    labels: { date: "Дата", start: "Старт", type: "Тип", area: "Район" },
     groupTitle: "Поделиться группой",
     groupMore: "Группа",
     upcomingHeading: "Ближайшие события",

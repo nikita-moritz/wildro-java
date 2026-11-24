@@ -59,18 +59,26 @@ export interface ShareFacts {
   url: string;
 }
 
+/** The words before each fact of a shared text: "Datum:", "Start:". */
+export interface ShareLabels {
+  date: string;
+  start: string;
+  type: string;
+  area: string;
+}
+
 /**
  * The text to post in a chat or a group, in the page's language. WhatsApp
  * shows *this* in bold; Telegram, Facebook and an Instagram caption take plain text.
- * Two symbols for date and place, nothing more: a message, not a flyer.
+ * Each fact behind a word, no symbols (owner's call, 2026-11-24): a message, not a flyer.
  */
-export function shareText(channel: Channel, facts: ShareFacts, moreLabel: string): string {
+export function shareText(channel: Channel, facts: ShareFacts, labels: ShareLabels, moreLabel: string): string {
   const title = channel === "whatsapp" ? `*${facts.name}*` : facts.name;
   return [
     title,
-    `📅 ${facts.when}`,
-    `📍 ${facts.placeName}`,
-    facts.facts,
+    `${labels.date}: ${facts.when}`,
+    `${labels.start}: ${facts.placeName}`,
+    facts.facts ? `${labels.type}: ${facts.facts}` : "",
     "",
     shortened(facts.description, 240),
     "",
@@ -97,12 +105,12 @@ export interface SharedCommunity {
  * A group's digest to post in a chat: who it is, its next outings, the way in.
  * The same shape as an event's text, so the two read alike in one chat.
  */
-export function communityShareText(channel: Channel, group: SharedCommunity, moreLabel: string): string {
+export function communityShareText(channel: Channel, group: SharedCommunity, labels: ShareLabels, moreLabel: string): string {
   return [
     channel === "whatsapp" ? `*${group.name}*` : group.name,
-    `📍 ${group.area} · ${group.members}`,
+    `${labels.area}: ${group.area} · ${group.members}`,
     "",
-    ...(group.upcoming.length > 0 ? [`📅 ${group.upcomingLabel}:`, ...group.upcoming.map((line) => `• ${line}`), ""] : []),
+    ...(group.upcoming.length > 0 ? [`${group.upcomingLabel}:`, ...group.upcoming.map((line) => `• ${line}`), ""] : []),
     shortened(group.description, group.upcoming.length > 0 ? 160 : 240),
     "",
     `${moreLabel}: ${group.url}`,

@@ -169,10 +169,10 @@ export default async function EventPageRoute({ params }: PageProps<"/[locale]/ev
               line={`${when} · ${event.placeName}`}
               url={pageUrl}
               texts={{
-                whatsapp: shareText("whatsapp", shareFacts, t.share.more),
-                telegram: shareText("telegram", shareFacts, t.share.more),
-                facebook: shareText("facebook", shareFacts, t.share.more),
-                instagram: shareText("instagram", shareFacts, t.share.more),
+                whatsapp: shareText("whatsapp", shareFacts, t.share.labels, t.share.more),
+                telegram: shareText("telegram", shareFacts, t.share.labels, t.share.more),
+                facebook: shareText("facebook", shareFacts, t.share.labels, t.share.more),
+                instagram: shareText("instagram", shareFacts, t.share.labels, t.share.more),
               }}
               posterUrl={`${routes.event(locale, event.slug)}/poster`}
               images={{

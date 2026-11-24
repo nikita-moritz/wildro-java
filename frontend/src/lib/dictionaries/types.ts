@@ -382,6 +382,8 @@ export interface Dictionary {
     textCopied: string;
     facebookHint: string;
     more: string;
+    /** Before each fact in a shared text, instead of symbols. */
+    labels: { date: string; start: string; type: string; area: string };
     groupTitle: string;
     groupMore: string;
     /** Above a group's next outings, in its text and its picture. */
