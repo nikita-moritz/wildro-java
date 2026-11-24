@@ -16,5 +16,6 @@ export function activeFilterCount(filter: FeedFilter): number {
     filter.minKm !== null || filter.maxKm !== null,
     filter.near !== null,
     filter.price !== null,
+    filter.communities.length > 0,
   ].filter(Boolean).length;
 }

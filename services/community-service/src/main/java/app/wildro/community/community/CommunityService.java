@@ -60,8 +60,8 @@ public class CommunityService {
 	}
 
 	@Transactional(readOnly = true)
-	public List<Views.Summary> list(int page, int size) {
-		return this.store.listActive(page, size)
+	public List<Views.Summary> list(String query, int page, int size) {
+		return this.store.listActive(query, page, size)
 			.stream()
 			.map((s) -> new Views.Summary(s.slug(), s.name(), s.area(), s.locale(), s.memberCount(),
 					this.logos.urlOf(s.logoUrl())))

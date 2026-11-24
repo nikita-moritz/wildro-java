@@ -82,6 +82,9 @@ export interface Dictionary {
     difficulty: string;
     price: string;
     priceAny: string;
+    /** "Meine Gruppen": shown to a signed-in member of at least one group. */
+    groups: string;
+    onlyMine: string;
     dates: string;
     dateFrom: string;
     dateTo: string;
@@ -392,6 +395,8 @@ export interface Dictionary {
     listTitle: string;
     listLead: string;
     listEmpty: string;
+    search: { label: string; placeholder: string; clear: string };
+    searchEmpty: string;
     members: CountForms;
     area: string;
     closed: string;

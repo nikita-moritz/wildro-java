@@ -4,10 +4,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { CommunityLogo } from "@/components/community/community-logo";
+import { SearchBox } from "@/components/search-box";
 import { SiteFooter } from "@/components/site-footer";
 import { Button } from "@/components/ui/button";
 import { listCommunities } from "@/lib/communities";
 import { getDictionary } from "@/lib/dictionaries";
+import { MAX_QUERY_LENGTH } from "@/lib/feed-filter";
 import { formatCount } from "@/lib/format";
 import { isLocale } from "@/lib/locales";
 import { routes } from "@/lib/routes";
@@ -24,7 +26,11 @@ export async function generateMetadata({ params }: PageProps<"/[locale]/communit
 
 export const instant = false;
 
-/** All active groups, the largest first (SPEC.md §18.3). Indexable: groups are search traffic. */
+/**
+ * All active groups, the largest first (SPEC.md §18.3). Indexable: groups are
+ * search traffic. A search by name or town (q) is closed to crawlers like the
+ * feed's filters (robots.ts).
+ */
 export default async function CommunitiesPage({ params, searchParams }: PageProps<"/[locale]/communities">) {
   const { locale } = await params;
   if (!isLocale(locale)) {
@@ -32,8 +38,9 @@ export default async function CommunitiesPage({ params, searchParams }: PageProp
   }
   const query = await searchParams;
   const page = Math.max(1, Math.min(50, Number(query.page) || 1));
+  const q = (typeof query.q === "string" ? query.q.trim().slice(0, MAX_QUERY_LENGTH) : "") || null;
   const t = getDictionary(locale);
-  const list = await listCommunities(page);
+  const list = await listCommunities(page, q);
 
   return (
     <>
@@ -51,8 +58,9 @@ export default async function CommunitiesPage({ params, searchParams }: PageProp
             </Link>
           </Button>
         </div>
+        <SearchBox action={routes.communities(locale)} value={q} others="" t={t.community.search} />
         {list.items.length === 0 ? (
-          <p className="text-sm text-muted-foreground">{t.community.listEmpty}</p>
+          <p className="text-sm text-muted-foreground">{q ? t.community.searchEmpty : t.community.listEmpty}</p>
         ) : (
           <ul className="grid gap-3 sm:grid-cols-2">
             {list.items.map((community) => (
@@ -77,8 +85,8 @@ export default async function CommunitiesPage({ params, searchParams }: PageProp
           </ul>
         )}
         <nav className="flex gap-3 text-sm">
-          {page > 1 && <Link href={routes.communities(locale, page - 1)}>←</Link>}
-          {list.hasNext && <Link href={routes.communities(locale, page + 1)}>→</Link>}
+          {page > 1 && <Link href={routes.communities(locale, page - 1, q)}>←</Link>}
+          {list.hasNext && <Link href={routes.communities(locale, page + 1, q)}>→</Link>}
         </nav>
       </main>
       <SiteFooter locale={locale} t={t} />

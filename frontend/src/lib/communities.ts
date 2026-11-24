@@ -76,11 +76,16 @@ function service(path: string): URL {
   return new URL(path, base);
 }
 
-export async function listCommunities(page: number): Promise<z.infer<typeof listSchema>> {
+/** One page of the open groups, the largest first; `query` narrows them by name or town. */
+export async function listCommunities(page: number, query: string | null = null): Promise<z.infer<typeof listSchema>> {
   "use cache";
   cacheTag(COMMUNITY_TAGS.list);
   cacheLife("hours");
-  const response = await fetch(service(`/v1/communities?page=${page - 1}`));
+  const search = new URLSearchParams({ page: String(page - 1) });
+  if (query) {
+    search.set("q", query);
+  }
+  const response = await fetch(service(`/v1/communities?${search}`));
   if (!response.ok) {
     throw new Error(`community service answered ${response.status} for the list`);
   }

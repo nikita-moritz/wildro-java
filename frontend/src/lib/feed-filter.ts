@@ -18,6 +18,12 @@ export interface FeedFilter {
   price: PriceChoice | null;
   /** Text search over name, organiser and place in every language; the service folds it. */
   q: string | null;
+  /**
+   * The events of these groups only, by the groups' ids: "Meine Gruppen" (SPEC.md
+   * §18.8). The browser knows which groups are the visitor's and puts their ids
+   * here, so the list itself stays one cached render per address.
+   */
+  communities: number[];
 }
 
 export const PRICE_CHOICES = ["free", "paid"] as const;
@@ -33,10 +39,14 @@ export const EMPTY_FILTER: FeedFilter = {
   near: null,
   price: null,
   q: null,
+  communities: [],
 };
 
 /** The query parameters a filter uses; robots.ts closes every one of them to crawlers. */
-export const FILTER_PARAMS = ["type", "difficulty", "from", "to", "minKm", "maxKm", "lat", "lon", "radiusKm", "price", "q"] as const;
+export const FILTER_PARAMS = ["type", "difficulty", "from", "to", "minKm", "maxKm", "lat", "lon", "radiusKm", "price", "q", "community"] as const;
+
+/** The service's bound on the groups of one filter (FeedFilter.MAX_COMMUNITIES); more are dropped, not refused. */
+export const MAX_COMMUNITIES = 30;
 
 /** Longest search text sent on; the service drops anything past its own limit of the same length. */
 export const MAX_QUERY_LENGTH = 100;
@@ -98,6 +108,11 @@ export function parseFilter(params: Params): FeedFilter {
 
   const price = one(params, "price");
   const q = one(params, "q")?.trim().slice(0, MAX_QUERY_LENGTH) || null;
+  // Sorted and without repeats, so the same groups make the same address and the same cache entry.
+  const communities = [...new Set(all(params, "community").map(Number))]
+    .filter((id) => Number.isSafeInteger(id) && id > 0)
+    .sort((a, b) => a - b)
+    .slice(0, MAX_COMMUNITIES);
 
   return {
     types: [...new Set(types)],
@@ -109,6 +124,7 @@ export function parseFilter(params: Params): FeedFilter {
     near,
     price: (PRICE_CHOICES as readonly string[]).includes(price ?? "") ? (price as PriceChoice) : null,
     q,
+    communities,
   };
 }
 
@@ -131,7 +147,8 @@ export function isEmptyFilter(filter: FeedFilter): boolean {
     filter.maxKm === null &&
     filter.near === null &&
     filter.price === null &&
-    filter.q === null
+    filter.q === null &&
+    filter.communities.length === 0
   );
 }
 
@@ -151,6 +168,7 @@ export function filterToParams(filter: FeedFilter): URLSearchParams {
   }
   if (filter.price) params.set("price", filter.price);
   if (filter.q) params.set("q", filter.q);
+  filter.communities.forEach((id) => params.append("community", String(id)));
   return params;
 }
 

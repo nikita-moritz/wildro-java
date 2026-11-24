@@ -18,6 +18,7 @@ import java.time.Clock;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -58,8 +59,9 @@ class EventReadController {
 	 * Upcoming published events, soonest first, narrowed by any combination of
 	 * the optional filters: {@code type} and {@code difficulty} (repeatable),
 	 * {@code from} and {@code to} (days), {@code minKm} and {@code maxKm}, and
-	 * {@code lat}, {@code lon} with {@code radiusKm} for "near me", and {@code q},
-	 * a text query over name, organiser and place in every language.
+	 * {@code lat}, {@code lon} with {@code radiusKm} for "near me", {@code q},
+	 * a text query over name, organiser and place in every language, and
+	 * {@code community} (repeatable), the ids of the groups whose events to keep.
 	 */
 	@GetMapping
 	FeedPage feed(@RequestParam String locale, @RequestParam(defaultValue = "0") int page,
@@ -69,7 +71,8 @@ class EventReadController {
 			@RequestParam(required = false) BigDecimal minKm, @RequestParam(required = false) BigDecimal maxKm,
 			@RequestParam(required = false) Double lat, @RequestParam(required = false) Double lon,
 			@RequestParam(required = false) Integer radiusKm, @RequestParam(required = false) String price,
-			@RequestParam(required = false) String q) {
+			@RequestParam(required = false) String q,
+			@RequestParam(name = "community", required = false) List<Long> communities) {
 		requireLocale(locale);
 		if (page < 0 || page > MAX_PAGE) {
 			throw badRequest("page must be between 0 and " + MAX_PAGE);
@@ -78,7 +81,7 @@ class EventReadController {
 			throw badRequest("size must be between 1 and " + MAX_SIZE);
 		}
 		return this.reader.feed(locale, page, size,
-				filter(types, difficulties, from, to, minKm, maxKm, lat, lon, radiusKm, price, q));
+				filter(types, difficulties, from, to, minKm, maxKm, lat, lon, radiusKm, price, q, communities));
 	}
 
 	/**
@@ -93,7 +96,8 @@ class EventReadController {
 			@RequestParam(name = "difficulty", required = false) List<String> difficulties,
 			@RequestParam(required = false) String from, @RequestParam(required = false) String to,
 			@RequestParam(required = false) BigDecimal minKm, @RequestParam(required = false) BigDecimal maxKm,
-			@RequestParam(required = false) String price, @RequestParam(required = false) String q) {
+			@RequestParam(required = false) String price, @RequestParam(required = false) String q,
+			@RequestParam(name = "community", required = false) List<Long> communities) {
 		requireLocale(locale);
 		Viewport viewport;
 		try {
@@ -103,7 +107,7 @@ class EventReadController {
 			throw badRequest(ex.getMessage());
 		}
 		return this.reader.points(locale, viewport,
-				filter(types, difficulties, from, to, minKm, maxKm, null, null, null, price, q));
+				filter(types, difficulties, from, to, minKm, maxKm, null, null, null, price, q, communities));
 	}
 
 	/** A community's upcoming events, for its page. */
@@ -149,7 +153,8 @@ class EventReadController {
 	}
 
 	private static FeedFilter filter(List<String> types, List<String> difficulties, String from, String to,
-			BigDecimal minKm, BigDecimal maxKm, Double lat, Double lon, Integer radiusKm, String price, String q) {
+			BigDecimal minKm, BigDecimal maxKm, Double lat, Double lon, Integer radiusKm, String price, String q,
+			List<Long> communities) {
 		try {
 			FeedFilter.Near near = null;
 			if (lat != null || lon != null || radiusKm != null) {
@@ -162,7 +167,8 @@ class EventReadController {
 				throw new IllegalArgumentException("distances must not be negative");
 			}
 			return new FeedFilter(enums(types, ActivityType.class), enums(difficulties, Difficulty.class),
-					day(from, "from"), day(to, "to"), minKm, maxKm, near, cost(price), SearchText.words(q));
+					day(from, "from"), day(to, "to"), minKm, maxKm, near, cost(price), SearchText.words(q),
+					communities == null ? Set.of() : new HashSet<>(communities));
 		}
 		catch (IllegalArgumentException ex) {
 			throw badRequest(ex.getMessage());

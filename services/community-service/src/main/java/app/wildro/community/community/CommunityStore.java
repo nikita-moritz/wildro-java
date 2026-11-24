@@ -103,14 +103,20 @@ public class CommunityStore {
 			.single();
 	}
 
-	List<Views.Summary> listActive(int page, int size) {
+	/**
+	 * Active communities, the largest first. {@code query} matches name or area
+	 * (a town, a region), blank matches all.
+	 */
+	List<Views.Summary> listActive(String query, int page, int size) {
 		return this.jdbc.sql("""
 				SELECT c.slug, c.name, c.area, c.locale, c.logo_file, count(m.user_id) AS members
 				FROM communities c LEFT JOIN memberships m ON m.community_id = c.id
 				WHERE c.status = 'ACTIVE'
+				  AND (lower(c.name) LIKE :pattern OR lower(c.area) LIKE :pattern)
 				GROUP BY c.id ORDER BY count(m.user_id) DESC, c.id
 				LIMIT :limit OFFSET :offset
 				""")
+			.param("pattern", containing(query))
 			.param("limit", size + 1)
 			.param("offset", page * size)
 			// logoUrl carries the file name here; the service turns it into the address.
@@ -254,7 +260,7 @@ public class CommunityStore {
 	 * matches name or address, blank matches all.
 	 */
 	List<Views.Moderated> moderated(String query, int limit) {
-		String pattern = "%" + query.strip().toLowerCase().replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_") + "%";
+		String pattern = containing(query);
 		return this.jdbc.sql("""
 				SELECT c.slug, c.name, c.area, c.status, c.suspension_reason, c.created_at, c.logo_file, count(m.user_id) AS members
 				FROM communities c LEFT JOIN memberships m ON m.community_id = c.id
@@ -332,6 +338,12 @@ public class CommunityStore {
 			.param("u", userId)
 			.query(String.class)
 			.list();
+	}
+
+	/** A LIKE pattern for "contains", lower case, with the user's own wildcards taken literally. */
+	private static String containing(String query) {
+		String text = query == null ? "" : query.strip().toLowerCase();
+		return "%" + text.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_") + "%";
 	}
 
 }

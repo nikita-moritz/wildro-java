@@ -73,6 +73,22 @@ class CommunityControllerTest {
 	}
 
 	@Test
+	void theListIsSearchedByNameAndByTown() throws Exception {
+		create("owner", "Trailrunner Aachen").andExpect(status().isCreated());
+		create("owner", "Lauftreff am See").andExpect(status().isCreated());
+		this.jdbc.sql("UPDATE communities SET area = 'Düren und Umgebung' WHERE slug = 'lauftreff-am-see'").update();
+
+		this.mvc.perform(get("/v1/communities").param("q", " DÜREN "))
+			.andExpect(jsonPath("$.items.length()").value(1))
+			.andExpect(jsonPath("$.items[0].slug").value("lauftreff-am-see"));
+		this.mvc.perform(get("/v1/communities").param("q", "trail"))
+			.andExpect(jsonPath("$.items.length()").value(1))
+			.andExpect(jsonPath("$.items[0].slug").value("trailrunner-aachen"));
+		this.mvc.perform(get("/v1/communities").param("q", "%")).andExpect(jsonPath("$.items.length()").value(0));
+		this.mvc.perform(get("/v1/communities")).andExpect(jsonPath("$.items.length()").value(2));
+	}
+
+	@Test
 	void creatingNeedsTheCurrentTerms() throws Exception {
 		this.people.put(new Person("owner", "Ada", false));
 		create("owner", "Group").andExpect(jsonPath("$.code").value("TERMS_REQUIRED"));

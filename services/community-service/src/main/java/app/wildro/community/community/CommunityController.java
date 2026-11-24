@@ -30,6 +30,8 @@ class CommunityController {
 
 	static final int PAGE_SIZE = 24;
 
+	static final int MAX_QUERY_LENGTH = 100;
+
 	private final CommunityService service;
 
 	CommunityController(CommunityService service) {
@@ -37,9 +39,11 @@ class CommunityController {
 	}
 
 	@GetMapping("/v1/communities")
-	Map<String, Object> list(@RequestParam(defaultValue = "0") int page) {
+	Map<String, Object> list(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "") String q) {
 		int safe = Math.max(0, Math.min(page, 50));
-		List<Views.Summary> rows = this.service.list(safe, PAGE_SIZE);
+		// A name or a town is short; anything longer is cut, not refused.
+		String query = q.strip().length() > MAX_QUERY_LENGTH ? q.strip().substring(0, MAX_QUERY_LENGTH) : q.strip();
+		List<Views.Summary> rows = this.service.list(query, safe, PAGE_SIZE);
 		return Map.of("items", rows.stream().limit(PAGE_SIZE).toList(), "page", safe, "hasNext", rows.size() > PAGE_SIZE);
 	}
 

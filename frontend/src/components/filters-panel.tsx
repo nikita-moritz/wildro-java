@@ -24,6 +24,10 @@ import { cn } from "@/lib/utils";
  * With JavaScript, Apply and Reset move to the new address in place instead of
  * reloading the page: the old results stay until the new ones arrive, so the
  * page does not blink, and the map is not rebuilt (a rebuild is a billed load).
+ *
+ * "Meine Gruppen" needs JavaScript too: which groups are the visitor's only the
+ * session knows, so the panel asks the first time it is opened, and shows the
+ * choice only to a member of at least one group (SPEC.md §18.8).
  */
 export interface FiltersText {
   button: string;
@@ -32,6 +36,8 @@ export interface FiltersText {
   difficulty: string;
   price: string;
   priceAny: string;
+  groups: string;
+  onlyMine: string;
   dates: string;
   dateFrom: string;
   dateTo: string;
@@ -77,6 +83,21 @@ export function FiltersPanel({
   const [pending, startTransition] = useTransition();
   const details = useRef<HTMLDetailsElement>(null);
   const [location, setLocation] = useState<Location>(locationOf(filter));
+  // The ids of the visitor's groups; null until asked.
+  const [myGroups, setMyGroups] = useState<number[] | null>(null);
+
+  function askMyGroups() {
+    if (myGroups !== null || !details.current?.open) {
+      return;
+    }
+    setMyGroups([]);
+    fetch("/api/account/communities", { cache: "no-store" })
+      .then((response) => (response.ok ? response.json() : { ids: [] }))
+      .then((body: { ids?: unknown }) =>
+        setMyGroups(Array.isArray(body.ids) ? body.ids.filter((id): id is number => Number.isSafeInteger(id)) : []),
+      )
+      .catch(() => {});
+  }
 
   // The fields are uncontrolled and keep the values they were first given, so
   // the form is remounted whenever what it should show changes: a new filter
@@ -147,7 +168,7 @@ export function FiltersPanel({
   }
 
   return (
-    <details ref={details} className={cn("group", inline ? "contents" : "relative")}>
+    <details ref={details} onToggle={askMyGroups} className={cn("group", inline ? "contents" : "relative")}>
       <summary
         className={cn(
           // h-11: the height of the search box beside it on the events page.
@@ -186,6 +207,15 @@ export function FiltersPanel({
 
         {/* The search box is its own form; this keeps its text when filters are applied. */}
         {shown.q && <input type="hidden" name="q" value={shown.q} />}
+
+        {/* Chosen earlier, or offered now: a member of no group never sees it. */}
+        {(shown.communities.length > 0 || (myGroups?.length ?? 0) > 0) && (
+          <Group label={t.groups}>
+            <MineChip chosen={shown.communities} mine={myGroups ?? []}>
+              {t.onlyMine}
+            </MineChip>
+          </Group>
+        )}
 
         <Group label={t.activity}>
           {ACTIVITY_TYPES.map((type) => (
@@ -299,6 +329,9 @@ export function FiltersPanel({
   );
 }
 
+const CHIP =
+  "inline-flex min-h-8 items-center rounded-full border px-3 text-xs font-medium text-muted-foreground transition-colors peer-checked:border-primary/40 peer-checked:bg-primary/10 peer-checked:text-primary peer-focus-visible:ring-2 peer-focus-visible:ring-ring/50 hover:bg-muted";
+
 const INPUT =
   "h-9 w-full rounded-md border bg-background px-2 text-sm focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none";
 
@@ -332,9 +365,23 @@ function Chip({
   return (
     <label className="cursor-pointer">
       <input type={type} name={name} value={value} defaultChecked={checked} className="peer sr-only" />
-      <span className="inline-flex min-h-8 items-center rounded-full border px-3 text-xs font-medium text-muted-foreground transition-colors peer-checked:border-primary/40 peer-checked:bg-primary/10 peer-checked:text-primary peer-focus-visible:ring-2 peer-focus-visible:ring-ring/50 hover:bg-muted">
-        {children}
-      </span>
+      <span className={CHIP}>{children}</span>
+    </label>
+  );
+}
+
+/**
+ * One choice that stands for several values: on, it sends one "community" per
+ * group. Its own groups when known, else those already in the address.
+ */
+function MineChip({ chosen, mine, children }: { chosen: number[]; mine: number[]; children: React.ReactNode }) {
+  const [on, setOn] = useState(chosen.length > 0);
+  const ids = mine.length > 0 ? mine : chosen;
+  return (
+    <label className="cursor-pointer">
+      <input type="checkbox" checked={on} onChange={(event) => setOn(event.target.checked)} className="peer sr-only" />
+      <span className={CHIP}>{children}</span>
+      {on && ids.map((id) => <input key={id} type="hidden" name="community" value={id} />)}
     </label>
   );
 }

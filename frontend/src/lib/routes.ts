@@ -34,7 +34,9 @@ export const routes = {
   moderation: (locale: Locale) => `/${locale}/moderation`,
   moderationCommunities: (locale: Locale) => `/${locale}/moderation/communities`,
   // Public and indexable: community pages are search traffic (SPEC.md §18.3).
-  communities: (locale: Locale, page = 1) => withQuery(`/${locale}/communities`, page),
+  // q, a name or a town, is a search: such an address is closed to crawlers like the filters.
+  communities: (locale: Locale, page = 1, q?: string | null) =>
+    withQuery(`/${locale}/communities`, page, q ? new URLSearchParams({ q }) : undefined),
   community: (locale: Locale, slug: string) => `/${locale}/community/${slug}`,
   myCommunities: (locale: Locale) => `/${locale}/account/communities`,
   newCommunity: (locale: Locale) => `/${locale}/account/communities/new`,

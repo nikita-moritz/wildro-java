@@ -16,7 +16,9 @@ import java.util.Set;
  * <p>
  * Dates are calendar days in Europe/Berlin, the way a visitor picks them.
  * {@code words} is the text query, already folded by {@code SearchText.words};
- * every word must be found.
+ * every word must be found. {@code communities} keeps the events of these groups
+ * only: the visitor's own groups, which the browser knows and the service does
+ * not (SPEC.md §18.8, "Meine Gruppen").
  */
 public record FeedFilter(
 		Set<ActivityType> types,
@@ -27,18 +29,32 @@ public record FeedFilter(
 		BigDecimal maxKm,
 		Near near,
 		Cost cost,
-		List<String> words) {
+		List<String> words,
+		Set<Long> communities) {
 
-	public static final FeedFilter NONE = new FeedFilter(Set.of(), Set.of(), null, null, null, null, null, null, List.of());
+	/** More groups than anyone belongs to in practice; the address bar stays short. */
+	public static final int MAX_COMMUNITIES = 30;
+
+	public static final FeedFilter NONE = new FeedFilter(Set.of(), Set.of(), null, null, null, null, null, null, List.of(), Set.of());
+
+	/** Without a group filter. */
+	public FeedFilter(Set<ActivityType> types, Set<Difficulty> difficulties, LocalDate from, LocalDate to,
+			BigDecimal minKm, BigDecimal maxKm, Near near, Cost cost, List<String> words) {
+		this(types, difficulties, from, to, minKm, maxKm, near, cost, words, Set.of());
+	}
 
 	/** Without a text query: what every caller wrote before search existed. */
 	public FeedFilter(Set<ActivityType> types, Set<Difficulty> difficulties, LocalDate from, LocalDate to,
 			BigDecimal minKm, BigDecimal maxKm, Near near, Cost cost) {
-		this(types, difficulties, from, to, minKm, maxKm, near, cost, List.of());
+		this(types, difficulties, from, to, minKm, maxKm, near, cost, List.of(), Set.of());
 	}
 
 	public FeedFilter {
 		words = words == null ? List.of() : List.copyOf(words);
+		communities = communities == null ? Set.of() : Set.copyOf(communities);
+		if (communities.size() > MAX_COMMUNITIES) {
+			throw new IllegalArgumentException("at most " + MAX_COMMUNITIES + " communities");
+		}
 		types = types == null ? Set.of() : Set.copyOf(types);
 		difficulties = difficulties == null ? Set.of() : Set.copyOf(difficulties);
 		if (from != null && to != null && to.isBefore(from)) {

@@ -62,6 +62,9 @@ final class EventSpecifications {
 		if (filter.near() != null) {
 			spec = spec.and(within(filter.near()));
 		}
+		if (!filter.communities().isEmpty()) {
+			spec = spec.and((root, query, cb) -> root.get("ownerCommunityId").in(filter.communities()));
+		}
 		for (String word : filter.words()) {
 			spec = spec.and(containing(word));
 		}

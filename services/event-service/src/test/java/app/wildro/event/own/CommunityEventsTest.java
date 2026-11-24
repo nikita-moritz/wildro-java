@@ -117,6 +117,31 @@ class CommunityEventsTest {
 	}
 
 	@Test
+	void theFeedAndTheMapKeepOnlyTheEventsOfTheGroupsAsked() throws Exception {
+		this.communities.community(8, "lauftreff-dueren", "Lauftreff Düren", "ACTIVE");
+		this.communities.role("lauftreff-dueren", "admin", "ADMIN");
+		String ours = slugOf(create("admin", "Group run", "lauftreff-dueren"));
+		slugOf(create("admin", "Personal hike", null));
+
+		this.mvc.perform(get("/v1/events").param("locale", "de").param("community", "8"))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.items.length()").value(1))
+			.andExpect(jsonPath("$.items[0].slug").value(ours));
+		this.mvc.perform(get("/v1/events/points").param("locale", "de").param("community", "8")
+			.param("south", "50").param("west", "5").param("north", "51").param("east", "7"))
+			.andExpect(jsonPath("$.items.length()").value(1))
+			.andExpect(jsonPath("$.items[0].slug").value(ours));
+		this.mvc.perform(get("/v1/events").param("locale", "de").param("community", "999"))
+			.andExpect(jsonPath("$.items.length()").value(0));
+
+		var tooMany = get("/v1/events").param("locale", "de");
+		for (int id = 1; id <= 31; id++) {
+			tooMany.param("community", String.valueOf(id));
+		}
+		this.mvc.perform(tooMany).andExpect(status().isBadRequest());
+	}
+
+	@Test
 	void aMemberIsNotAnAdmin() throws Exception {
 		create("member", "Morning run", "trailrunner-aachen").andExpect(status().isForbidden())
 			.andExpect(jsonPath("$.code").value("NOT_YOURS"));
