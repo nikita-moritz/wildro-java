@@ -402,7 +402,7 @@ export const de: Dictionary = {
     imageStory: "Story",
     shareImage: "Bild teilen",
     download: "Herunterladen",
-    instagramHint: "Instagram übernimmt nichts von außen: Bild teilen oder speichern, in Instagram hochladen und den Text als Beschreibung einfügen.",
+    instagramHint: "Instagram übernimmt nichts von außen: Bild teilen oder speichern und hochladen. Der Text ist dabei schon kopiert: als Beschreibung einfügen.",
     poster: "Poster (A4)",
     print: "Drucken oder als PDF speichern",
     posterHint: "Zum Aushängen: im Druckdialog A4 wählen, Ränder auf „Keine“.",

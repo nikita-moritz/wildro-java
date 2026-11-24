@@ -402,7 +402,7 @@ export const en: Dictionary = {
     imageStory: "Story",
     shareImage: "Share picture",
     download: "Download",
-    instagramHint: "Instagram takes nothing from outside: share or save the picture, upload it in Instagram and paste the text as its caption.",
+    instagramHint: "Instagram takes nothing from outside: share or save the picture and upload it. The text is copied along the way: paste it as the caption.",
     poster: "Poster (A4)",
     print: "Print or save as PDF",
     posterHint: "For a notice board: choose A4 in the print dialog, margins “None”.",

@@ -86,15 +86,22 @@ export function ShareBar({
     setTimeout(() => setCopied(null), 2500);
   }
 
-  /** The picture itself into the share sheet (Instagram, WhatsApp); a download where that is not possible. */
+  /**
+   * The picture itself into the share sheet (Instagram, WhatsApp); a download
+   * where that is not possible. The picture alone: given text beside it,
+   * WhatsApp on the desktop posted the picture twice (owner's report,
+   * 2026-11-24). The text goes to the clipboard instead, to paste as the caption;
+   * copied first, while the press still counts as the visitor's.
+   */
   async function shareImage(src: string, name: string) {
+    void copy(edited.instagram, "text");
     const blob = await fetch(src).then((response) => (response.ok ? response.blob() : null)).catch(() => null);
     if (!blob) {
       return;
     }
     const file = new File([blob], name, { type: blob.type || "image/webp" });
     if (typeof navigator.canShare === "function" && navigator.canShare({ files: [file] })) {
-      await navigator.share({ files: [file], text: edited.instagram }).catch(() => {});
+      await navigator.share({ files: [file] }).catch(() => {});
       return;
     }
     const link = Object.assign(document.createElement("a"), { href: URL.createObjectURL(blob), download: name });
