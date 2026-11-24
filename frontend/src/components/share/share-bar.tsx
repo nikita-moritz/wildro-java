@@ -78,6 +78,14 @@ export function ShareBar({
     () => typeof navigator.share === "function",
     () => false,
   );
+  // A picture goes into the share sheet on a phone only. On a computer the
+  // system sheet handed it to WhatsApp and Telegram twice (owner's report,
+  // 2026-11-24, macOS); there it is saved as one file, to drop into the chat.
+  const canShareImage = useSyncExternalStore(
+    subscribe,
+    () => typeof navigator.share === "function" && window.matchMedia("(pointer: coarse)").matches,
+    () => false,
+  );
   const text = edited[channel];
 
   async function copy(value: string, what: "link" | "text") {
@@ -87,11 +95,10 @@ export function ShareBar({
   }
 
   /**
-   * The picture itself into the share sheet (Instagram, WhatsApp); a download
-   * where that is not possible. The picture alone: given text beside it,
-   * WhatsApp on the desktop posted the picture twice (owner's report,
-   * 2026-11-24). The text goes to the clipboard instead, to paste as the caption;
-   * copied first, while the press still counts as the visitor's.
+   * The picture itself into a phone's share sheet (Instagram, WhatsApp), a
+   * download anywhere else. The picture alone, never with text beside it; the
+   * text goes to the clipboard instead, to paste as the caption, copied first,
+   * while the press still counts as the visitor's.
    */
   async function shareImage(src: string, name: string) {
     void copy(edited.instagram, "text");
@@ -100,7 +107,7 @@ export function ShareBar({
       return;
     }
     const file = new File([blob], name, { type: blob.type || "image/webp" });
-    if (typeof navigator.canShare === "function" && navigator.canShare({ files: [file] })) {
+    if (canShareImage && typeof navigator.canShare === "function" && navigator.canShare({ files: [file] })) {
       await navigator.share({ files: [file] }).catch(() => {});
       return;
     }
@@ -199,8 +206,8 @@ export function ShareBar({
                         className="h-11 gap-2 rounded-full px-3"
                         onClick={() => void shareImage(images[format], `${format}.webp`)}
                       >
-                        {canShare ? <Share2 className="h-4 w-4" aria-hidden /> : <Download className="h-4 w-4" aria-hidden />}
-                        {canShare ? t.shareImage : t.download}
+                        {canShareImage ? <Share2 className="h-4 w-4" aria-hidden /> : <Download className="h-4 w-4" aria-hidden />}
+                        {canShareImage ? t.shareImage : t.download}
                       </Button>
                     </figure>
                   ))}
