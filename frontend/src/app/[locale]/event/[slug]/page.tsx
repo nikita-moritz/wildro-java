@@ -295,7 +295,7 @@ export default async function EventPageRoute({ params }: PageProps<"/[locale]/ev
             <MetaRow icon={<MapPin className="h-4 w-4" />}>
               <p className="font-medium">{event.placeName}</p>
               {/* A link, not an embedded map: nothing is requested from a tile server until someone asks. */}
-              <a href={mapUrl} target="_blank" rel="noopener noreferrer" className="mt-0.5 inline-block text-xs font-medium text-primary underline underline-offset-2">
+              <a href={mapUrl} target="_blank" rel="noopener noreferrer" className="-my-3 inline-flex min-h-11 items-center text-xs font-medium text-primary underline underline-offset-2 lg:my-0 lg:mt-0.5 lg:min-h-0">
                 {t.event.openMap}
               </a>
             </MetaRow>

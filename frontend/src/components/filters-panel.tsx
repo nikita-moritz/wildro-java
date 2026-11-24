@@ -200,7 +200,7 @@ export function FiltersPanel({
       >
         <div className="flex items-center justify-between">
           <p className="text-sm font-semibold">{t.title}</p>
-          <Link href={action} onClick={reset} className="text-xs font-medium text-muted-foreground hover:text-foreground">
+          <Link href={action} onClick={reset} className="-my-3 flex min-h-11 items-center text-xs font-medium text-muted-foreground hover:text-foreground lg:my-0 lg:min-h-0">
             {t.reset}
           </Link>
         </div>
@@ -289,7 +289,7 @@ export function FiltersPanel({
                 variant={location.state === "on" ? "default" : "outline"}
                 size="sm"
                 onClick={location.state === "on" ? () => setLocation({ state: "off" }) : locate}
-                className="gap-1.5"
+                className="h-11 gap-1.5 lg:h-8"
               >
                 <LocateFixed className="h-4 w-4" />
                 {location.state === "locating" ? t.locating : t.nearMe}
@@ -330,10 +330,12 @@ export function FiltersPanel({
 }
 
 const CHIP =
-  "inline-flex min-h-8 items-center rounded-full border px-3 text-xs font-medium text-muted-foreground transition-colors peer-checked:border-primary/40 peer-checked:bg-primary/10 peer-checked:text-primary peer-focus-visible:ring-2 peer-focus-visible:ring-ring/50 hover:bg-muted";
+  // 44px to the touch on phones and tablets, the compact 32px with a mouse.
+  "inline-flex min-h-11 lg:min-h-8 items-center rounded-full border px-3 text-xs font-medium text-muted-foreground transition-colors peer-checked:border-primary/40 peer-checked:bg-primary/10 peer-checked:text-primary peer-focus-visible:ring-2 peer-focus-visible:ring-ring/50 hover:bg-muted";
 
+// 16px text on phones, so iOS does not zoom into the field on focus.
 const INPUT =
-  "h-9 w-full rounded-md border bg-background px-2 text-sm focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none";
+  "h-11 w-full rounded-md border bg-background px-2 text-base lg:h-9 lg:text-sm focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none";
 
 function locationOf(filter: FeedFilter): Location {
   return filter.near ? { state: "on", lat: filter.near.lat, lon: filter.near.lon } : { state: "off" };

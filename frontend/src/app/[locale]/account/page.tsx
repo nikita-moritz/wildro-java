@@ -183,7 +183,7 @@ export default async function AccountPage({ params, searchParams }: PageProps<"/
             appName="wildro"
             target={home}
             privacyUrl={routes.privacy(locale)}
-            termsUrl={routes.legalNotice(locale)}
+            termsUrl={routes.terms(locale)}
           />
         </section>
       </main>

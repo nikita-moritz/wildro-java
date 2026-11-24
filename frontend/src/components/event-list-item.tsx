@@ -5,6 +5,7 @@ import { ACTIVITY_ICON, DIFFICULTY_STYLE } from "@/components/activity";
 import { Highlighted } from "@/components/highlighted";
 import { LogoMark } from "@/components/logo-mark";
 import { PriceBadge } from "@/components/price-badge";
+import { CoverThumb } from "@/components/cover-thumb";
 import { defaultCover } from "@/lib/covers";
 import type { Dictionary } from "@/lib/dictionaries";
 import type { EventCard } from "@/lib/events-api";
@@ -159,14 +160,11 @@ function Cover({ event, text }: { event: EventCard; text: EventCardText }) {
   return (
     <div className="relative w-24 shrink-0 self-stretch overflow-hidden bg-muted sm:w-36 tiles:aspect-video tiles:w-full tiles:self-auto">
       {event.coverImageUrl ? (
-        // A freely licensed photo in our own storage; its credit is the title and is in full on the event page.
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={event.coverImageUrl}
-          alt=""
-          title={event.coverCredit ?? undefined}
-          loading="lazy"
-          decoding="async"
+        // A row's thumbnail is 6 or 9 rem wide; a tile up to a quarter of a wide screen or a phone's width.
+        <CoverThumb
+          url={event.coverImageUrl}
+          credit={event.coverCredit}
+          sizes="(min-width: 640px) 24rem, 50vw"
           className={image}
         />
       ) : standIn ? (

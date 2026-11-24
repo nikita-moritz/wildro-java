@@ -48,7 +48,7 @@ export default async function SignInPage({ params, searchParams }: PageProps<"/[
           <SignInPanel
             next={next}
             privacyUrl={routes.privacy(locale)}
-            termsUrl={routes.legalNotice(locale)}
+            termsUrl={routes.terms(locale)}
             failedText={t.failed}
           />
         </ElvixShell>

@@ -38,6 +38,18 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
 
   /**
+   * Event covers in cards (components/cover-thumb.tsx): the imported ones in the
+   * media bucket, the organisers' own under /media on this site's host. Covers
+   * never change under their address (a new picture is a new file name), so a
+   * cut, once made, is kept for a week.
+   */
+  images: {
+    remotePatterns: [new URL("https://media.wildro.app/**"), new URL("https://*.wildro.app/media/**")],
+    formats: ["image/webp"],
+    minimumCacheTTL: 604800,
+  },
+
+  /**
    * The Instagram pictures read Inter from its package at run time; the tracer
    * cannot see a path built from parts, so the files are named here.
    */

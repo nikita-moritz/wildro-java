@@ -16,6 +16,8 @@ export default function NotFound() {
 
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col items-start gap-4 px-4 py-24">
+      {/* The page that failed set no title of its own; without this the tab showed the home page's. */}
+      <title>{`${t.notFound.title} · ${t.site.name}`}</title>
       <h1 className="text-3xl font-semibold tracking-tight">{t.notFound.title}</h1>
       <p className="text-muted-foreground">{t.notFound.body}</p>
       <Button asChild size="lg">

@@ -2,6 +2,7 @@ import { MapPin, Navigation, TrendingUp } from "lucide-react";
 import Link from "next/link";
 
 import { ACTIVITY_ICON, DIFFICULTY_STYLE } from "@/components/activity";
+import { CoverThumb } from "@/components/cover-thumb";
 import { LogoMark } from "@/components/logo-mark";
 import type { Dictionary } from "@/lib/dictionaries";
 import type { EventCard } from "@/lib/events-api";
@@ -27,13 +28,10 @@ export function EventTeaser({ event, locale, t }: { event: EventCard; locale: Lo
     >
       <div className="relative h-40 overflow-hidden bg-muted">
         {event.coverImageUrl ? (
-          // A freely licensed photo in our own storage; its credit is the title and is in full on the event page.
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={event.coverImageUrl}
-            alt=""
-            title={event.coverCredit ?? undefined}
-            loading="lazy"
+          <CoverThumb
+            url={event.coverImageUrl}
+            credit={event.coverCredit}
+            sizes="(min-width: 1024px) 24rem, (min-width: 640px) 50vw, 100vw"
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
         ) : standIn ? (

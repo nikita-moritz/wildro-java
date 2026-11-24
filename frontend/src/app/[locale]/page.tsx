@@ -104,7 +104,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
 
           <Link
             href={routes.feed(locale)}
-            className="mt-6 flex items-center justify-center gap-1.5 text-sm font-medium text-primary hover:underline sm:hidden"
+            className="mt-4 flex min-h-11 items-center justify-center gap-1.5 text-sm font-medium text-primary hover:underline sm:hidden"
           >
             {l.upcomingCta}
             <ArrowRight className="h-4 w-4" />

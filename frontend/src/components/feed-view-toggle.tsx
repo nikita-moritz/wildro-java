@@ -69,7 +69,7 @@ function Choice({
       title={label}
       onClick={() => setFeedView(value)}
       className={cn(
-        "flex h-8.5 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none",
+        "flex h-9 w-10 items-center justify-center rounded-md text-muted-foreground transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none",
         className,
       )}
     >
